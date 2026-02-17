@@ -4,6 +4,8 @@ import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () =>
 {
@@ -17,22 +19,25 @@ const SignUp = () =>
   } = useForm();
 
   const password = watch( "password" );
+  const navigate = useNavigate();
 
+ const onSubmit = (data) => {
+  console.log("Form Data:", data);
 
-  const onSubmit = ( data ) =>
-  {
-    console.log( "Form Data:", data );
-  };
+  // Fake login
+  localStorage.setItem("token", "demo-token");
+  localStorage.setItem("isProfileComplete", "false");
+
+  navigate("/onboarding");
+};
+
 
   return (
-    <div className="relative min-h-screen w-full">
-      <img
-        src={ LoginBg }
-        alt="Login Background"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      <div className="absolute inset-0 flex flex-col md:flex-row">
+    <div
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
+      style={ { backgroundImage: `url(${ LoginBg })` } }
+    >
+      <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 text-white">
           <div className="max-w-lg text-center p-4">
             <img
@@ -159,8 +164,6 @@ const SignUp = () =>
                 ) }
               </div>
 
-
-
               <button
                 type="submit"
                 className="w-full bg-[#E07A5F] text-white px-3 py-3 rounded-md cursor-pointer hover:bg-[#d96b57] font-semibold"
@@ -171,15 +174,14 @@ const SignUp = () =>
 
             <div className="flex flex-col items-center mt-6">
               <p className="mt-4 text-lg">
-                Already have an account? { " " }
-                <a
-                  href="/login"
+                Already have an account?{ " " }
+                <Link
+                  to="/login"
                   className="text-[#2F6F6D] hover:underline"
                 >
                   Log in
-                </a>
+                </Link>
               </p>
-
               <p className="mt-6 text-lg">or sign up with</p>
 
               <button className="flex items-center justify-center border border-gray-300 rounded-md p-3 mt-6 hover:bg-gray-50 font-semibold">

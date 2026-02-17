@@ -1,6 +1,8 @@
 import { useForm } from "react-hook-form";
 import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
+import { useNavigate } from "react-router-dom";
+
 
 const Login = () =>
 {
@@ -11,20 +13,24 @@ const Login = () =>
     formState: { errors },
   } = useForm();
 
-  const onSubmit = ( data ) =>
-  {
-    console.log( "Form Data:", data );
-  };
+  const navigate = useNavigate();
+
+
+ const onSubmit = (data) => {
+  console.log("Form Data:", data);
+
+  // After validation success
+  navigate("/otp-verification");
+};
+
 
   return (
-    <div className="relative min-h-screen w-full">
-      <img
-        src={ LoginBg }
-        alt="Login Background"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <div
+         className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
+         style={ { backgroundImage: `url(${ LoginBg })` } }
+       >
 
-      <div className="absolute inset-0 flex flex-col md:flex-row">
+      <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 text-white">
           <div className="max-w-lg text-center p-4">
             <img
@@ -80,7 +86,7 @@ const Login = () =>
                 ) }
               </div>
   
-              <button
+              <button 
                 type="submit"
                 className="w-full bg-[#E07A5F] text-white px-3 py-3 rounded-md cursor-pointer hover:bg-[#d96b57] font-semibold"
               >

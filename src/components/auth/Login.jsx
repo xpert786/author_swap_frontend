@@ -4,6 +4,7 @@ import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 const Login = () =>
 {
@@ -21,14 +22,12 @@ const Login = () =>
   };
 
   return (
-    <div className="relative min-h-screen w-full">
-      <img
-        src={ LoginBg }
-        alt="Login Background"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+    <div
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
+      style={ { backgroundImage: `url(${ LoginBg })` } }
+    >
 
-      <div className="absolute inset-0 flex flex-col md:flex-row">
+      <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 text-white">
           <div className="max-w-lg text-center p-4">
             <img
@@ -126,9 +125,9 @@ const Login = () =>
                   Remember me
                 </label>
 
-                <a href="/forget-password" className="text-[#2F6F6D] hover:underline">
+                <Link to="/forget-password" className="text-[#2F6F6D] hover:underline">
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               <button
@@ -142,12 +141,12 @@ const Login = () =>
             <div className="flex flex-col items-center mt-6">
               <p className="mt-4 text-lg">
                 Don’t have an account?{ " " }
-                <a
-                  href="/signup"
+                <Link
+                  to="/signup"
                   className="text-[#2F6F6D] hover:underline"
                 >
                   Sign up
-                </a>
+                </Link>
               </p>
 
               <p className="mt-6 text-lg">or sign up with</p>
