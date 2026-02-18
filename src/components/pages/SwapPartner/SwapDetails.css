@@ -1,0 +1,25 @@
+/* SwapDetails — responsive overrides only */
+
+@media (max-width: 900px) {
+    .sd-analytics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .sd-history-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .sd-analytics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .sd-history-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sd-meta-row {
+        gap: 12px !important;
+    }
+}

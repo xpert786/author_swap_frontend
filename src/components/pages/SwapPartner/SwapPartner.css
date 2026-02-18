@@ -1,0 +1,22 @@
+/* SwapPartner — responsive overrides only */
+
+@media (max-width: 1024px) {
+  .sp-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .sp-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .sp-spacer {
+    display: none !important;
+  }
+  .sp-search {
+    max-width: 100% !important;
+  }
+  .sp-filters {
+    width: 100% !important;
+  }
+}
