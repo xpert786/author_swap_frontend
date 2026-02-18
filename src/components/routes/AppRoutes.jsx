@@ -11,7 +11,8 @@ import MainLayout from "../layouts/MainLayout"; // adjust path if needed
 
 // Example protected pages
 import Dashboard from "../pages/Dashboard";
-import BooksPage from "../pages/BooksPage";
+import BooksPage from "../pages/books/BooksPage";
+import BookDetails from "../pages/books/BookDetails";
 import SwapPartner from "../pages/SwapPartner/SwapPartner";
 import SwapDetails from "../pages/SwapPartner/SwapDetails";
 import CommunicationTools from "../pages/CommunicationTools";
@@ -44,6 +45,7 @@ const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/books" element={<BooksPage />} />
+          <Route path="/books/:id" element={<BookDetails />} />
           <Route path="/swap-partner" element={<SwapPartner />} />
           <Route path="/swap-details" element={<SwapDetails />} />
           <Route path="/communication" element={<CommunicationTools />} />
