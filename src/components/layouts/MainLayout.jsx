@@ -4,17 +4,22 @@ import Header from "../Header";
 
 export default function MainLayout() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="h-screen overflow-hidden bg-gray-100">
+      
+      {/* Fixed Sidebar */}
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        {/* Header Always Visible */}
+      {/* Right Side */}
+      <div className="ml-72 flex flex-col h-full">
+        
+        {/* Fixed Header */}
         <Header />
 
-        {/* Page Content Changes */}
-        <div className="flex-1 bg-white">
+        {/* Scrollable Content Area */}
+        <main className="mt-20 flex-1 overflow-y-auto bg-white p-6">
           <Outlet />
-        </div>
+        </main>
+
       </div>
     </div>
   );

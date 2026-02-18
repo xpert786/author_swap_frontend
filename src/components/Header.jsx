@@ -6,8 +6,7 @@ import { GoChevronDown } from "react-icons/go";
 export default function Header ()
 {
     return (
-        <div className="w-full bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-
+     <div className="fixed top-0 left-72 right-0 bg-white shadow-sm px-6 py-4 flex items-center justify-between z-40">git 
             {/* Left Side */ }
             <div className="flex items-center gap-4">
                 <button className="bg-gray-100 p-2 rounded-full">
