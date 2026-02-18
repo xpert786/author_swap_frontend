@@ -81,11 +81,11 @@ export default function Sidebar ()
           } ) }
         </nav>
 
-        <div className="absolute bottom-6 left-0 w-full px-4">
+        {/* <div className="absolute bottom-6 left-0 w-full px-4">
           <button className="w-full flex items-center justify-center gap-2 rounded-2xl text-white py-3 hover:bg-slate-700 transition">
             <LogOut size={ 16 } /> Logout
           </button>
-        </div>
+        </div> */}
       </aside>
     </>
   );

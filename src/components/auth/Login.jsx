@@ -29,26 +29,26 @@ const Login = () =>
 
       <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 text-white">
-          <div className="max-w-lg text-center p-4">
+          <div className="max-w-sm md:max-w-lg text-center p-2 md:p-4">
             <img
               src={ Logo }
               alt="AuthorSwap Logo"
               className="mx-auto mb-6 w-full max-w-[454px] h-auto"
             />
 
-            <h1 className="text-[25px] font-medium mb-3 leading-snug">
+            <h1 className="text-[18px] md:text-[25px] font-medium mb-3 leading-snug">
               Verified newsletter swaps for authors
             </h1>
 
-            <p className="text-[17px] opacity-90">
+            <p className="text-[14px] md:text-[17px] opacity-90">
               Flat pricing. No commissions. Automatic verification.
             </p>
           </div>
         </div>
 
         <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[600px] p-8">
-            <h2 className="text-[45px] font-bold text-[#E07A5F] mb-6">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[600px] p-5 md:p-8">
+            <h2 className="text-[28px] md:text-[45px] font-bold text-[#E07A5F] mb-4 md:mb-6">
               Log In
             </h2>
 
@@ -119,7 +119,7 @@ const Login = () =>
                 ) }
               </div>
 
-              <div className="flex justify-between items-center text-lg mb-5">
+              <div className="flex justify-between items-center text-sm md:text-lg mb-5">
                 <label className="flex items-center gap-2">
                   <input type="checkbox" { ...register( "remember" ) } />
                   Remember me
@@ -139,7 +139,7 @@ const Login = () =>
             </form>
 
             <div className="flex flex-col items-center mt-6">
-              <p className="mt-4 text-lg">
+              <p className="mt-4 text-sm md:text-lg">
                 Don’t have an account?{ " " }
                 <Link
                   to="/signup"
@@ -149,7 +149,7 @@ const Login = () =>
                 </Link>
               </p>
 
-              <p className="mt-6 text-lg">or sign up with</p>
+              <p className="mt-6 text-sm md:text-lg">or sign up with</p>
 
               <button className="flex items-center justify-center border border-gray-300 rounded-md p-3 mt-6 hover:bg-gray-50 font-semibold">
                 <FcGoogle className="text-2xl mr-2" /> Google

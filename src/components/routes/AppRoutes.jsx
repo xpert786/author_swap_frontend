@@ -11,7 +11,8 @@ import MainLayout from "../layouts/MainLayout"; // adjust path if needed
 
 // Example protected pages
 import Dashboard from "../pages/Dashboard";
-import BooksPage from "../pages/BooksPage";
+import BooksPage from "../pages/books/BooksPage";
+import BookDetails from "../pages/books/BookDetails";
 
 const AppRoutes = () => {
   return (
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/books" element={<BooksPage />} /> 
+          <Route path="/books/:id" element={<BookDetails />} />
         </Route>
 
       </Route>
