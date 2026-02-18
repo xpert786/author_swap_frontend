@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../auth/Login";
 import Signup from "../auth/SignUp";
 import PublicRoute from "../routes/PublicRoutes";
@@ -12,10 +12,18 @@ import MainLayout from "../layouts/MainLayout"; // adjust path if needed
 // Example protected pages
 import Dashboard from "../pages/Dashboard";
 import BooksPage from "../pages/BooksPage";
+import SwapPartner from "../pages/SwapPartner/SwapPartner";
+import SwapDetails from "../pages/SwapPartner/SwapDetails";
+import CommunicationTools from "../pages/CommunicationTools";
+import AccountSettings from "../pages/AccountSettings";
+import { NewsletterSlot, SwapManagement, Analytics, Reputation } from "../pages/PlaceholderPages";
 
 const AppRoutes = () => {
   return (
     <Routes>
+
+      {/* ROOT REDIRECT */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* PUBLIC ROUTES */}
       <Route element={<PublicRoute />}>
@@ -35,7 +43,15 @@ const AppRoutes = () => {
         {/* All other protected routes WITH Sidebar */}
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/books" element={<BooksPage />} /> 
+          <Route path="/books" element={<BooksPage />} />
+          <Route path="/swap-partner" element={<SwapPartner />} />
+          <Route path="/swap-details" element={<SwapDetails />} />
+          <Route path="/communication" element={<CommunicationTools />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/newsletter" element={<NewsletterSlot />} />
+          <Route path="/swap-management" element={<SwapManagement />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reputation" element={<Reputation />} />
         </Route>
 
       </Route>
