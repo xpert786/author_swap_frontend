@@ -11,6 +11,7 @@ import MainLayout from "../layouts/MainLayout"; // adjust path if needed
 
 // Example protected pages
 import Dashboard from "../pages/Dashboard";
+import BooksPage from "../pages/BooksPage";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,7 @@ const AppRoutes = () => {
         {/* All other protected routes WITH Sidebar */}
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/books" element={<BooksPage />} /> 
         </Route>
 
       </Route>
