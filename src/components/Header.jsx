@@ -65,14 +65,6 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
         <div className={`fixed top-0 right-0 bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between z-40 transition-all duration-300 ${isOpen ? "left-0 lg:left-72" : "left-0"}`}>
             {/* Left Side */}
             <div className="flex items-center gap-2 md:gap-4">
-                {/* Mobile Menu Icon */}
-                <button
-                    onClick={onMenuClick}
-                    className="lg:hidden flex items-center justify-center bg-[rgba(224,122,95,0.2)] text-[#E07A5F] w-12 h-10 md:w-14 md:h-12 rounded-xl"
-                >
-                    <FiMenu size={24} />
-                </button>
-
                 {/* Sidebar Toggle Button */}
                 <button
                     onClick={onToggle}
@@ -127,10 +119,10 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                 {/* Notification Bell */}
                 <div
                     onClick={() => navigate("/notifications")}
-                    className="bg-[rgba(224,122,95,0.2)] p-2.5 md:p-2.5 rounded-full md:rounded-lg relative cursor-pointer hover:bg-[rgba(224,122,95,0.3)] transition-colors"
+                    className="bg-[rgba(224,122,95,0.2)] p-2 rounded-lg relative cursor-pointer hover:bg-[rgba(224,122,95,0.3)] transition-colors"
                 >
-                    <TbBell className="text-xl md:text-2xl text-[#E07A5F] md:text-[#1F4F4D]" />
-                    <span className="hidden md:flex absolute -top-1.5 -right-1.5 bg-[#E07A5F] text-white text-[10px] font-bold rounded-full w-5 h-5 items-center justify-center border-2 border-white">
+                    <TbBell className="text-lg md:text-2xl text-[#1F4F4D]" />
+                    <span className="flex absolute -top-1 -right-1 bg-[#E07A5F] text-white text-[9px] font-bold rounded-full w-4 h-4 items-center justify-center border-2 border-white">
                         10
                     </span>
                 </div>

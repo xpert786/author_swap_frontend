@@ -44,8 +44,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           flex flex-col
         `}
       >
-        <div className="flex items-center justify-between px-6 py-5 mb-6 mt-3">
-          <img src={Logo} alt="Logo" className="h-10" />
+        <div className="flex items-center justify-between px-6 py-5 mb-6 mt-2">
+          <img src={Logo} alt="Logo" className="h-6 md:h-10" />
           <button className="lg:hidden p-1 hover:bg-black/5 rounded-full" onClick={() => setIsOpen(false)}>
             <X size={22} />
           </button>
