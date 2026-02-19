@@ -23,23 +23,15 @@ export default function Header({ onMenuClick }) {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     return (
-<<<<<<< HEAD
-     <div className="fixed top-0 left-72 right-0 bg-white shadow-sm px-6 py-4 flex items-center justify-between z-40">git 
-            {/* Left Side */ }
-            <div className="flex items-center gap-4">
-                <button className="bg-gray-100 p-2 rounded-full">
-                    ←
-=======
-        <div className="w-full bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        <div className="fixed top-0 left-0 lg:left-72 right-0 bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between z-40">
             {/* Left Side */}
             <div className="flex items-center gap-2 md:gap-4">
                 {/* Mobile Menu Icon */}
                 <button
                     onClick={onMenuClick}
-                    className="md:hidden flex items-center justify-center bg-[rgba(224,122,95,0.2)] text-[#E07A5F] w-14 h-12 rounded-xl"
+                    className="lg:hidden flex items-center justify-center bg-[rgba(224,122,95,0.2)] text-[#E07A5F] w-12 h-10 md:w-14 md:h-12 rounded-xl"
                 >
                     <FiMenu size={24} />
->>>>>>> 54ed8caf3ce4fbe525ad720ef277ed8773758347
                 </button>
 
                 {/* Back Button - Visible on all screens */}
@@ -48,7 +40,7 @@ export default function Header({ onMenuClick }) {
                     className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors w-9 h-9 md:w-10 md:h-10 rounded-full text-gray-700 shrink-0"
                     aria-label="Back"
                 >
-                    <FiArrowLeft size={16} md:size={18} />
+                    <FiArrowLeft size={16} />
                 </button>
 
                 {/* Search - Visible on all screens with more spacing on mobile */}

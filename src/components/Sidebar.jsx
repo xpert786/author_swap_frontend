@@ -14,26 +14,11 @@ const menuItems = [
   { name: "Author Reputation", path: "/reputation", icon: Award },
 ];
 
-<<<<<<< HEAD
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      {/* Mobile Top Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-md flex items-center justify-between px-4 py-3">
-        <img src={Logo} alt="Logo" className="h-8" />
-        <button onClick={() => setIsOpen(true)}>
-          <Menu size={24} />
-        </button>
-      </div>
-
-=======
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
+
   return (
     <>
->>>>>>> 54ed8caf3ce4fbe525ad720ef277ed8773758347
       {/* Overlay */}
       {isOpen && (
         <div
@@ -45,49 +30,27 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       {/* Sidebar */}
       <aside
         className={`
-<<<<<<< HEAD
-    w-72
-    h-screen
-    bg-[#2F6F6D33]
-    fixed
-    top-0
-    left-0
-    z-50
-    transform transition-transform duration-300
-    ${isOpen ? "translate-x-0" : "-translate-x-full"}
-    lg:translate-x-0
-  `}
-      >
-        <div className="flex items-center justify-between px-6 py-5 mb-6 mt-3">
-          <img src={Logo} alt="Logo" className="h-10" />
-          <button className="lg:hidden" onClick={() => setIsOpen(false)}>
-            <X size={22} />
-          </button>
-        </div>
-
-        <nav className="flex flex-col gap-2 p-4">
-=======
-          w-64 md:w-72
+          w-72
           bg-[#EBF1F0]
-          min-h-screen
-          flex-shrink-0
+          h-screen
+          fixed
+          top-0
+          left-0
+          z-50
           transform transition-transform duration-300
           ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
           lg:translate-x-0
-          fixed lg:static
-          top-0 left-0 z-50
           border-r border-gray-100
         `}
       >
         <div className="flex items-center justify-between px-6 py-5 mb-6 mt-3">
-          <img src={Logo} alt="Logo" className="h-6 md:h-10" />
+          <img src={Logo} alt="Logo" className="h-10" />
           <button className="lg:hidden p-1 hover:bg-black/5 rounded-full" onClick={() => setIsOpen(false)}>
-            <X size={18} />
+            <X size={22} />
           </button>
         </div>
 
         <nav className="flex flex-col gap-1 p-3">
->>>>>>> 54ed8caf3ce4fbe525ad720ef277ed8773758347
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             // Keep Swap Partner active for both /swap-partner and /swap-details
@@ -100,17 +63,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 to={item.path}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
-<<<<<<< HEAD
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition text-lg font-semibold
-                  ${isActive
-                    ? "bg-[#1F4F4D] text-white"
-                    : "hover:bg-slate-200 text-gray-800"
-                  }`
-                }
-              >
-                <Icon size={18} />
-                {item.name}
-=======
                   `flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-[15px] font-semibold active:scale-[0.98] group relative
                   ${isActive || extraActive
                     ? "bg-[#1F4F4D] text-white shadow-md shadow-[#1F4F4D]/20 z-10"
@@ -130,7 +82,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     </>
                   );
                 }}
->>>>>>> 54ed8caf3ce4fbe525ad720ef277ed8773758347
               </NavLink>
             );
           })}
