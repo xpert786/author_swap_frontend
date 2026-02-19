@@ -17,7 +17,8 @@ import SwapPartner from "../pages/SwapPartner/SwapPartner";
 import SwapDetails from "../pages/SwapPartner/SwapDetails";
 import CommunicationTools from "../pages/CommunicationTools";
 import AccountSettings from "../pages/AccountSettings";
-import { NewsletterSlot, SwapManagement, Analytics, Reputation } from "../pages/PlaceholderPages";
+import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSystem";
+import { NewsletterSlot, SwapManagement, Analytics } from "../pages/PlaceholderPages";
 
 const AppRoutes = () => {
   return (
@@ -53,7 +54,7 @@ const AppRoutes = () => {
           <Route path="/newsletter" element={<NewsletterSlot />} />
           <Route path="/swap-management" element={<SwapManagement />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/reputation" element={<Reputation />} />
+          <Route path="/reputation" element={<AuthorReputationSystem />} />
         </Route>
 
       </Route>
