@@ -63,7 +63,7 @@ const AddBooks = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-[900px] rounded-2xl shadow-xl p-8 max-h-[95vh] overflow-y-auto  m-5">
+      <div className="bg-white w-[750px] rounded-2xl shadow-xl p-8 max-h-[95vh] overflow-y-auto  m-5">
 
         {/* Header */}
         <div className="flex justify-between items-start mb-6">

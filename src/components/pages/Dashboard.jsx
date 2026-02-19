@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { FiBookOpen } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
+import AddBooks from "../pages/books/AddBooks";
+import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 
 const Dashboard = () => {
-  // ---------------- MOCK DATA (acts like API response) ----------------
   const mockData = {
     stats: {
       books: 3,
@@ -12,36 +13,16 @@ const Dashboard = () => {
       reliability: 3,
     },
     calendar: [
-      { date: "2024-05-03", type: "swap" },
-      { date: "2024-05-10", type: "deadline" },
-      { date: "2024-05-18", type: "meeting" },
+      { date: "2024-05-03" },
+      { date: "2024-05-10" },
+      { date: "2024-05-18" },
     ],
     recentActivity: [
-      {
-        id: 1,
-        title: "Completed swap with Jane Author",
-        time: "2 days ago",
-      },
-      {
-        id: 2,
-        title: "Initiated project review with Mark Lee",
-        time: "1 day ago",
-      },
-      {
-        id: 3,
-        title: "Submitted design revisions to Sarah Brown",
-        time: "3 days ago",
-      },
-      {
-        id: 4,
-        title: "Conducted user testing session for app prototype",
-        time: "4 days ago",
-      },
-      {
-        id: 5,
-        title: "Finalized budget proposal for Q4",
-        time: "5 days ago",
-      },
+      { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
+      { id: 2, title: "Initiated project review with Mark Lee", time: "1 day ago" },
+      { id: 3, title: "Submitted design revisions to Sarah Brown", time: "3 days ago" },
+      { id: 4, title: "Conducted user testing session for app prototype", time: "4 days ago" },
+      { id: 5, title: "Finalized budget proposal for Q4", time: "5 days ago" },
     ],
     analytics: {
       viewRate: 43.3,
@@ -50,9 +31,7 @@ const Dashboard = () => {
     },
   };
 
-  const [currentDate] = useState(new Date(2024, 4)); // May 2024 (month is 0-indexed)
-
-  // ---------------- CALENDAR LOGIC ----------------
+  const [currentDate] = useState(new Date(2024, 4));
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -60,78 +39,84 @@ const Dashboard = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const calendarDays = [];
-
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarDays.push(null);
-  }
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(i);
-  }
+  for (let i = 0; i < firstDayOfMonth; i++) calendarDays.push(null);
+  for (let i = 1; i <= daysInMonth; i++) calendarDays.push(i);
 
   const isEventDay = (day) => {
     if (!day) return false;
-
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(
       day
     ).padStart(2, "0")}`;
-
     return mockData.calendar.some((item) => item.date === dateString);
   };
 
+  const [showAddBook, setShowAddBook] = useState(false);
+  const [showAddSlot, setShowAddSlot] = useState(false);
+
+    const handleCreateSlot = () => {
+    console.log("Slot created");
+    setShowAddSlot(false);
+  };
+
+
   return (
-    <div className="p-4 md:p-6 min-h-screen max-w-[1600px] mx-auto">
-      {/* Header */}
+    <div className="min-h-screen max-w-[1400px] mx-auto">
+
+      {/* HEADER */}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Welcome back, Author!</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Welcome back, Author!
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
           Here's what's happening with your swaps and books
         </p>
       </div>
 
-      {/* ---------------- STATS ---------------- */}
+      {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Book", value: mockData.stats.books, icon: <FiBookOpen /> },
-          { label: "Newsletter Slots", value: mockData.stats.newsletterSlots, icon: <FiBookOpen /> },
-          { label: "Completed Swaps", value: mockData.stats.completedSwaps, icon: <FiBookOpen /> },
-          { label: "Reliability", value: mockData.stats.reliability, icon: <FiBookOpen /> },
+          { label: "Book", value: mockData.stats.books },
+          { label: "Newsletter Slots", value: mockData.stats.newsletterSlots },
+          { label: "Completed Swaps", value: mockData.stats.completedSwaps },
+          { label: "Reliability", value: mockData.stats.reliability },
         ].map((item, index) => (
           <div
             key={index}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow min-h-[140px]"
+            className="bg-white p-5 rounded-xl border border-gray-200 flex flex-col justify-between min-h-[110px]"
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 bg-[#1F4F4D]/10 text-[#1F4F4D] rounded-xl text-xl">
-                {item.icon}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#E07A5F]/10 text-[#E07A5F] rounded-md">
+                <FiBookOpen />
               </div>
-              <p className="text-gray-500 text-sm font-bold uppercase tracking-wider">
+              <p className="text-xs text-gray-500 font-medium">
                 {item.label}
               </p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mt-4 leading-none">
+
+            <h2 className="text-2xl font-semibold text-gray-900 mt-4">
               {item.value}
             </h2>
           </div>
         ))}
       </div>
 
-      {/* ---------------- MAIN RESPONSIVE GRID ---------------- */}
+      {/* MAIN GRID */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
-        {/* Calendar */}
-        <div className="xl:col-span-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-lg text-gray-900">
-              {currentDate.toLocaleString("default", { month: "long" })} {year}
+
+        {/* CALENDAR */}
+        <div className="xl:col-span-8 bg-white p-5 rounded-xl border border-gray-200">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-semibold text-gray-900">
+              May {year} Calendar
             </h2>
-            <button className="px-4 py-1.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors uppercase tracking-widest">
+            <button className="px-3 py-1 border border-gray-200 rounded-md text-xs text-gray-600 hover:bg-gray-100">
               View Full
             </button>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+          <div className="grid grid-cols-7 text-center text-xs text-gray-400 mb-4">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="py-2">{day}</div>
+              <div key={day}>{day}</div>
             ))}
           </div>
 
@@ -139,30 +124,34 @@ const Dashboard = () => {
             {calendarDays.map((day, idx) => (
               <div
                 key={idx}
-                className={`aspect-square sm:h-14 flex items-center justify-center rounded-xl transition-all cursor-pointer text-sm font-bold
-                ${day ? "bg-gray-50 hover:bg-[#1F4F4D]/5 text-gray-700" : "bg-transparent"} 
-                ${isEventDay(day)
-                    ? "bg-[#E07A5F] text-white shadow-lg shadow-[#E07A5F]/20 scale-105"
-                    : ""
-                  }`}
+                className="relative h-12 flex items-center justify-center rounded-md text-sm text-gray-700 hover:bg-gray-100"
               >
                 {day}
+                {isEventDay(day) && (
+                  <span className="absolute bottom-2 h-1.5 w-1.5 bg-[#E07A5F] rounded-full"></span>
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="xl:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-          <h2 className="font-bold mb-6 text-lg text-gray-900 border-b border-gray-50 pb-4">Recent Activity</h2>
+        {/* RECENT ACTIVITY */}
+        <div className="xl:col-span-4 bg-white p-5 rounded-xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-5">
+            Recent Activity
+          </h2>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {mockData.recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-4 group cursor-pointer">
-                <div className="w-2.5 h-2.5 bg-[#E07A5F] rounded-full mt-1.5 flex-shrink-0 group-hover:scale-125 transition-transform shadow-sm"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800 group-hover:text-[#1F4F4D] transition-colors leading-tight">{activity.title}</p>
-                  <p className="text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-tighter">{activity.time}</p>
+              <div key={activity.id} className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-[#E07A5F] rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm text-gray-800 font-medium">
+                    {activity.title}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {activity.time}
+                  </p>
                 </div>
               </div>
             ))}
@@ -170,55 +159,95 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ---------------- BOTTOM RESPONSIVE GRID ---------------- */}
+      {/* BOTTOM GRID */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* Analytics */}
-        <div className="xl:col-span-8 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200 flex flex-col justify-between">
-          <h2 className="font-bold mb-8 text-lg text-gray-900">Campaign Analytics</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-8">
-            <div className="bg-[#E07A5F]/5 p-8 rounded-3xl text-center border border-[#E07A5F]/10 hover:bg-[#E07A5F]/10 transition-colors group">
-              <h3 className="text-4xl font-black text-[#E07A5F] group-hover:scale-105 transition-transform">
+        {/* ANALYTICS */}
+        <div className="xl:col-span-8 bg-white p-6 rounded-xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-6">
+            Campaign Analytics
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.viewRate}%
               </h3>
-              <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">Open Rate</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Open Rate
+              </p>
             </div>
 
-            <div className="bg-[#1F4F4D]/5 p-8 rounded-3xl text-center border border-[#1F4F4D]/10 hover:bg-[#1F4F4D]/10 transition-colors group">
-              <h3 className="text-4xl font-black text-[#1F4F4D] group-hover:scale-105 transition-transform">
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.clickRate}%
               </h3>
-              <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">Click-Through</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Click-Through
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
+                {mockData.analytics.viewRate}%
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Open Rate
+              </p>
+            </div>
+
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
+                {mockData.analytics.clickRate}%
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Click-Through
+              </p>
             </div>
           </div>
 
-          <p className="text-sm text-gray-500 font-medium">
-            Performance summary for the last 30 days.{" "}
-            <span className="text-green-600 font-bold bg-green-50 px-2 py-1 rounded-lg">
+          <p className="text-sm text-gray-500">
+            Last 30 days performance.{" "}
+            <span className="text-green-600 font-medium">
               +{mockData.analytics.improvement}% improvement
             </span>{" "}
-            relative to previous month.
+            vs previous period.
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="xl:col-span-4 bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-200">
-          <h2 className="font-bold mb-8 text-lg text-gray-900 border-b border-gray-50 pb-4">Quick Actions</h2>
+        <div className="xl:col-span-4 bg-[#F9FAFB] p-6 rounded-2xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-6">
+            Quick Actions
+          </h2>
 
-          <div className="flex flex-col sm:flex-row xl:flex-col gap-4">
-            <button className="flex-1 flex items-center p-6 justify-start gap-4 border-2 border-dashed border-gray-200 rounded-2xl hover:bg-[#E07A5F]/5 hover:border-[#E07A5F]/30 hover:text-[#E07A5F] transition-all group active:scale-[0.98]">
-              <div className="p-3 bg-gray-50 group-hover:bg-[#E07A5F] text-gray-400 group-hover:text-white rounded-xl transition-colors shadow-sm">
-                <LuPlus size={22} />
+          <div className="flex gap-6">
+            <button onClick={() => setShowAddBook(true)} className="group flex-1 flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-200 bg-[#F3F4F6] transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+                <LuPlus size={20} className="text-black" />
               </div>
-              <span className="font-bold text-sm tracking-tight text-gray-700 group-hover:text-gray-900">Add New Book</span>
+              <span className="text-xs font-medium text-gray-900 leading-tight">
+                Add <br /> New Book
+              </span>
             </button>
 
-            <button className="flex-1 flex items-center p-6 justify-start gap-4 border-2 border-dashed border-gray-200 rounded-2xl hover:bg-[#1F4F4D]/5 hover:border-[#1F4F4D]/30 hover:text-[#1F4F4D] transition-all group active:scale-[0.98]">
-              <div className="p-3 bg-gray-50 group-hover:bg-[#1F4F4D] text-gray-400 group-hover:text-white rounded-xl transition-colors shadow-sm">
-                <LuPlus size={22} />
+            {showAddBook && (
+              <AddBooks onClose={() => setShowAddBook(false)} />
+            )}
+            <button onClick={() => setShowAddSlot(true)} className="group flex-1 flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-200 bg-[#F3F4F6] transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+                <LuPlus size={20} className="text-black" />
               </div>
-              <span className="font-bold text-sm tracking-tight text-gray-700 group-hover:text-gray-900">Add Newsletter Slot</span>
+              <span className="text-xs font-medium text-gray-900 leading-tight">
+                Add <br /> Newsletter Slot
+              </span>
             </button>
+
+            <AddNewsSlot
+              isOpen={showAddSlot}
+              onClose={() => setShowAddSlot(false)}
+              onSubmit={handleCreateSlot}
+            />
           </div>
         </div>
       </div>

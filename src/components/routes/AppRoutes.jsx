@@ -18,7 +18,7 @@ import SwapDetails from "../pages/SwapPartner/SwapDetails";
 import CommunicationTools from "../pages/CommunicationTools";
 import AccountSettings from "../pages/AccountSettings";
 import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSystem";
-import Newsletter from "../newsletters/Newsletter";
+import Newsletter from "../pages/newsletters/Newsletter";
 import { SwapManagement, Analytics } from "../pages/PlaceholderPages";
 
 const AppRoutes = () => {

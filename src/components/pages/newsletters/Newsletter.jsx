@@ -15,11 +15,11 @@ import {
     Users,
     Globe
 } from "lucide-react";
-import { Publish } from "../icons";
-import pendingSwapIcon from "../../assets/pendingswap.png";
-import confirmedSwapIcon from "../../assets/confirmedswap.png";
-import verifiedSentIcon from "../../assets/acceptedswap.png";
-import newsIcon from "../../assets/newsicon.png";
+import { Publish } from "../../icons";
+import pendingSwapIcon from "../../../assets/pendingswap.png";
+import confirmedSwapIcon from "../../../assets/confirmedswap.png";
+import verifiedSentIcon from "../../../assets/acceptedswap.png";
+import newsIcon from "../../../assets/newsicon.png";
 import AddNewsSlot from "./AddNewsSlot";
 import EditNewsSlot from "./EditNewsSlot";
 import DeleteNewsSlot from "./DeleteNewsSlot";
