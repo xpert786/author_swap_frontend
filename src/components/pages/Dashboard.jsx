@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { FiBookOpen } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
-
+import AddBooks from "../pages/books/AddBooks";
+import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 
 const Dashboard = () => {
-  // ---------------- MOCK DATA (acts like API response) ----------------
   const mockData = {
     stats: {
       books: 3,
@@ -13,36 +13,16 @@ const Dashboard = () => {
       reliability: 3,
     },
     calendar: [
-      { date: "2024-05-03", type: "swap" },
-      { date: "2024-05-10", type: "deadline" },
-      { date: "2024-05-18", type: "meeting" },
+      { date: "2024-05-03" },
+      { date: "2024-05-10" },
+      { date: "2024-05-18" },
     ],
     recentActivity: [
-      {
-        id: 1,
-        title: "Completed swap with Jane Author",
-        time: "2 days ago",
-      },
-      {
-        id: 2,
-        title: "Initiated project review with Mark Lee",
-        time: "1 day ago",
-      },
-      {
-        id: 3,
-        title: "Submitted design revisions to Sarah Brown",
-        time: "3 days ago",
-      },
-      {
-        id: 4,
-        title: "Conducted user testing session for app prototype",
-        time: "4 days ago",
-      },
-      {
-        id: 5,
-        title: "Finalized budget proposal for Q4",
-        time: "5 days ago",
-      },
+      { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
+      { id: 2, title: "Initiated project review with Mark Lee", time: "1 day ago" },
+      { id: 3, title: "Submitted design revisions to Sarah Brown", time: "3 days ago" },
+      { id: 4, title: "Conducted user testing session for app prototype", time: "4 days ago" },
+      { id: 5, title: "Finalized budget proposal for Q4", time: "5 days ago" },
     ],
     analytics: {
       viewRate: 43.3,
@@ -51,9 +31,7 @@ const Dashboard = () => {
     },
   };
 
-  const [currentDate] = useState(new Date(2024, 4)); // May 2024 (month is 0-indexed)
-
-  // ---------------- CALENDAR LOGIC ----------------
+  const [currentDate] = useState(new Date(2024, 4)); // May 2024
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -61,112 +39,113 @@ const Dashboard = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const calendarDays = [];
-
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarDays.push(null);
-  }
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(i);
-  }
+  for (let i = 0; i < firstDayOfMonth; i++) calendarDays.push(null);
+  for (let i = 1; i <= daysInMonth; i++) calendarDays.push(i);
 
   const isEventDay = (day) => {
     if (!day) return false;
-
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(
       day
     ).padStart(2, "0")}`;
-
     return mockData.calendar.some((item) => item.date === dateString);
   };
 
-  return (
-    <div className="p-6 min-h-screen">
-      {/* Header */}
-      <h1 className="text-3xl font-semibold">Welcome back, Author!</h1>
-      <p className="text-gray-500 mb-6">
-        Here's what's happening with your swaps and books
-      </p>
+  const [showAddBook, setShowAddBook] = useState(false);
+  const [showAddSlot, setShowAddSlot] = useState(false);
 
-      {/* ---------------- STATS ---------------- */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+  const handleCreateSlot = () => {
+    console.log("Slot created");
+    setShowAddSlot(false);
+  };
+
+  return (
+    <div className="min-h-screen max-w-[1400px] mx-auto p-6">
+      {/* HEADER */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Welcome back, Author!
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Here's what's happening with your swaps and books
+        </p>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Book", value: mockData.stats.books, icon: <FiBookOpen /> },
-          { label: "Newsletter Slots", value: mockData.stats.newsletterSlots, icon: <FiBookOpen /> },
-          { label: "Completed Swaps", value: mockData.stats.completedSwaps, icon: <FiBookOpen /> },
-          { label: "Reliability", value: mockData.stats.reliability, icon: <FiBookOpen /> },
+          { label: "Book", value: mockData.stats.books },
+          { label: "Newsletter Slots", value: mockData.stats.newsletterSlots },
+          { label: "Completed Swaps", value: mockData.stats.completedSwaps },
+          { label: "Reliability", value: mockData.stats.reliability },
         ].map((item, index) => (
           <div
             key={index}
-            className="bg-white p-6 rounded-xl shadow-sm border border-[#B5B5B5] min-h-[160px] flex flex-col justify-between"
+            className="bg-white p-5 rounded-xl border border-gray-200 flex flex-col justify-between min-h-[110px]"
           >
-            {/* Top Section */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="p-3 bg-[#2F6F6D33] text-black rounded-xl text-xl">
-                {item.icon}
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#E07A5F]/10 text-[#E07A5F] rounded-md">
+                <FiBookOpen />
               </div>
-              <p className="text-[#374151] text-lg font-medium">
-                {item.label}
-              </p>
+              <p className="text-xs text-gray-500 font-medium">{item.label}</p>
             </div>
-
-            {/* Bottom Value */}
-            <h2 className="text-4xl font-semibold text-gray-900">
+            <h2 className="text-2xl font-semibold text-gray-900 mt-4">
               {item.value}
             </h2>
           </div>
         ))}
       </div>
 
-
-
-      {/* ---------------- CALENDAR + ACTIVITY ---------------- */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        {/* Calendar */}
-        <div className="col-span-2 bg-white p-5 rounded-xl shadow-sm border border-[#B5B5B5]">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold text-lg">
-              {currentDate.toLocaleString("default", { month: "long" })} {year}
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
+        {/* CALENDAR */}
+        <div className="xl:col-span-8 bg-white p-5 rounded-xl border border-gray-200">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-semibold text-gray-900 uppercase tracking-wider text-sm">
+              {currentDate.toLocaleString("default", { month: "long" })} {year} Calendar
             </h2>
-            <button className="px-3 py-1 border rounded-md text-sm">
+            <button className="px-3 py-1 border border-gray-200 rounded-md text-xs text-gray-600 hover:bg-gray-100">
               View Full
             </button>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-sm text-gray-400 mb-3">
+          <div className="grid grid-cols-7 text-center text-xs text-gray-400 mb-4">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
               <div key={day}>{day}</div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-2 text-center">
+          <div className="grid grid-cols-7 gap-2">
             {calendarDays.map((day, idx) => (
               <div
                 key={idx}
-                className={`h-14 flex items-center justify-center rounded-lg cursor-pointer 
-                ${day ? "bg-gray-100" : ""} 
-                ${isEventDay(day)
-                    ? "bg-orange-200 font-semibold text-orange-700"
-                    : ""
-                  }`}
+                className="relative h-12 flex items-center justify-center rounded-md text-sm text-gray-700 hover:bg-gray-100"
               >
                 {day}
+                {isEventDay(day) && (
+                  <span className="absolute bottom-2 h-1.5 w-1.5 bg-[#E07A5F] rounded-full"></span>
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-[#B5B5B5]">
-          <h2 className="font-semibold mb-4 text-lg">Recent Activity</h2>
+        {/* RECENT ACTIVITY */}
+        <div className="xl:col-span-4 bg-white p-5 rounded-xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-5 text-sm uppercase tracking-wider">
+            Recent Activity
+          </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {mockData.recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 border-b border-[#B5B5B5] pb-5">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                <div className="">
-                  <p className="text-sm">{activity.title}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
+              <div key={activity.id} className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-[#E07A5F] rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm text-gray-800 font-medium">
+                    {activity.title}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {activity.time}
+                  </p>
                 </div>
               </div>
             ))}
@@ -174,40 +153,26 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ---------------- ANALYTICS + QUICK ACTIONS ---------------- */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Analytics */}
-        <div className="col-span-2 bg-white p-5 rounded-xl shadow-sm border border-[#B5B5B5]">
-          <h2 className="font-semibold mb-4 text-lg">Campaign Analytics</h2>
+      {/* BOTTOM GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* ANALYTICS */}
+        <div className="xl:col-span-8 bg-white p-6 rounded-xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
+            Campaign Analytics
+          </h2>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#E07A5F0D] p-6 rounded-xl text-center">
-              <h3 className="text-3xl font-semibold">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.viewRate}%
               </h3>
-              <p className="text-gray-500 text-sm">View Details</p>
+              <p className="text-xs text-gray-500 mt-1">Open Rate</p>
             </div>
-
-            <div className="bg-[#E07A5F0D] p-6 rounded-xl text-center">
-              <h3 className="text-3xl font-semibold">
+            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
+              <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.clickRate}%
               </h3>
-              <p className="text-gray-500 text-sm">Click Rate</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#E07A5F0D] p-6 rounded-xl text-center">
-              <h3 className="text-3xl font-semibold">
-                {mockData.analytics.viewRate}%
-              </h3>
-              <p className="text-gray-500 text-sm">View Details</p>
-            </div>
-
-            <div className="bg-[#E07A5F0D] p-6 rounded-xl text-center">
-              <h3 className="text-3xl font-semibold">
-                {mockData.analytics.clickRate}%
-              </h3>
-              <p className="text-gray-500 text-sm">Click Rate</p>
+              <p className="text-xs text-gray-500 mt-1">Click-Through</p>
             </div>
           </div>
 
@@ -220,25 +185,41 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-[#B5B5B5]">
-          <h2 className="font-semibold mb-4 text-lg">Quick Actions</h2>
+        {/* QUICK ACTIONS */}
+        <div className="xl:col-span-4 bg-[#F9FAFB] p-6 rounded-2xl border border-gray-200">
+          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
+            Quick Actions
+          </h2>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center py-[30px] justify-center gap-3 h-12 border border-[#B5B5B5] rounded-xl hover:bg-orange-50 hover:border-orange-500 transition font-medium text-black text-sm ">
-              <div className="p-2 bg-[#E07A5F80] rounded-md">
-                <LuPlus className="text-lg text-black" />
+          <div className="flex gap-4">
+            <button onClick={() => setShowAddBook(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+                <LuPlus size={20} className="text-black" />
               </div>
-              Add New Book
+              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
+                Add New Book
+              </span>
             </button>
 
-            <button className="flex items-center py-[30px] justify-center gap-3 h-12 border border-[#B5B5B5] rounded-xl hover:bg-orange-50 hover:border-orange-500 transition font-medium text-black text-sm">
-              <div className="p-2 bg-[#E07A5F80] rounded-md">
-                <LuPlus className="text-lg text-black" />
+            <button onClick={() => setShowAddSlot(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+                <LuPlus size={20} className="text-black" />
               </div>
-              Add Newsletter Slot
+              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
+                Add Newsletter Slot
+              </span>
             </button>
           </div>
+
+          {showAddBook && (
+            <AddBooks onClose={() => setShowAddBook(false)} />
+          )}
+
+          <AddNewsSlot
+            isOpen={showAddSlot}
+            onClose={() => setShowAddSlot(false)}
+            onSubmit={handleCreateSlot}
+          />
         </div>
       </div>
     </div>

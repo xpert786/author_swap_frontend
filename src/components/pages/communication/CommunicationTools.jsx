@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { FiSearch, FiPaperclip, FiFileText } from "react-icons/fi";
-import { SendIcon } from "../icons";
+import { SendIcon } from "../../icons";
 
 const conversations = [
     {

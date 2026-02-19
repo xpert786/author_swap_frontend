@@ -126,7 +126,7 @@ const BooksPage = () =>
 
 
     return (
-        <div className="p-6 min-h-screen bg-gray-50">
+        <div className="min-h-screen">
 
             <div className="flex justify-between items-center mb-8">
                 <div>

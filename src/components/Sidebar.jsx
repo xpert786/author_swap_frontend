@@ -10,8 +10,8 @@ const menuItems = [
   { name: "Newsletter Slot", path: "/newsletter", icon: Mail },
   { name: "Swap Partner", path: "/swap-partner", icon: Users },
   { name: "Swap Management", path: "/swap-management", icon: Users },
-  { name: "Communication Tools", path: "/communication", icon: Mail },
-  { name: "Subscriber & Analytics", path: "/analytics", icon: BarChart3 },
+  { name: "Communication Tools", path: "/communication-list", icon: Mail },
+  { name: "Subscriber & Analytics", path: "/subscription", icon: BarChart3 },
   { name: "Author Reputation", path: "/reputation", icon: Award },
 ];
 
@@ -84,11 +84,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           })}
         </nav>
 
-        <div className="px-4 mt-auto mb-6">
+        {/* <div className="px-4 mt-auto mb-6">
           <button className="w-full flex items-center gap-3 rounded-xl py-3 px-6 transition-all duration-200 text-[15px] font-semibold text-[#111827]" style={{ border: "1px solid rgba(47, 111, 109, 1)", background: "transparent" }}>
             <LogoutIcon size={16} color="#111827" /> Logout
           </button>
-        </div>
+        </div> */}
       </aside>
     </>
   );
