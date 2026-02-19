@@ -108,47 +108,49 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             }}
             onClick={onClick}
         >
-            {/* ── Row 1: Avatar + Name + Badges ── */}
-            <div className="flex items-start gap-3">
-                <img
-                    src={partner.photo}
-                    alt={partner.name}
-                    className="w-[52px] h-[52px] rounded-full object-cover shrink-0"
-                    onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
-                    }}
-                />
-                <div
-                    className="hidden w-[52px] h-[52px] rounded-full bg-[#2F6F6D] text-white font-bold text-lg items-center justify-center shrink-0"
-                >
-                    {partner.name.split(" ").map((n) => n[0]).join("")}
+            {/* ── Row 1: Avatar + Name + Status ── */}
+            <div className="flex items-start gap-2.5">
+                <div className="shrink-0">
+                    <img
+                        src={partner.photo}
+                        alt={partner.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                        onError={(e) => {
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                        }}
+                    />
+                    <div
+                        className="hidden w-12 h-12 rounded-full bg-[#2F6F6D] text-white font-bold text-base items-center justify-center"
+                    >
+                        {partner.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-bold text-black mb-0.5">{partner.name}</p>
-                    <p className="text-xs text-black">{partner.swaps} swaps completed</p>
-                </div>
-
-                <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
-                    {partner.badge && (
-                        <span className="bg-violet-100 text-black text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                            {partner.badge}
-                        </span>
-                    )}
-                    {partner.paid && (
-                        <>
-                            <span className="bg-[rgba(232,232,232,1)] text-black text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                                {partner.paidAmount}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-black truncate" title={partner.name}>
+                                {partner.name}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                            {partner.paid && (
+                                <div className="flex items-center gap-1">
+                                    <span className="bg-[#E8E8E8] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                        {partner.paidAmount}
+                                    </span>
+                                    <span className="bg-[rgba(22,163,74,0.15)] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                        Paid
+                                    </span>
+                                </div>
+                            )}
+                            <span className="bg-[rgba(22,163,74,0.15)] text-black text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                                Available
                             </span>
-                            <span className="bg-[rgba(22,163,74,0.2)] text-black text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                                Paid
-                            </span>
-                        </>
-                    )}
-                    <span className="bg-[rgba(22,163,74,0.2)] text-black text-[11px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">
-                        Available
-                    </span>
+                        </div>
+                    </div>
+                    <p className="text-[11px] text-gray-500">{partner.swaps} swaps completed</p>
                 </div>
             </div>
 
@@ -182,9 +184,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             </div>
 
             {/* ── Row 4: Buttons ── */}
-            <div className="flex flex-wrap gap-2.5 mt-auto">
+            <div className="grid grid-cols-2 gap-2 mt-auto">
                 <button
-                    className="flex-1 min-w-[120px] px-4 py-2.5 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
+                    className="w-full px-2 py-2 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-[13px] font-bold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate("/swap-details", {
@@ -199,9 +201,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         e.stopPropagation();
                         onSendRequest(); // Trigger modal open via parent
                     }}
-                    className="flex-1 min-w-[120px] px-4 py-2.5 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-sm font-semibold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
+                    className="w-full px-2 py-2 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-[13px] font-bold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
                 >
-                    {partner.paid ? "Request Paid Swaps" : "Send Request"}
+                    {partner.paid ? "Request Paid" : "Send Request"}
                 </button>
             </div>
         </div>
@@ -270,7 +272,7 @@ const SwapPartner = () => {
     );
 
     return (
-        <div className="p-4 md:p-7 min-h-screen max-w-[1400px] mx-auto">
+        <div className="px-4 md:px-6 lg:px-8 xl:px-12 py-8 min-h-screen max-w-[1600px] mx-auto">
             {/* Page Header */}
             <h1 className="text-2xl md:text-[26px] font-bold text-black mb-1">Swap Partner</h1>
             <p className="text-sm text-black mb-5">Find places to promote your book</p>
@@ -311,7 +313,7 @@ const SwapPartner = () => {
             </div>
 
             {/* Cards Grid */}
-            <div className="sp-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="sp-grid grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
                 {filtered.map((partner) => (
                     <PartnerCard
                         key={partner.id}

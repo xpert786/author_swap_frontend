@@ -13,7 +13,7 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
 
-        <div className="flex-1 bg-white">
+        <div className="flex-1 bg-white overflow-y-auto">
           <Outlet />
         </div>
       </div>

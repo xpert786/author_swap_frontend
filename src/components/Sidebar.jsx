@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide-react";
+import { LogoutIcon } from "./icons";
 import Logo from "../assets/logo.png";
 
 const menuItems = [
@@ -39,6 +40,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           fixed lg:static
           top-0 left-0 z-50
           border-r border-gray-100
+          flex flex-col
         `}
       >
         <div className="flex items-center justify-between px-6 py-5 mb-6 mt-3">
@@ -72,8 +74,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   const isReallyActive = isActive || extraActive;
                   return (
                     <>
-                      {/* Active Indicator Dot */}
-                      <div className={`absolute left-0 w-1.5 h-1.5 rounded-full bg-white transition-all duration-300 ${isReallyActive ? "opacity-100 scale-100" : "opacity-0 scale-0"}`} />
+                      {/* Removed the dot indicator */}
 
                       <Icon size={14} className={`transition-transform duration-200 group-hover:scale-110 ${isReallyActive ? "" : "text-gray-400 group-hover:text-[#1F4F4D]"}`} />
                       <span className="relative z-10">{item.name}</span>
@@ -85,9 +86,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           })}
         </nav>
 
-        <div className="absolute bottom-6 left-0 w-full px-4">
-          <button className="w-full flex items-center justify-center gap-2 rounded-2xl text-white py-2.5 bg-slate-800 hover:bg-slate-700 transition text-[15px] font-semibold shadow-lg shadow-black/10">
-            <LogOut size={14} /> Logout
+        <div className="px-4 mt-auto mb-6">
+          <button className="w-full flex items-center gap-3 rounded-xl py-3 px-6 transition-all duration-200 text-[15px] font-semibold text-[#111827]" style={{ border: "1px solid rgba(47, 111, 109, 1)", background: "transparent" }}>
+            <LogoutIcon size={16} color="#111827" /> Logout
           </button>
         </div>
       </aside>
