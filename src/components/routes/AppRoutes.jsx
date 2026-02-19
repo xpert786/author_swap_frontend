@@ -18,7 +18,8 @@ import SwapDetails from "../pages/SwapPartner/SwapDetails";
 import CommunicationTools from "../pages/CommunicationTools";
 import AccountSettings from "../pages/AccountSettings";
 import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSystem";
-import { NewsletterSlot, SwapManagement, Analytics } from "../pages/PlaceholderPages";
+import Newsletter from "../newsletters/Newsletter";
+import { SwapManagement, Analytics } from "../pages/PlaceholderPages";
 
 const AppRoutes = () => {
   return (
@@ -51,7 +52,7 @@ const AppRoutes = () => {
           <Route path="/swap-details" element={<SwapDetails />} />
           <Route path="/communication" element={<CommunicationTools />} />
           <Route path="/account-settings" element={<AccountSettings />} />
-          <Route path="/newsletter" element={<NewsletterSlot />} />
+          <Route path="/newsletter" element={<Newsletter />} />
           <Route path="/swap-management" element={<SwapManagement />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
