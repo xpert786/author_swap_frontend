@@ -4,7 +4,7 @@ import AppRoutes from "./components/routes/AppRoutes";
 function App() {
   return (
     <BrowserRouter basename="/authorswap-frontend">
-        <AppRoutes />
+      <AppRoutes />
     </BrowserRouter>
   );
 }
