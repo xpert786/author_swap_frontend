@@ -15,11 +15,14 @@ import BooksPage from "../pages/books/BooksPage";
 import BookDetails from "../pages/books/BookDetails";
 import SwapPartner from "../pages/SwapPartner/SwapPartner";
 import SwapDetails from "../pages/SwapPartner/SwapDetails";
-import CommunicationTools from "../pages/CommunicationTools";
+import CommunicationTools from "../pages/communication/CommunicationTools";
 import AccountSettings from "../pages/AccountSettings";
 import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSystem";
 import Newsletter from "../pages/newsletters/Newsletter";
 import { SwapManagement, Analytics } from "../pages/PlaceholderPages";
+import SubscriptionPage from "../pages/subscription/SubscriptionPage";
+import AnalyticsPage from "../pages/subscription/AnalyticsPage";
+import CommunicationList from "../pages/communication/CommunicationList";
 
 const AppRoutes = () => {
   return (
@@ -56,6 +59,9 @@ const AppRoutes = () => {
           <Route path="/swap-management" element={<SwapManagement />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/analytics-page" element={<AnalyticsPage />} />
+          <Route path="/communication-list" element={<CommunicationList />} />
         </Route>
 
       </Route>

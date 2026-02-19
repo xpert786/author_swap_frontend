@@ -10,8 +10,8 @@ const menuItems = [
   { name: "Newsletter Slot", path: "/newsletter", icon: Mail },
   { name: "Swap Partner", path: "/swap-partner", icon: Users },
   { name: "Swap Management", path: "/swap-management", icon: Users },
-  { name: "Communication Tools", path: "/communication", icon: Mail },
-  { name: "Subscriber & Analytics", path: "/analytics", icon: BarChart3 },
+  { name: "Communication Tools", path: "/communication-list", icon: Mail },
+  { name: "Subscriber & Analytics", path: "/subscription", icon: BarChart3 },
   { name: "Author Reputation", path: "/reputation", icon: Award },
 ];
 
