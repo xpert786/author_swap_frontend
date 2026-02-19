@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide-react";
+import { X, LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide-react";
 import { LogoutIcon } from "./icons";
 import Logo from "../assets/logo.png";
 
@@ -74,8 +74,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   const isReallyActive = isActive || extraActive;
                   return (
                     <>
-                      {/* Removed the dot indicator */}
-
                       <Icon size={14} className={`transition-transform duration-200 group-hover:scale-110 ${isReallyActive ? "" : "text-gray-400 group-hover:text-[#1F4F4D]"}`} />
                       <span className="relative z-10">{item.name}</span>
                     </>
