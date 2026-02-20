@@ -39,14 +39,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           left-0
           z-50
           transform transition-transform duration-300
-          ${isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
-          lg:translate-x-0
+          ${isOpen ? "translate-x-0 shadow-2xl lg:shadow-none" : "-translate-x-full"}
           border-r border-gray-100
           flex flex-col
         `}
       >
-        <div className="flex items-center justify-between px-6 py-5 mb-6 mt-3">
-          <img src={Logo} alt="Logo" className="h-10" />
+        <div className="flex items-center justify-between px-6 py-5 mb-6 mt-2">
+          <img src={Logo} alt="Logo" className="h-6 md:h-10" />
           <button className="lg:hidden p-1 hover:bg-black/5 rounded-full" onClick={() => setIsOpen(false)}>
             <X size={22} />
           </button>
@@ -63,7 +62,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               <NavLink
                 key={index}
                 to={item.path}
-                onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-[15px] font-semibold active:scale-[0.98] group relative
                   ${isActive || extraActive

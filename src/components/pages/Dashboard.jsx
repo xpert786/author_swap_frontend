@@ -31,7 +31,7 @@ const Dashboard = () => {
     },
   };
 
-  const [currentDate] = useState(new Date(2024, 4));
+  const [currentDate] = useState(new Date(2024, 4)); // May 2024
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
@@ -53,15 +53,13 @@ const Dashboard = () => {
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
 
-    const handleCreateSlot = () => {
+  const handleCreateSlot = () => {
     console.log("Slot created");
     setShowAddSlot(false);
   };
 
-
   return (
     <div className="min-h-screen">
-
       {/* HEADER */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">
@@ -88,11 +86,8 @@ const Dashboard = () => {
               <div className="p-2 bg-[#E07A5F]/10 text-[#E07A5F] rounded-md">
                 <FiBookOpen />
               </div>
-              <p className="text-xs text-gray-500 font-medium">
-                {item.label}
-              </p>
+              <p className="text-xs text-gray-500 font-medium">{item.label}</p>
             </div>
-
             <h2 className="text-2xl font-semibold text-gray-900 mt-4">
               {item.value}
             </h2>
@@ -102,12 +97,11 @@ const Dashboard = () => {
 
       {/* MAIN GRID */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
-
         {/* CALENDAR */}
         <div className="xl:col-span-8 bg-white p-5 rounded-xl border border-gray-200">
           <div className="flex justify-between items-center mb-5">
-            <h2 className="font-semibold text-gray-900">
-              May {year} Calendar
+            <h2 className="font-semibold text-gray-900 uppercase tracking-wider text-sm">
+              {currentDate.toLocaleString("default", { month: "long" })} {year} Calendar
             </h2>
             <button className="px-3 py-1 border border-gray-200 rounded-md text-xs text-gray-600 hover:bg-gray-100">
               View Full
@@ -137,7 +131,7 @@ const Dashboard = () => {
 
         {/* RECENT ACTIVITY */}
         <div className="xl:col-span-4 bg-white p-5 rounded-xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-5">
+          <h2 className="font-semibold text-gray-900 mb-5 text-sm uppercase tracking-wider">
             Recent Activity
           </h2>
 
@@ -161,10 +155,9 @@ const Dashboard = () => {
 
       {/* BOTTOM GRID */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
         {/* ANALYTICS */}
         <div className="xl:col-span-8 bg-white p-6 rounded-xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-6">
+          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
             Campaign Analytics
           </h2>
 
@@ -173,37 +166,13 @@ const Dashboard = () => {
               <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.viewRate}%
               </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Open Rate
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Open Rate</p>
             </div>
-
             <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
               <h3 className="text-3xl font-semibold text-gray-900">
                 {mockData.analytics.clickRate}%
               </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Click-Through
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
-              <h3 className="text-3xl font-semibold text-gray-900">
-                {mockData.analytics.viewRate}%
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Open Rate
-              </p>
-            </div>
-
-            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
-              <h3 className="text-3xl font-semibold text-gray-900">
-                {mockData.analytics.clickRate}%
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Click-Through
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Click-Through</p>
             </div>
           </div>
 
@@ -216,39 +185,41 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* QUICK ACTIONS */}
         <div className="xl:col-span-4 bg-[#F9FAFB] p-6 rounded-2xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-6">
+          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
             Quick Actions
           </h2>
 
-          <div className="flex gap-6">
-            <button onClick={() => setShowAddBook(true)} className="group flex-1 flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-200 bg-[#F3F4F6] transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
-              <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+          <div className="flex gap-4">
+            <button onClick={() => setShowAddBook(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
                 <LuPlus size={20} className="text-black" />
               </div>
-              <span className="text-xs font-medium text-gray-900 leading-tight">
-                Add <br /> New Book
+              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
+                Add New Book
               </span>
             </button>
 
-            {showAddBook && (
-              <AddBooks onClose={() => setShowAddBook(false)} />
-            )}
-            <button onClick={() => setShowAddSlot(true)} className="group flex-1 flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-200 bg-[#F3F4F6] transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
-              <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
+            <button onClick={() => setShowAddSlot(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
+              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
                 <LuPlus size={20} className="text-black" />
               </div>
-              <span className="text-xs font-medium text-gray-900 leading-tight">
-                Add <br /> Newsletter Slot
+              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
+                Add Newsletter Slot
               </span>
             </button>
-
-            <AddNewsSlot
-              isOpen={showAddSlot}
-              onClose={() => setShowAddSlot(false)}
-              onSubmit={handleCreateSlot}
-            />
           </div>
+
+          {showAddBook && (
+            <AddBooks onClose={() => setShowAddBook(false)} />
+          )}
+
+          <AddNewsSlot
+            isOpen={showAddSlot}
+            onClose={() => setShowAddSlot(false)}
+            onSubmit={handleCreateSlot}
+          />
         </div>
       </div>
     </div>

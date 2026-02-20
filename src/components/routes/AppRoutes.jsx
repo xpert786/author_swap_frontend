@@ -18,8 +18,11 @@ import SwapDetails from "../pages/SwapPartner/SwapDetails";
 import CommunicationTools from "../pages/communication/CommunicationTools";
 import AccountSettings from "../pages/AccountSettings";
 import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSystem";
+import Notification from "../pages/Notification";
+import SwapManagement from "../pages/SwapManagement/SwapManagement";
+import SwapHistory from "../pages/SwapManagement/SwapHistory";
 import Newsletter from "../pages/newsletters/Newsletter";
-import { SwapManagement, Analytics } from "../pages/PlaceholderPages";
+import { Analytics } from "../pages/PlaceholderPages";
 import SubscriptionPage from "../pages/subscription/SubscriptionPage";
 import AnalyticsPage from "../pages/subscription/AnalyticsPage";
 import CommunicationList from "../pages/communication/CommunicationList";
@@ -57,16 +60,18 @@ const AppRoutes = () => {
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/newsletter" element={<Newsletter />} />
           <Route path="/swap-management" element={<SwapManagement />} />
+          <Route path="/swap-history" element={<SwapHistory />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
+          <Route path="/notifications" element={<Notification />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
           <Route path="/analytics-page" element={<AnalyticsPage />} />
           <Route path="/communication-list" element={<CommunicationList />} />
-        </Route>
+        </Route >
 
-      </Route>
+      </Route >
 
-    </Routes>
+    </Routes >
   );
 };
 

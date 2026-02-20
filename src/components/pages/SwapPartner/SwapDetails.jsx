@@ -1,6 +1,6 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
-import { FiRefreshCw } from "react-icons/fi";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiRefreshCw, FiArrowLeft } from "react-icons/fi";
 import {
     PublicIcon,
     PartnersIcon,
@@ -128,6 +128,7 @@ const ProgressBar = ({ percent, color }) => (
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const SwapDetails = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const passed = location.state || {};
     const name = passed.name || detail.name;
@@ -137,9 +138,20 @@ const SwapDetails = () => {
     return (
         <div className="p-7 min-h-screen w-full">
 
-            {/* Page Title */}
-            <h1 className="text-2xl font-bold text-black mb-1">Swap Detail</h1>
-            <p className="text-sm text-black mb-5">Find places to promote your book</p>
+            {/* Page Title with Back Button */}
+            <div className="flex items-center gap-4 mb-5">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors w-10 h-10 rounded-full text-gray-700 shrink-0"
+                    aria-label="Back"
+                >
+                    <FiArrowLeft size={20} />
+                </button>
+                <div>
+                    <h1 className="text-2xl font-bold text-black mb-0.5 leading-tight">Swap Detail</h1>
+                    <p className="text-sm text-black opacity-70">Find places to promote your book</p>
+                </div>
+            </div>
 
             {/* ── Profile Card ── */}
             <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-6 mb-7">

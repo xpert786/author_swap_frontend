@@ -4,20 +4,26 @@ import Sidebar from "../Sidebar";
 import Header from "../Header";
 
 export default function MainLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-100 flex">
+    <div className="h-screen overflow-hidden bg-white flex">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       {/* Right Side */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-72 h-full">
+      <div
+        className={`flex-1 flex flex-col min-w-0 h-full transition-all duration-300 ${isSidebarOpen ? "lg:ml-72" : "lg:ml-0"}`}
+      >
         {/* Fixed Header */}
-        <Header onMenuClick={() => setIsSidebarOpen(true)} />
+        <Header
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          onMenuClick={() => setIsSidebarOpen(true)}
+        />
 
         {/* Scrollable Content Area */}
-        <main className="mt-[72px] flex-1 overflow-y-auto bg-white p-4 md:p-6">
+        <main className="mt-[72px] flex-1 overflow-y-auto bg-white p-4 md:p-6 px-4 md:px-10">
           <Outlet />
         </main>
       </div>
