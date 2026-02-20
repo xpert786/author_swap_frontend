@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { FiBookOpen } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
-import { IoChevronDown } from "react-icons/io5";
+import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import AddBooks from "../pages/books/AddBooks";
 import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
+import dayjs from "dayjs";
+import { useMemo } from "react";
 
 const Dashboard = () => {
   const mockData = {
@@ -31,17 +33,42 @@ const Dashboard = () => {
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState("Genre");
+
+  const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
 
   // Calendar logic for May 2024
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const calendarDays = [
-    { day: 28, isPrev: true }, { day: 29, isPrev: true }, { day: 30, isPrev: true },
-    { day: 1 }, { day: 2 }, { day: 3 }, { day: 4, isSpecial: true },
-    { day: 5 }, { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 },
-    { day: 12 }, { day: 13 }, { day: 14 }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18, isToday: true },
-    { day: 19 }, { day: 20 }, { day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 },
-    { day: 26 }, { day: 27 }, { day: 28 }, { day: 29 }, { day: 30 }, { day: 31 }, { day: 1, isNext: true }
-  ];
+  // const calendarDays = [
+  //   { day: 28, isPrev: true }, { day: 29, isPrev: true }, { day: 30, isPrev: true },
+  //   { day: 1 }, { day: 2 }, { day: 3 }, { day: 4, isSpecial: true },
+  //   { day: 5 }, { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 },
+  //   { day: 12 }, { day: 13 }, { day: 14 }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18, isToday: true },
+  //   { day: 19 }, { day: 20 }, { day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 },
+  //   { day: 26 }, { day: 27 }, { day: 28 }, { day: 29 }, { day: 30 }, { day: 31 }, { day: 1, isNext: true }
+  // ];
+
+  const generateCalendar = () => {
+    const startOfMonth = currentMonth.startOf("month");
+    const endOfMonth = currentMonth.endOf("month");
+
+    const startDate = startOfMonth.startOf("week");
+    const endDate = endOfMonth.endOf("week");
+
+    let date = startDate.clone();   // must be let
+    const days = [];
+
+    while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+      days.push(date.clone());
+      date = date.add(1, "day");
+    }
+
+    return days;
+  };
+
+  const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
 
   const handleCreateSlot = () => {
     setShowAddSlot(false);
@@ -79,50 +106,98 @@ const Dashboard = () => {
         {/* CALENDAR */}
         <div className="lg:col-span-8 bg-white rounded-[10px] border border-[#B5B5B5] p-5 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight">May 2024 Calendar</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+              >
+                <IoChevronBack size={18} />
+              </button>
+              <button
+                onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+              >
+                <IoChevronForward size={18} />
+              </button>
+              <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight ml-1">
+                {currentMonth.format("MMMM YYYY")} Calendar
+              </h3>
+            </div>
             <div className="flex gap-2">
               <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
                 View Full
               </button>
-              <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1.5 transition-colors">
-                Genre <IoChevronDown size={12} />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowGenreDropdown(!showGenreDropdown)}
+                  className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
+                >
+                  {selectedGenre} <IoChevronDown size={12} className={`transition-transform ${showGenreDropdown ? "rotate-180" : ""}`} />
+                </button>
+
+                {showGenreDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowGenreDropdown(false)}
+                    />
+                    <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-100 rounded-lg shadow-lg z-20 py-1 overflow-hidden">
+                      {genres.map((genre) => (
+                        <button
+                          key={genre}
+                          onClick={() => {
+                            setSelectedGenre(genre === "All Genres" ? "Genre" : genre);
+                            setShowGenreDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-[11px] font-medium text-gray-600 hover:bg-gray-50 hover:text-[#E07A5F] transition-colors"
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-7 border-l border-t border-gray-50">
             {days.map((day) => (
-              <div key={day} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase border-r border-b border-gray-50 bg-gray-50/20">
+              <div
+                key={day}
+                className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase border-r border-b border-gray-50 bg-gray-50/20"
+              >
                 {day}
               </div>
             ))}
-            {calendarDays.map((item, idx) => (
-              <div
-                key={idx}
-                className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative group transition-all
-                  ${item.isPrev || item.isNext ? "bg-gray-50/30" : "bg-white"}
-                  ${item.isSpecial ? "bg-[#FFF5F2]" : ""}
-                `}
-              >
-                <span className={`text-[10px] md:text-[11px] font-bold ${item.isPrev || item.isNext ? "text-gray-200" : "text-gray-300"} ${item.isSpecial ? "text-[#E07A5F]" : ""}`}>
-                  {item.day}
-                </span>
-                {item.isToday && (
-                  <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-gray-300 uppercase">Today</span>
-                )}
-                {item.isSpecial && (
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="flex gap-1 mb-1">
-                      <div className="w-3 h-0.5 bg-[#E07A5F] rounded-full"></div>
-                      <div className="w-3 h-0.5 bg-[#2F6F6D] rounded-full"></div>
-                    </div>
-                    <div className="w-5 h-5 rounded-full bg-[#E07A5F] flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-transform">
-                      <LuPlus size={12} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+            {calendarDays.map((date, idx) => {
+              const isCurrentMonth = date.isSame(currentMonth, "month");
+              const isToday = date.isSame(dayjs(), "day");
+
+              return (
+                <div
+                  key={idx}
+                  className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative
+        ${!isCurrentMonth ? "bg-gray-50/30" : "bg-white"}
+      `}
+                >
+                  <span
+                    className={`text-[10px] md:text-[11px] font-bold
+          ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}
+          ${isToday ? "text-[#E07A5F]" : ""}
+        `}
+                  >
+                    {date.date()}
+                  </span>
+
+                  {isToday && (
+                    <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-[#E07A5F] uppercase">
+                      Today
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 

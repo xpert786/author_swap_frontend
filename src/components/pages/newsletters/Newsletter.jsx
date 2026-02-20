@@ -26,6 +26,8 @@ import DeleteNewsSlot from "./DeleteNewsSlot";
 import SlotDetails from "./SlotDetails";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import Edit from "../../../assets/edit.png"
+import dayjs from "dayjs";
+import { useMemo } from "react";
 
 
 const Newsletter = () => {
@@ -34,6 +36,7 @@ const Newsletter = () => {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [currentMonth, setCurrentMonth] = useState(dayjs());
 
     const [visibility, setVisibility] = useState("All Visibility");
     const [status, setStatus] = useState("All Status");
@@ -77,6 +80,24 @@ const Newsletter = () => {
             height={size}
         />
     );
+
+    const calendarDays = useMemo(() => {
+        const startOfMonth = currentMonth.startOf("month");
+        const endOfMonth = currentMonth.endOf("month");
+
+        const startDate = startOfMonth.startOf("week");
+        const endDate = endOfMonth.endOf("week");
+
+        let date = startDate.clone();
+        const days = [];
+
+        while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+            days.push(date);
+            date = date.add(1, "day"); // IMPORTANT (no infinite loop)
+        }
+
+        return days;
+    }, [currentMonth]);
 
 
     // Mock data for stats
@@ -342,15 +363,21 @@ const Newsletter = () => {
                     <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                                <button
+                                    onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
                                     <ChevronLeft size={16} className="text-gray-400" />
                                 </button>
 
                                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">
-                                    May 2024 Calendar
+                                    {currentMonth.format("MMMM YYYY")} Calendar
                                 </h3>
 
-                                <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                                <button
+                                    onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
                                     <ChevronRight size={16} className="text-gray-400" />
                                 </button>
                             </div>
@@ -374,33 +401,25 @@ const Newsletter = () => {
 
                         {/* Calendar Grid */}
                         <div className="grid grid-cols-7 border-t border-l border-gray-50 rounded-lg overflow-hidden">
-                            {Array.from({ length: 35 }).map((_, i) => {
-                                const day = i - 4;
-                                const isCurrentMonth = day > 0 && day <= 31;
-                                const displayDay = isCurrentMonth
-                                    ? day
-                                    : day <= 0
-                                        ? 30 + day
-                                        : day - 31;
-
-                                let bgColor = "bg-white";
-                                if (day === 4) bgColor = "bg-[#FAD4C0]";
-                                if (day === 16) bgColor = "bg-[#A7C0BD]";
-                                if (day === 21) bgColor = "bg-[#96CEA5]";
-                                if (day === 19) bgColor = "bg-[#FEF1D3]";
+                            {calendarDays.map((date, i) => {
+                                const isCurrentMonth = date.isSame(currentMonth, "month");
+                                const isToday = date.isSame(dayjs(), "day");
 
                                 return (
                                     <div
                                         key={i}
-                                        className={`aspect-square border-r border-b border-gray-50 p-1 flex flex-col items-end transition-all hover:bg-gray-50 cursor-pointer relative group ${bgColor}`}
+                                        className={`aspect-square border-r border-b border-gray-50 p-1 flex flex-col items-end relative transition-all hover:bg-gray-50 cursor-pointer
+            ${!isCurrentMonth ? "bg-gray-50/40" : "bg-white"}
+            ${isToday ? "bg-[#FAD4C0]" : ""}
+            `}
                                     >
                                         <span
-                                            className={`text-[10px] font-black ${isCurrentMonth
-                                                ? 'text-gray-700'
-                                                : 'text-gray-300'
-                                                }`}
+                                            className={`text-[10px] font-black
+                ${isCurrentMonth ? "text-gray-700" : "text-gray-300"}
+                ${isToday ? "text-black" : ""}
+                `}
                                         >
-                                            {displayDay < 10 ? `0${displayDay}` : displayDay}
+                                            {date.date() < 10 ? `0${date.date()}` : date.date()}
                                         </span>
                                     </div>
                                 );

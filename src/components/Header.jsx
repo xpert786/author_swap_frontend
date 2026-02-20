@@ -142,7 +142,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         {/* Text + Arrow wrapper */}
                         <div className="flex items-center gap-2">
                             <div className="hidden md:flex flex-col">
-                                <p className="text-sm font-bold text-gray-900 leading-tight">Jane Doe</p>
+                                <p className="text-sm font-bold text-gray-900 leading-tight">Jane Author</p>
                                 <p className="text-[11px] text-gray-500">Fantasy Author</p>
                             </div>
                             {isDropdownOpen ? (
@@ -156,23 +156,15 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                     {/* Dropdown Menu */}
                     {isDropdownOpen && (
                         <div
-                            className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl py-2 z-50 transform origin-top-right transition-all duration-200"
-                            style={{ filter: "drop-shadow(0 20px 25px rgb(0 0 0 / 0.1))" }}
+                            className="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-200 rounded-[6px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-2 z-50"
                         >
-                            <div className="px-4 py-2 border-b border-gray-50 mb-1 lg:hidden">
-                                <p className="text-xs font-bold text-gray-900">Jane Doe</p>
-                                <p className="text-[10px] text-gray-500">Fantasy Author</p>
-                            </div>
                             <button
                                 onClick={() => {
                                     setIsDropdownOpen(false);
                                     navigate("/account-settings");
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-[13.5px] text-gray-700 hover:bg-[rgba(224,122,95,0.05)] hover:text-[#E07A5F] transition-all text-left font-medium group"
+                                className="w-full px-4 py-2 text-[15px] text-[#001524] hover:bg-[#FFF9F7] rounded-lg transition-all text-left font-medium"
                             >
-                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-[#E07A5F]/10 transition-colors">
-                                    <FiUser className="text-gray-400 group-hover:text-[#E07A5F]" />
-                                </div>
                                 Profile Setting
                             </button>
                             <button
@@ -182,11 +174,8 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                                     setIsDropdownOpen(false);
                                     navigate("/login");
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-[13.5px] text-gray-700 hover:bg-[rgba(224,122,95,0.05)] hover:text-[#E07A5F] transition-all text-left font-medium group"
+                                className="w-full px-4 py-2 text-[15px] text-[#001524] hover:bg-[#FFF9F7] rounded-lg transition-all text-left font-medium"
                             >
-                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-[#E07A5F]/10 transition-colors">
-                                    <FiLogOut className="text-gray-400 group-hover:text-[#E07A5F]" />
-                                </div>
                                 Logout
                             </button>
                         </div>

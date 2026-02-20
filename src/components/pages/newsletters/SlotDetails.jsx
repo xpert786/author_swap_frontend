@@ -37,144 +37,155 @@ const SlotDetails = ({ isOpen, onClose, onEdit }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
-            <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-
-                {/* Header */}
-                <div className="flex items-start justify-between border-b border-[#B8B8B8] pb-2">
-                    <div>
-                        <h2 className="text-lg font-semibold">Slot Details</h2>
-                        <p className="text-sm text-gray-500 mt-1">
-                            Manage slot settings and view swap partners
-                        </p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600"
-                    >
-                        <X size={18} />
-                    </button>
-                </div>
-
-                {/* Slot Information */}
-                <div className="mt-5">
-                    <h3 className="text-lg font-medium text-black mb-3 border-b border-[#B8B8B8] pb-1">
-                        Slot Information
-                    </h3>
-
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[#374151]">Date & Time</p>
-                            <p className="font-medium text-gray-800">
-                                {slot.date}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
+                <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    {/* Header */}
+                    <div className="flex items-start justify-between border-b border-[#B8B8B8] pb-4">
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">
+                                Slot Details
+                            </h2>
+                            <p className="text-[13px] text-gray-500 mt-0.5">
+                                Manage slot settings and view swap partners
                             </p>
                         </div>
-
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[#374151]">Status</p>
-                            <span className="inline-flex w-fit self-start rounded-full bg-[#16A34A33] px-3 py-1 text-xs font-medium text-black">
-                                {slot.status}
-                            </span>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[#374151]">Visibility</p>
-                            <span className="inline-flex w-fit self-start items-center gap-1 rounded-full bg-[#E8E8E8] px-3 py-1 text-xs font-medium text-black">
-                                <AiOutlineEye className="text-sm" />
-                                {slot.visibility}
-                            </span>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[#374151]">Audience Size</p>
-                            <p className="font-medium text-gray-800">
-                                {slot.audienceSize}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <p className="text-[#374151]">Genre</p>
-                            <span className="inline-flex w-fit self-start rounded-full bg-[#16A34A33] px-3 py-1 text-xs font-medium text-black">
-                                {slot.genre}
-                            </span>
-                        </div>
-
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
 
+                    {/* Slot Information */}
+                    <div className="mt-6">
+                        <h3 className="text-[14px] font-bold text-gray-700 mb-4 uppercase tracking-wider border-b border-[#B8B8B8] pb-1">
+                            Slot Information
+                        </h3>
 
-                </div>
+                        <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                            <div className="flex flex-col gap-0.5">
+                                <p className="text-[12px] font-medium text-gray-500 uppercase">
+                                    Date & Time
+                                </p>
+                                <p className="text-[13px] font-semibold text-gray-800">
+                                    {slot.date}
+                                </p>
+                            </div>
 
-                {/* Swap Partners */}
-                <div className="mt-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">
-                        Swap Partners ({slot.partners.length})
-                    </h3>
+                            <div className="flex flex-col gap-1">
+                                <p className="text-[12px] font-medium text-gray-500 uppercase">
+                                    Status
+                                </p>
+                                <span className="inline-flex w-fit rounded-full bg-[#16A34A15] px-3 py-0.5 text-[11px] font-semibold text-[#16A34A]">
+                                    {slot.status}
+                                </span>
+                            </div>
 
-                    <div className="space-y-3">
-                        {slot.partners.map((partner, index) => (
-                            <div
-                                key={index}
-                                className={`flex items-center justify-between rounded-md border p-3 ${partner.highlighted
-                                    ? "border-[#E07A5F] bg-[#E07A5F0D]"
-                                    : "border-[#E8E8E8]"
-                                    }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <img
-                                        src={partner.avatar}
-                                        alt={partner.name}
-                                        className="h-9 w-9 rounded-full object-cover"
-                                    />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-800">
-                                            {partner.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {partner.swaps}
-                                        </p>
+                            <div className="flex flex-col gap-1">
+                                <p className="text-[12px] font-medium text-gray-500 uppercase">
+                                    Visibility
+                                </p>
+                                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-semibold text-gray-600">
+                                    <AiOutlineEye className="text-sm" />
+                                    {slot.visibility}
+                                </span>
+                            </div>
+
+                            <div className="flex flex-col gap-0.5">
+                                <p className="text-[12px] font-medium text-gray-500 uppercase">
+                                    Audience Size
+                                </p>
+                                <p className="text-[13px] font-semibold text-gray-800">
+                                    {slot.audienceSize}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <p className="text-[12px] font-medium text-gray-500 uppercase">
+                                    Genre
+                                </p>
+                                <span className="inline-flex w-fit rounded-full bg-[#2F6F6D15] px-3 py-0.5 text-[11px] font-semibold text-[#2F6F6D]">
+                                    {slot.genre}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Swap Partners */}
+                    <div className="mt-8">
+                        <h3 className="text-[13px] font-bold text-gray-700 mb-4 uppercase tracking-wider">
+                            Swap Partners ({slot.partners.length})
+                        </h3>
+
+                        <div className="space-y-3">
+                            {slot.partners.map((partner, index) => (
+                                <div
+                                    key={index}
+                                    className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${partner.highlighted
+                                        ? "border-[#E07A5F] bg-[#E07A5F08]"
+                                        : "border-gray-100 hover:border-gray-200"
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <img
+                                            src={partner.avatar}
+                                            alt={partner.name}
+                                            className="h-10 w-10 rounded-full object-cover shadow-sm"
+                                        />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">
+                                                {partner.name}
+                                            </p>
+                                            <p className="text-[12px] text-gray-500">
+                                                {partner.swaps}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side Icons */}
+                                    <div className="flex items-center gap-2">
+                                        {partner.highlighted && (
+                                            <button
+                                                onClick={() => setSwapOpen(true)}
+                                                className="p-2 rounded-lg bg-[#2F6F6D15] text-[#2F6F6D] hover:bg-[#2F6F6D25] transition-colors"
+                                            >
+                                                <AiOutlineEye size={16} />
+                                            </button>
+                                        )}
+
+                                        <SwapPartnerDetails
+                                            isOpen={swapOpen}
+                                            onClose={() => setSwapOpen(false)}
+                                        />
+
+                                        <button className="p-2 rounded-lg border border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+                                            <Mail size={16} />
+                                        </button>
                                     </div>
                                 </div>
-
-                                {/* Right Side Icons */}
-                                <div className="flex items-center gap-2">
-                                    {partner.highlighted && (
-                                        <div onClick={() => setSwapOpen(true)} className="rounded-md bg-[#2F6F6D33] p-2">
-                                            <AiOutlineEye size={14} />
-                                        </div>
-                                    )}
-
-                                    <SwapPartnerDetails
-                                        isOpen={swapOpen}
-                                        onClose={() => setSwapOpen(false)}
-                                    />
-
-                                    <button className="rounded-md border border-gray-200 p-2 hover:bg-gray-50">
-                                        <Mail size={14} className="text-gray-600" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
+                    {/* Footer */}
+                    <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button
+                            onClick={onClose}
+                            className="px-5 py-1.5 text-[13px] rounded-lg border text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+                        >
+                            Close
+                        </button>
+
+                        <button
+                            onClick={onEdit}
+                            className="px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 transition shadow-sm font-medium"
+                        >
+                            Edit Slot
+                        </button>
+                    </div>
                 </div>
-
-                {/* Footer */}
-                <div className="mt-6 flex justify-end gap-3 pt-4">
-                    <button
-                        onClick={onClose}
-                        className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        onClick={onEdit}
-                        className="rounded-md bg-[#2F6F6D] px-4 py-2 text-sm text-white hover:bg-[#2F6F6D]"
-                    >
-                        Edit Slot
-                    </button>
-                </div>
-
             </div>
         </div>
     );

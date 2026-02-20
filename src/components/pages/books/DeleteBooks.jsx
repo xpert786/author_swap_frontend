@@ -5,9 +5,8 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white w-[400px] rounded-2xl shadow-xl p-6 relative animate-fadeIn">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white w-[400px] rounded-[10px] shadow-xl p-6 relative">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -18,37 +17,35 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle }) => {
 
         {/* Icon */}
         <div className="flex justify-center mb-4">
-          <div className="bg-red-100 text-red-500 p-4 rounded-full">
+          <div className="bg-red-50 text-red-500 p-3 rounded-full">
             <Trash2 size={24} />
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="text-center text-lg font-semibold mb-2">
+        <h2 className="text-center text-lg font-semibold text-gray-800 mb-1">
           Are you sure?
         </h2>
 
         {/* Message */}
-        <p className="text-center text-sm text-gray-500 mb-6">
+        <p className="text-center text-[13px] text-gray-500 mb-6 px-4 leading-relaxed">
           Are you sure you want to delete{" "}
-          <span className="font-medium text-gray-700">
-            "{bookTitle}"
-          </span>{" "}
+          <span className="font-semibold text-gray-700">"{bookTitle}"</span>{" "}
           book?
         </p>
 
         {/* Buttons */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100 transition"
+            className="px-6 py-1.5 text-[13px] rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition font-medium"
           >
             Cancel
           </button>
 
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+            className="px-6 py-1.5 text-[13px] rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-sm font-medium"
           >
             Delete
           </button>
