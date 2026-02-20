@@ -60,7 +60,7 @@ const Dashboard = () => {
 
 
   return (
-    <div className="min-h-screen max-w-[1400px] mx-auto">
+    <div className="min-h-screen">
 
       {/* HEADER */}
       <div className="mb-8">

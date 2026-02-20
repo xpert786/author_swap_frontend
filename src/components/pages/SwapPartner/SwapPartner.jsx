@@ -272,7 +272,7 @@ const SwapPartner = () => {
     );
 
     return (
-        <div className="px-4 md:px-6 lg:px-8 xl:px-12 py-8 min-h-screen max-w-[1600px] mx-auto">
+        <div className="min-h-screen">
             {/* Page Header */}
             <h1 className="text-2xl md:text-[26px] font-bold text-black mb-1">Swap Partner</h1>
             <p className="text-sm text-black mb-5">Find places to promote your book</p>
