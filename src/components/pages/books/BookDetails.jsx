@@ -5,13 +5,14 @@ import { FaApple } from "react-icons/fa";
 import { FiBookOpen } from "react-icons/fi";
 import EditBooks from "./EditBooks";
 import { useState } from "react";
+import edit from "../../../assets/edit.png";
+import { LuBookOpen } from "react-icons/lu";
 
-export default function BookDetails ()
-{
+export default function BookDetails() {
 
-    const [ isEditOpen, setIsEditOpen ] = useState( false );
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
-    const [ book, setBook ] = useState( {
+    const [book, setBook] = useState({
         title: "The Midnight Garden",
         genre: "Fantasy",
         subgenre: "Epic Fantasy",
@@ -22,73 +23,81 @@ export default function BookDetails ()
             "When a famous author is found dead in his isolated mansion...",
         coverImage:
             "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600",
-    } );
+    });
 
-    const handleSave = ( updatedBook ) =>
-    {
-        setBook( updatedBook );
+    const handleSave = (updatedBook) => {
+        setBook(updatedBook);
     };
 
 
     return (
-        <div className="min-h-screen bg-[#F9FAFB] p-8">
+        <div className="min-h-screen">
 
-            {/* Header */ }
+            {/* Header */}
             <div className="flex items-start justify-between mb-8">
                 <div>
-                    {/* Title + Badges Row */ }
-                    <div className="flex items-center gap-7 flex-wrap">
+                    {/* Title + Badges Row */}
+                    <div className="flex items-center gap-4 flex-wrap">
 
                         <h1 className="text-3xl font-semibold text-gray-900">
                             The Midnight Garden
                         </h1>
 
-                        <div className="flex gap-7">
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <div className="flex gap-4">
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
                                 Active
                             </span>
 
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                Fantasy
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[#2F6F6D33] text-[#2F6F6D]">
+                                <LuBookOpen size={12} />
+                                Kindle Unlimited
                             </span>
                         </div>
                     </div>
 
-                    {/* Meta Info */ }
+                    {/* Meta Info */}
                     <div className="flex items-center gap-6 mt-3 text-sm text-gray-500">
-                        <div className="flex items-center gap-2">
-                            <Calendar size={ 16 } />
+                        <div className="flex items-center gap-2 text-[#374151]">
+                            <Calendar size={16} />
                             <span>Published 15 Mar 2025</span>
                         </div>
 
-                        <span className="font-medium text-gray-700">$0.99</span>
+                        <span className="font-medium text-[#374151]">$ 0.99</span>
                     </div>
                 </div>
 
 
-                <button onClick={ () => setIsEditOpen( true ) } className="flex items-center gap-2 bg-[#2F6F6D] text-white px-5 py-2.5 rounded-xl font-medium hover:opacity-90 transition">
-                    <Pencil size={ 16 } />
+                <button
+                    onClick={() => setIsEditOpen(true)}
+                    className="flex items-center gap-2 bg-[#2F6F6D] text-white px-5 py-2.5 rounded-[8px] font-medium hover:opacity-90 transition-all duration-200 active:scale-95"
+                >
+                    <img
+                        src={edit}
+                        alt="Edit icon"
+                        className="w-4 h-4 filter brightness-0 invert"
+                    />
                     Edit Book
                 </button>
 
-                { isEditOpen && (
+                {isEditOpen && (
                     <EditBooks
-                        bookData={ book }
-                        onClose={ () => setIsEditOpen( false ) }
-                        onSave={ handleSave }
+                        bookData={book}
+                        onClose={() => setIsEditOpen(false)}
+                        onSave={handleSave}
                     />
-                ) }
+                )}
 
             </div>
 
-            {/* Main Card */ }
-            {/* ===== Main Card ===== */ }
-            <div className="bg-white rounded-2xl border border-gray-200 p-8">
+            {/* Main Card */}
+            {/* ===== Main Card ===== */}
+            <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
                 <div className="flex gap-12 items-stretch">
-                    {/* LEFT SIDE – COVER */ }
-                    {/* LEFT SIDE – COVER */ }
+                    {/* LEFT SIDE – COVER */}
+                    {/* LEFT SIDE – COVER */}
                     <div className="w-75 shrink-0">
-                        <div className="h-full rounded-2xl overflow-hidden shadow-md border border-gray-200">
+                        <div className="h-full rounded-[10px] overflow-hidden shadow-md">
                             <img
                                 src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600"
                                 alt="Book Cover"
@@ -98,15 +107,15 @@ export default function BookDetails ()
                     </div>
 
 
-                    {/* RIGHT SIDE */ }
+                    {/* RIGHT SIDE */}
                     <div className="flex-1 space-y-8">
 
-                        {/* Description */ }
+                        {/* Description */}
                         <div className="mb-2">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
                                 Book Description
                             </h2>
-                            <p className="text-gray-600 leading-relaxed text-sm">
+                            <p className="text-[#374151] leading-relaxed text-sm font-normal">
                                 When a famous author is found dead in his isolated mansion,
                                 detective Sarah Chen must unravel a web of secrets, lies,
                                 and forgotten memories. Each clue leads deeper into the town's
@@ -115,9 +124,9 @@ export default function BookDetails ()
                             </p>
                         </div>
 
-                        {/* Metadata */ }
+                        {/* Metadata */}
                         <div className="mb-2">
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
                                 Book Metadata
                             </h2>
 
@@ -128,13 +137,13 @@ export default function BookDetails ()
                             </div>
                         </div>
 
-                        {/* Platforms */ }
+                        {/* Platforms */}
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
                                 Available ON
                             </h2>
 
-                            <div className="flex gap-6">
+                            <div className="flex gap-6 pb-3">
                                 <PlatformCard name="Amazon" active />
                                 <PlatformCard name="Apple Books" />
                                 <PlatformCard name="Kobo" />
@@ -150,31 +159,29 @@ export default function BookDetails ()
 }
 
 
-function MetaCard ( { label, value } )
-{
+function MetaCard({ label, value }) {
     return (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-            <p className="text-sm text-gray-500">{ label }</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1">
-                { value }
+        <div className="py-5 pt-1">
+            <p className="text-sm text-[#374151]">{label}</p>
+            <p className="text-lg font-medium text-[#111827] mt-1">
+                {value}
             </p>
         </div>
     );
 }
 
 
-function PlatformCard ( { name, active = false } )
-{
+function PlatformCard({ name, active = false }) {
     return (
         <div
-            className={ `w-44 rounded-2xl border p-6 flex flex-col items-center gap-3 transition cursor-pointer ${ active
+            className={`w-44 rounded-[10px] border p-6 flex flex-col items-center gap-3 transition cursor-pointer ${active
                 ? "border-orange-400 bg-orange-50"
-                : "border-gray-200 bg-white"
-                }` }
+                : "border-[#B5B5B5] bg-white"
+                }`}
         >
             <div
-                className={ `w-12 h-12 rounded-2xl flex items-center justify-center shadow-md
-    ${ name === "Amazon"
+                className={`w-12 h-12 rounded-[6px] flex items-center justify-center shadow-md
+    ${name === "Amazon"
                         ? "bg-gradient-to-br from-[#FF9900] via-[#FF8C00] to-[#E47911]"
                         : name === "Apple Books"
                             ? "bg-gradient-to-br from-black via-gray-900 to-gray-800"
@@ -184,24 +191,24 @@ function PlatformCard ( { name, active = false } )
                     }
   `}
             >
-                { name === "Amazon" && (
-                    <SiAmazon className="text-white text-2xl" />
-                ) }
+                {name === "Amazon" && (
+                    <SiAmazon className="text-white w-5 h-5" />
+                )}
 
-                { name === "Apple Books" && (
-                    <FaApple className="text-white text-2xl" />
-                ) }
+                {name === "Apple Books" && (
+                    <FaApple className="text-white w-5 h-5" />
+                )}
 
-                { name === "Kobo" && (
-                    <FiBookOpen className="text-white text-2xl" />
-                ) }
+                {name === "Kobo" && (
+                    <FiBookOpen className="text-white w-5 h-5" />
+                )}
             </div>
 
 
 
-            <p className="font-medium text-gray-900">{ name }</p>
+            <p className="font-medium text-gray-900">{name}</p>
 
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#16A34A1A] text-[#16A34A]">
                 Live
             </span>
         </div>

@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 import { FiBookOpen } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
+import { IoChevronDown } from "react-icons/io5";
 import AddBooks from "../pages/books/AddBooks";
 import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 
 const Dashboard = () => {
   const mockData = {
-    stats: {
-      books: 3,
-      newsletterSlots: 5,
-      completedSwaps: 3,
-      reliability: 3,
-    },
-    calendar: [
-      { date: "2024-05-03" },
-      { date: "2024-05-10" },
-      { date: "2024-05-18" },
+    stats: [
+      { label: "Book", value: "3", icon: <FiBookOpen />, color: "bg-[#2F6F6D33]" },
+      { label: "Newsletter Slots", value: "5", icon: <FiBookOpen />, color: "bg-[#E07A5F80]" },
+      { label: "Completed Swaps", value: "3", icon: <FiBookOpen />, color: "bg-[#16A34A33]" },
+      { label: "Reliability", value: "3", icon: <FiBookOpen />, color: "bg-[#DC262633]" },
     ],
     recentActivity: [
       { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
@@ -23,106 +19,107 @@ const Dashboard = () => {
       { id: 3, title: "Submitted design revisions to Sarah Brown", time: "3 days ago" },
       { id: 4, title: "Conducted user testing session for app prototype", time: "4 days ago" },
       { id: 5, title: "Finalized budget proposal for Q4", time: "5 days ago" },
+      { id: 6, title: "Reviewed feedback from marketing team", time: "6 days ago" },
     ],
-    analytics: {
-      viewRate: 43.3,
-      clickRate: 8.7,
-      improvement: 3.2,
-    },
-  };
-
-  const [currentDate] = useState(new Date(2024, 4)); // May 2024
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const calendarDays = [];
-  for (let i = 0; i < firstDayOfMonth; i++) calendarDays.push(null);
-  for (let i = 1; i <= daysInMonth; i++) calendarDays.push(i);
-
-  const isEventDay = (day) => {
-    if (!day) return false;
-    const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-      day
-    ).padStart(2, "0")}`;
-    return mockData.calendar.some((item) => item.date === dateString);
+    analytics: [
+      { label: "View Details", value: "43.3%" },
+      { label: "Click Rate", value: "8.7%" },
+      { label: "View Details", value: "43.3%" },
+      { label: "Click Rate", value: "8.7%" },
+    ]
   };
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
 
+  // Calendar logic for May 2024
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const calendarDays = [
+    { day: 28, isPrev: true }, { day: 29, isPrev: true }, { day: 30, isPrev: true },
+    { day: 1 }, { day: 2 }, { day: 3 }, { day: 4, isSpecial: true },
+    { day: 5 }, { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 },
+    { day: 12 }, { day: 13 }, { day: 14 }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18, isToday: true },
+    { day: 19 }, { day: 20 }, { day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 },
+    { day: 26 }, { day: 27 }, { day: 28 }, { day: 29 }, { day: 30 }, { day: 31 }, { day: 1, isNext: true }
+  ];
+
   const handleCreateSlot = () => {
-    console.log("Slot created");
     setShowAddSlot(false);
   };
 
   return (
     <div className="min-h-screen">
       {/* HEADER */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Welcome back, Author!
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold">
+          Welcome back , Author!
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Here's what's happening with your swaps and books
+        <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
+          Here's what's happening with your swaps and books.
         </p>
       </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: "Book", value: mockData.stats.books },
-          { label: "Newsletter Slots", value: mockData.stats.newsletterSlots },
-          { label: "Completed Swaps", value: mockData.stats.completedSwaps },
-          { label: "Reliability", value: mockData.stats.reliability },
-        ].map((item, index) => (
-          <div
-            key={index}
-            className="bg-white p-5 rounded-xl border border-gray-200 flex flex-col justify-between min-h-[110px]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#E07A5F]/10 text-[#E07A5F] rounded-md">
-                <FiBookOpen />
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        {mockData.stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
+            <div className="flex justify-between items-start">
+              <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
+                {stat.icon}
               </div>
-              <p className="text-xs text-gray-500 font-medium">{item.label}</p>
+              <span className="text-[11px] md:text-[13px] font-medium text-[#374151]">{stat.label}</span>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mt-4">
-              {item.value}
-            </h2>
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mt-2 leading-none">{stat.value}</h3>
           </div>
         ))}
       </div>
 
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-8">
+      {/* MID SECTION: CALENDAR & RECENT ACTIVITY */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
         {/* CALENDAR */}
-        <div className="xl:col-span-8 bg-white p-5 rounded-xl border border-gray-200">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="font-semibold text-gray-900 uppercase tracking-wider text-sm">
-              {currentDate.toLocaleString("default", { month: "long" })} {year} Calendar
-            </h2>
-            <button className="px-3 py-1 border border-gray-200 rounded-md text-xs text-gray-600 hover:bg-gray-100">
-              View Full
-            </button>
+        <div className="lg:col-span-8 bg-white rounded-[10px] border border-[#B5B5B5] p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight">May 2024 Calendar</h3>
+            <div className="flex gap-2">
+              <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+                View Full
+              </button>
+              <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1.5 transition-colors">
+                Genre <IoChevronDown size={12} />
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-xs text-gray-400 mb-4">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day}>{day}</div>
+          <div className="grid grid-cols-7 border-l border-t border-gray-50">
+            {days.map((day) => (
+              <div key={day} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase border-r border-b border-gray-50 bg-gray-50/20">
+                {day}
+              </div>
             ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {calendarDays.map((day, idx) => (
+            {calendarDays.map((item, idx) => (
               <div
                 key={idx}
-                className="relative h-12 flex items-center justify-center rounded-md text-sm text-gray-700 hover:bg-gray-100"
+                className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative group transition-all
+                  ${item.isPrev || item.isNext ? "bg-gray-50/30" : "bg-white"}
+                  ${item.isSpecial ? "bg-[#FFF5F2]" : ""}
+                `}
               >
-                {day}
-                {isEventDay(day) && (
-                  <span className="absolute bottom-2 h-1.5 w-1.5 bg-[#E07A5F] rounded-full"></span>
+                <span className={`text-[10px] md:text-[11px] font-bold ${item.isPrev || item.isNext ? "text-gray-200" : "text-gray-300"} ${item.isSpecial ? "text-[#E07A5F]" : ""}`}>
+                  {item.day}
+                </span>
+                {item.isToday && (
+                  <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-gray-300 uppercase">Today</span>
+                )}
+                {item.isSpecial && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                    <div className="flex gap-1 mb-1">
+                      <div className="w-3 h-0.5 bg-[#E07A5F] rounded-full"></div>
+                      <div className="w-3 h-0.5 bg-[#2F6F6D] rounded-full"></div>
+                    </div>
+                    <div className="w-5 h-5 rounded-full bg-[#E07A5F] flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-transform">
+                      <LuPlus size={12} />
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
@@ -130,20 +127,17 @@ const Dashboard = () => {
         </div>
 
         {/* RECENT ACTIVITY */}
-        <div className="xl:col-span-4 bg-white p-5 rounded-xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-5 text-sm uppercase tracking-wider">
-            Recent Activity
-          </h2>
-
+        <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
+          <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
             {mockData.recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-[#E07A5F] rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm text-gray-800 font-medium">
+              <div key={activity.id} className="flex gap-3">
+                <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
+                <div className="pb-3 border-b border-[#B5B5B5] w-full last:border-0 last:pb-0">
+                  <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug">
                     {activity.title}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-[11px] font-medium text-[#374151] mt-0.5">
                     {activity.time}
                   </p>
                 </div>
@@ -153,75 +147,60 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* BOTTOM GRID */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      {/* BOTTOM SECTION: ANALYTICS & QUICK ACTIONS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
         {/* ANALYTICS */}
-        <div className="xl:col-span-8 bg-white p-6 rounded-xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
-            Campaign Analytics
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
-              <h3 className="text-3xl font-semibold text-gray-900">
-                {mockData.analytics.viewRate}%
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">Open Rate</p>
-            </div>
-            <div className="bg-[#E07A5F0D] p-6 rounded-lg text-center">
-              <h3 className="text-3xl font-semibold text-gray-900">
-                {mockData.analytics.clickRate}%
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">Click-Through</p>
-            </div>
+        <div className="lg:col-span-8 bg-white rounded-[12px] border border-[#B5B5B5] p-6 shadow-sm">
+          <h3 className="text-sm md:text-base font-medium text-black mb-6 tracking-tight">Campaign Analytics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 mb-6">
+            {mockData.analytics.map((item, idx) => (
+              <div key={idx} className="bg-[#FFF9F7] py-6 px-4 rounded-xl text-center">
+                <h4 className="text-[20px] md:text-[24px] font-medium text-black leading-none">{item.value}</h4>
+                <p className="text-[10px] md:text-[11px] font-medium text-[#374151] mt-1.5 tracking-tight uppercase">{item.label}</p>
+              </div>
+            ))}
           </div>
-
-          <p className="text-sm text-gray-500">
-            Last 30 days performance.{" "}
-            <span className="text-green-600 font-medium">
-              +{mockData.analytics.improvement}% improvement
-            </span>{" "}
-            vs previous period.
-          </p>
+          <div className="text-[12px] font-medium">
+            <span className="text-[#374151]">Last 30 days performance.</span>
+            <span className="text-[#16A34A] font-medium ml-1">+3.2% improvement</span>
+            <span className="text-[#374151] ml-1 font-medium">vs previous period.</span>
+          </div>
         </div>
 
         {/* QUICK ACTIONS */}
-        <div className="xl:col-span-4 bg-[#F9FAFB] p-6 rounded-2xl border border-gray-200">
-          <h2 className="font-semibold text-gray-900 mb-6 text-sm uppercase tracking-wider">
-            Quick Actions
-          </h2>
-
-          <div className="flex gap-4">
-            <button onClick={() => setShowAddBook(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
-              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
-                <LuPlus size={20} className="text-black" />
+        <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
+          <h3 className="text-sm md:text-base font-bold text-gray-900 mb-6 tracking-tight">Quick Actions</h3>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setShowAddBook(true)}
+              className="flex items-center gap-3 bg-[#FFF9F7] border border-[#FEE2D9] rounded-[8px] p-3.5 hover:shadow-sm transition-all group"
+            >
+              <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80] text-[#EA580C]">
+                <LuPlus size={18} className="text-black" />
               </div>
-              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
-                Add New Book
-              </span>
+              <span className="text-[13px] font-medium text-black">Add New Book</span>
             </button>
 
-            <button onClick={() => setShowAddSlot(true)} className="group flex-1 flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:bg-[#E07A5F0D] hover:border-[#E07A5F] cursor-pointer">
-              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-[#E6B2A3]">
-                <LuPlus size={20} className="text-black" />
+            <button
+              onClick={() => setShowAddSlot(true)}
+              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:shadow-sm transition-all group"
+            >
+              <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80]">
+                <LuPlus size={18} className="text-black" />
               </div>
-              <span className="text-[11px] font-bold text-gray-900 leading-tight text-center">
-                Add Newsletter Slot
-              </span>
+              <span className="text-[13px] font-bold text-black">Add Newsletter Slot</span>
             </button>
           </div>
-
-          {showAddBook && (
-            <AddBooks onClose={() => setShowAddBook(false)} />
-          )}
-
-          <AddNewsSlot
-            isOpen={showAddSlot}
-            onClose={() => setShowAddSlot(false)}
-            onSubmit={handleCreateSlot}
-          />
         </div>
       </div>
+
+      {/* MODALS */}
+      {showAddBook && <AddBooks onClose={() => setShowAddBook(false)} />}
+      <AddNewsSlot
+        isOpen={showAddSlot}
+        onClose={() => setShowAddSlot(false)}
+        onSubmit={handleCreateSlot}
+      />
     </div>
   );
 };

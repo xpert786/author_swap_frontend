@@ -91,7 +91,7 @@ export default function SubscriptionPage() {
                         Subscriber Verification & Analytics
                     </h1>
                     <div className="flex items-center gap-2">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
                             Request, manage, and track newsletter partnerships
                         </p>
                         <span className="inline-flex items-center gap-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">

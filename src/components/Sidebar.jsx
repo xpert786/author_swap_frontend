@@ -54,7 +54,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         <nav className="flex flex-col gap-1 p-3">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
-            // Keep Swap Partner active for both /swap-partner and /swap-details
             const extraActive =
               item.path === "/swap-partner" &&
               location.pathname.startsWith("/swap-details");
@@ -66,7 +65,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   `flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-[15px] font-semibold active:scale-[0.98] group relative
                   ${isActive || extraActive
                     ? "bg-[#1F4F4D] text-white shadow-md shadow-[#1F4F4D]/20 z-10"
-                    : "hover:bg-[#1F4F4D]/5 text-gray-700 hover:text-[#1F4F4D] active:bg-[#1F4F4D]/10"
+                    : "hover:bg-[#1F4F4D]/5 text-[#111827] hover:text-[#1F4F4D] active:bg-[#1F4F4D]/10"
                   }`
                 }
               >
@@ -74,7 +73,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   const isReallyActive = isActive || extraActive;
                   return (
                     <>
-                      <Icon size={14} className={`transition-transform duration-200 group-hover:scale-110 ${isReallyActive ? "" : "text-gray-400 group-hover:text-[#1F4F4D]"}`} />
+                      <Icon size={14} className={`transition-transform duration-200 group-hover:scale-110 ${isReallyActive ? "" : "text-[#111827] group-hover:text-[#1F4F4D]"}`} />
                       <span className="relative z-10">{item.name}</span>
                     </>
                   );

@@ -22,23 +22,21 @@ const OnboardingLayout = () => {
 
   const finish = async () => {
     localStorage.setItem("isProfileComplete", "true");
-
     console.log("Final Data:", formData);
-
     navigate("/dashboard");
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white overflow-hidden">
 
-      {/* Left Side - Static */}
-      <div className="w-full md:w-1/2 h-full">
+      {/* Static Sidebar - 50% width on large screens */}
+      <div className="w-full lg:w-1/2 h-auto lg:h-screen lg:fixed lg:top-0 lg:left-0 z-30">
         <OnboardingSidebar currentStep={step} />
       </div>
 
-      {/* Right Side - Scrollable */}
-      <div className="w-full md:w-1/2 h-full overflow-y-auto flex items-start justify-center p-6">
-        <div className="w-full max-w-xl">
+      {/* Scrollable Content - 50% width on large screens */}
+      <div className="flex-1 lg:ml-[50%] min-h-screen flex items-start justify-center p-6 md:p-12 lg:p-16 2xl:p-24 bg-white">
+        <div className="w-full max-w-[620px] transition-all duration-300">
           {step === 1 && <AccountBasics next={next} />}
           {step === 2 && (
             <OnlinePresence
@@ -57,8 +55,6 @@ const OnboardingLayout = () => {
 
     </div>
   );
-
-
 };
 
 export default OnboardingLayout;

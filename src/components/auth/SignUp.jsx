@@ -1,203 +1,3 @@
-// import { useState } from "react";
-// import { useForm } from "react-hook-form";
-// import Logo from "../../assets/logo.png";
-// import LoginBg from "../../assets/Login.png";
-// import { FcGoogle } from "react-icons/fc";
-// import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
-// import { Link } from "react-router-dom";
-// import { useNavigate } from "react-router-dom";
-
-// const SignUp = () =>
-// {
-//   const [ showPassword, setShowPassword ] = useState( false );
-
-//   const {
-//     register,
-//     handleSubmit,
-//     watch,
-//     formState: { errors },
-//   } = useForm();
-
-//   const password = watch( "password" );
-//   const navigate = useNavigate();
-
-//  const onSubmit = (data) => {
-//   console.log("Form Data:", data);
-
-//   // Fake login
-//   localStorage.setItem("token", "demo-token");
-//   localStorage.setItem("isProfileComplete", "false");
-
-//   navigate("/onboarding");
-// };
-
-
-//   return (
-//     <div
-//       className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
-//       style={ { backgroundImage: `url(${ LoginBg })` } }
-//     >
-//       <div className="min-h-screen flex flex-col md:flex-row">
-//         <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-6 text-white">
-//           <div className="max-w-lg text-center p-4">
-//             <img
-//               src={ Logo }
-//               alt="AuthorSwap Logo"
-//               className="mx-auto mb-6 w-full max-w-[454px] h-auto"
-//             />
-
-//             <h1 className="text-[25px] font-medium mb-3 leading-snug">
-//               Verified newsletter swaps for authors
-//             </h1>
-
-//             <p className="text-[17px] opacity-90">
-//               Flat pricing. No commissions. Automatic verification.
-//             </p>
-//           </div>
-//         </div>
-
-//         <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-//           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[600px] p-8">
-//             <h2 className="text-[45px] font-bold text-[#E07A5F] mb-6">
-//               Create Account
-//             </h2>
-
-//             <form onSubmit={ handleSubmit( onSubmit ) } className="space-y-4">
-
-//               <div className="mb-5">
-//                 <label className="block text-sm font-medium mb-1">
-//                   Email address
-//                 </label>
-
-//                 <input
-//                   type="email"
-//                   placeholder="Enter your email address"
-//                   { ...register( "email", {
-//                     required: "Email is required",
-//                     pattern: {
-//                       value: /^\S+@\S+$/i,
-//                       message: "Invalid email address",
-//                     },
-//                   } ) }
-//                   className={ `w-full border rounded-md px-3 py-3 text-sm focus:outline-none focus:ring-2
-//                   ${ errors.email
-//                       ? "border-red-500 focus:ring-red-400"
-//                       : "border-gray-300 focus:ring-[#E07A5F]"
-//                     }` }
-//                 />
-
-//                 { errors.email && (
-//                   <p className="text-red-500 text-xs mt-1">
-//                     { errors.email.message }
-//                   </p>
-//                 ) }
-//               </div>
-
-//               <div className="relative mb-5">
-//                 <label className="block text-sm font-medium mb-1">
-//                   Password
-//                 </label>
-
-//                 <input
-//                   type={ showPassword ? "text" : "password" }
-//                   placeholder="Enter Password"
-//                   { ...register( "password", {
-//                     required: "Password is required",
-//                     minLength: {
-//                       value: 6,
-//                       message: "Minimum 6 characters required",
-//                     },
-//                   } ) }
-
-//                   className={ `w-full border rounded-md px-3 py-3 text-sm focus:outline-none focus:ring-2
-//                   ${ errors.password
-//                       ? "border-red-500 focus:ring-red-400"
-//                       : "border-gray-300 focus:ring-[#E07A5F]"
-//                     }` }
-//                 />
-
-//                 <span
-//                   className="absolute right-3 top-9 cursor-pointer text-gray-500"
-//                   onClick={ () => setShowPassword( !showPassword ) }
-//                 >
-//                   { showPassword ? <FaRegEyeSlash /> : <FaRegEye /> }
-//                 </span>
-
-//                 { errors.password && (
-//                   <p className="text-red-500 text-xs mt-1">
-//                     { errors.password.message }
-//                   </p>
-//                 ) }
-//               </div>
-
-//               <div className="relative mb-5">
-//                 <label className="block text-sm font-medium mb-1">
-//                   Confirm Password
-//                 </label>
-
-//                 <input
-//                   type={ showPassword ? "text" : "password" }
-//                   placeholder="Confirm Password"
-//                   { ...register( "confirmPassword", {
-//                     required: "Confirm Password is required",
-//                     validate: ( value ) =>
-//                       value === password || "Passwords do not match",
-//                   } ) }
-//                   className={ `w-full border rounded-md px-3 py-3 text-sm focus:outline-none focus:ring-2
-//       ${ errors.confirmPassword
-//                       ? "border-red-500 focus:ring-red-400"
-//                       : "border-gray-300 focus:ring-[#E07A5F]"
-//                     }` }
-//                 />
-
-//                 <span
-//                   className="absolute right-3 top-9 cursor-pointer text-gray-500"
-//                   onClick={ () => setShowPassword( !showPassword ) }
-//                 >
-//                   { showPassword ? <FaRegEyeSlash /> : <FaRegEye /> }
-//                 </span>
-
-//                 { errors.confirmPassword && (
-//                   <p className="text-red-500 text-xs mt-1">
-//                     { errors.confirmPassword.message }
-//                   </p>
-//                 ) }
-//               </div>
-
-//               <button
-//                 type="submit"
-//                 className="w-full bg-[#E07A5F] text-white px-3 py-3 rounded-md cursor-pointer hover:bg-[#d96b57] font-semibold"
-//               >
-//                 Create Account
-//               </button>
-//             </form>
-
-//             <div className="flex flex-col items-center mt-6">
-//               <p className="mt-4 text-lg">
-//                 Already have an account?{ " " }
-//                 <Link
-//                   to="/login"
-//                   className="text-[#2F6F6D] hover:underline"
-//                 >
-//                   Log in
-//                 </Link>
-//               </p>
-//               <p className="mt-6 text-lg">or sign up with</p>
-
-//               <button className="flex items-center justify-center border border-gray-300 rounded-md p-3 mt-6 hover:bg-gray-50 font-semibold">
-//                 <FcGoogle className="text-2xl mr-2" /> Google
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SignUp;
-
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Logo from "../../assets/logo.png";
@@ -208,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -217,59 +18,52 @@ const SignUp = () => {
   } = useForm();
 
   const password = watch("password");
-  const navigate = useNavigate();
 
   const onSubmit = (data) => {
     console.log("Form Data:", data);
-
     localStorage.setItem("token", "demo-token");
     localStorage.setItem("isProfileComplete", "false");
-
     navigate("/onboarding");
   };
 
   return (
     <div
-      className="min-h-screen w-full bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${LoginBg})` }}
+      className="min-h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 md:p-6"
+      style={{ backgroundImage: `url(${LoginBg})`, backgroundColor: "#3a8d8b" }}
     >
-      <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
-        {/* LEFT SIDE */}
-        <div className="hidden md:flex md:w-1/2 items-center justify-center p-10 text-white">
-          <div className="max-w-xl text-center">
+        {/* LEFT SIDE - BRANDING */}
+        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-white">
+          <div className="max-w-md">
             <img
               src={Logo}
               alt="AuthorSwap Logo"
-              className="mx-auto mb-8 w-full max-w-[450px]"
+              className="mb-6 w-full max-w-[320px] h-auto drop-shadow-md"
             />
-
-            <h1 className="text-3xl lg:text-4xl font-semibold mb-4 leading-snug">
+            <h1 className="text-2xl xl:text-2xl font-bold mb-3 leading-tight">
               Verified newsletter swaps for authors
             </h1>
-
-            <p className="text-lg lg:text-xl opacity-90">
+            <p className="text-sm lg:text-base opacity-90 font-medium tracking-tight">
               Flat pricing. No commissions. Automatic verification.
             </p>
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-6 lg:p-10">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg lg:max-w-xl p-8 lg:p-10">
+        {/* RIGHT SIDE - SIGN UP CARD */}
+        <div className="w-full max-w-[440px]">
+          <div className="bg-white rounded-[18px] shadow-2xl w-full p-6 md:p-10">
 
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#E07A5F] mb-8">
+            <h2 className="text-2xl font-bold text-[#E07A5F] mb-6">
               Create Account
             </h2>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-              {/* Email */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Email address */}
               <div>
-                <label className="block text-base font-medium mb-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
                   Email address
                 </label>
-
                 <input
                   type="email"
                   placeholder="Enter your email address"
@@ -280,15 +74,14 @@ const SignUp = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className={`w-full border rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2
+                  className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all
                   ${errors.email
                       ? "border-red-500 focus:ring-red-400"
-                      : "border-gray-300 focus:ring-[#E07A5F]"
+                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                     }`}
                 />
-
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-[10px] mt-1 font-medium ml-0.5">
                     {errors.email.message}
                   </p>
                 )}
@@ -296,36 +89,36 @@ const SignUp = () => {
 
               {/* Password */}
               <div className="relative">
-                <label className="block text-base font-medium mb-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
                   Password
                 </label>
-
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter Password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Minimum 6 characters required",
-                    },
-                  })}
-                  className={`w-full border rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2
-                  ${errors.password
-                      ? "border-red-500 focus:ring-red-400"
-                      : "border-gray-300 focus:ring-[#E07A5F]"
-                    }`}
-                />
-
-                <span
-                  className="absolute right-4 top-11 cursor-pointer text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                </span>
-
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter Password"
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Minimum 6 characters required",
+                      },
+                    })}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
+                    ${errors.password
+                        ? "border-red-500 focus:ring-red-400"
+                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                      }`}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                  </button>
+                </div>
                 {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-[10px] mt-1 font-medium ml-0.5">
                     {errors.password.message}
                   </p>
                 )}
@@ -333,72 +126,74 @@ const SignUp = () => {
 
               {/* Confirm Password */}
               <div className="relative">
-                <label className="block text-base font-medium mb-2">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
                   Confirm Password
                 </label>
-
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Confirm Password"
-                  {...register("confirmPassword", {
-                    required: "Confirm Password is required",
-                    validate: (value) =>
-                      value === password || "Passwords do not match",
-                  })}
-                  className={`w-full border rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2
-                  ${errors.confirmPassword
-                      ? "border-red-500 focus:ring-red-400"
-                      : "border-gray-300 focus:ring-[#E07A5F]"
-                    }`}
-                />
-
-                <span
-                  className="absolute right-4 top-11 cursor-pointer text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                </span>
-
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    {...register("confirmPassword", {
+                      required: "Confirm Password is required",
+                      validate: (value) =>
+                        value === password || "Passwords do not match",
+                    })}
+                    className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
+                    ${errors.confirmPassword
+                        ? "border-red-500 focus:ring-red-400"
+                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                      }`}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-[10px] mt-1 font-medium ml-0.5">
                     {errors.confirmPassword.message}
                   </p>
                 )}
               </div>
 
-              {/* Submit */}
+              {/* Create Account Button */}
               <button
                 type="submit"
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-lg hover:bg-[#d96b57] font-semibold text-lg transition"
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98] mt-2"
               >
                 Create Account
               </button>
             </form>
 
-            {/* Bottom */}
-            <div className="flex flex-col items-center mt-8">
-              <p className="text-base">
+            {/* Bottom Footer */}
+            <div className="flex flex-col items-center mt-6">
+              <p className="text-xs font-semibold text-gray-500">
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="text-[#2F6F6D] hover:underline"
+                  className="text-[#2F6F6D] font-bold hover:underline transition-all"
                 >
                   Log in
                 </Link>
               </p>
 
-              <div className="mt-6 flex items-center justify-center">
-                <div className="w-24 h-px bg-gray-400"></div>
-
-                <span className="px-4 text-base text-gray-600 whitespace-nowrap">
-                  or sign in with
+              <div className="mt-6 flex items-center justify-center w-full">
+                <div className="flex-1 h-px bg-gray-100"></div>
+                <span className="px-3 text-[11px] font-medium text-gray-400 whitespace-nowrap bg-white">
+                  or sign up with
                 </span>
-
-                <div className="w-24 h-px bg-gray-400"></div>
+                <div className="flex-1 h-px bg-gray-100"></div>
               </div>
 
-              <button className="flex items-center justify-center border border-gray-300 rounded-lg px-4 py-3 mt-4 hover:bg-gray-50 font-semibold text-base">
-                <FcGoogle className="text-2xl mr-2" /> Google
+              <button
+                type="button"
+                className="flex items-center justify-center border border-gray-200 rounded-xl px-6 py-2 mt-5 hover:bg-gray-50 transition-all w-full md:w-auto min-w-[160px] shadow-sm active:scale-[0.98]"
+              >
+                <FcGoogle className="text-xl mr-2" />
+                <span className="text-xs font-bold text-gray-700">Google</span>
               </button>
             </div>
 
@@ -411,4 +206,3 @@ const SignUp = () => {
 };
 
 export default SignUp;
-

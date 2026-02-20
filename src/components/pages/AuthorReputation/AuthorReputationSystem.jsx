@@ -57,39 +57,39 @@ const AuthorReputationSystem = () => {
             title: "Verified Sender",
             desc: "Complete 10+ swaps with verification",
             status: "Earned",
-            statusColor: "bg-green-100 text-green-700"
+            statusColor: "bg-[#16A34A33]"
         },
         {
             icon: <ReliabilityIcon size={32} />,
             title: "100% Reliability",
             desc: "Perfect send record for 30 days",
             status: "Active",
-            statusColor: "bg-green-100 text-green-700"
+            statusColor: "bg-[#16A34A33]"
         },
         {
             icon: <TopPartnerIcon size={32} />,
             title: "Top Swap Partner",
             desc: "Top 10% of all authors in reliability",
             status: "Earned",
-            statusColor: "bg-green-100 text-green-700"
+            statusColor: "bg-[#16A34A33]"
         },
         {
             icon: <FastCommunicatorIcon size={32} />,
             title: "Fast Communicator",
             desc: "Average response time under 3 hours",
             status: "Locked",
-            statusColor: "bg-gray-100 text-gray-500"
+            statusColor: "bg-[#16A34A33] text-[#111827]"
         }
     ];
 
     return (
-        <div className="p-8 min-h-screen">
+        <div className="min-h-screen">
             {/* Header */}
             <header className="mb-8">
-                <h1 className="text-2xl font-bold text-[#1F2937] mb-1">Author Reputation System</h1>
-                <p className="text-sm text-gray-500 mb-6 font-medium">Automatic reliability scoring based on confirmed sends, timeliness, and performance</p>
+                <h1 className="text-2xl font-semibold">Author Reputation System</h1>
+                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Automatic reliability scoring based on confirmed sends, timeliness, and performance</p>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 mt-5">
                     <div className="p-4 rounded-xl w-fit" style={{ background: "rgba(22, 163, 74, 0.2)", border: "1px solid rgba(181, 181, 181, 1)" }}>
                         <div className="text-center font-bold text-[#1F2937]">
                             <p className="text-xl">96/100</p>
@@ -113,25 +113,25 @@ const AuthorReputationSystem = () => {
                 </div>
             </header>
 
-            <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid rgba(181, 181, 181, 1)" }}>
-                <div className="p-6">
+            <div className="bg-white rounded-xl overflow-hidden border border-[#B5B5B5]">
+                <div className="p-5">
                     {/* Platform Ranking Banner */}
-                    <div className="rounded-xl p-4 flex items-center gap-4 mb-8" style={{ background: "#FFF4F0", border: "1px solid rgba(181, 181, 181, 1)" }}>
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs ring-4 ring-orange-100" style={{ background: "rgba(245, 158, 11, 1)" }}>
+                    <div className="rounded-xl p-4 flex items-center gap-4 mb-4" style={{ background: "#FFF4F0", border: "1px solid rgba(181, 181, 181, 1)" }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-normal text-xs" style={{ background: "#F59E0B" }}>
                             #47
                         </div>
                         <div>
-                            <h3 className="font-bold text-[#1F2937] text-[15px]">Platform Ranking</h3>
-                            <p className="text-xs text-gray-600 mt-1">You're in the top 15% of all authors based on reputation score</p>
+                            <h3 className="font-medium text-[15px]">Platform Ranking</h3>
+                            <p className="text-xs mt-1">You're in the top 15% of all authors based on reputation score</p>
                         </div>
                     </div>
 
                     {/* Reputation Badges Section */}
                     <section className="mb-10">
-                        <h2 className="text-lg font-bold text-[#374151] mb-5 pb-2" style={{ borderBottom: "1px solid rgba(181, 181, 181, 1)" }}>Reputation Badges</h2>
+                        <h2 className="text-lg font-medium text-[#111827] mb-5 pb-2 border-b border-[#B5B5B5]">Reputation Badges</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                             {badges.map((badge, idx) => (
-                                <div key={idx} className="rounded-2xl py-3.5 px-5 flex flex-col items-center text-center transition-all h-full justify-between" style={{ border: "1px solid rgba(181, 181, 181, 1)" }}>
+                                <div key={idx} className="rounded-[10px] py-3.5 px-5 flex flex-col items-center text-center transition-all h-full justify-between border border-[#B5B5B5]">
                                     <div className="mb-2">
                                         {badge.icon}
                                     </div>
@@ -141,7 +141,7 @@ const AuthorReputationSystem = () => {
                                     </div>
                                     <div className={`flex items-center gap-1 px-4 py-1 rounded-full ${badge.statusColor}`}>
                                         <Check size={11} />
-                                        <span className="text-[10px] font-bold">{badge.status}</span>
+                                        <span className="text-[10px] font-medium">{badge.status}</span>
                                     </div>
                                 </div>
                             ))}
@@ -153,11 +153,11 @@ const AuthorReputationSystem = () => {
                         <h2 className="text-lg font-bold text-[#374151] mb-5 pb-2" style={{ borderBottom: "1px solid rgba(181, 181, 181, 1)" }}>Reputation Score Breakdown</h2>
                         <div className="space-y-4">
                             {breakdown.map((item, idx) => (
-                                <div key={idx} className="rounded-2xl p-5" style={{ border: "1px solid rgba(181, 181, 181, 1)" }}>
+                                <div key={idx} className="rounded-[10px] p-5" style={{ border: "1px solid rgba(181, 181, 181, 1)" }}>
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             {item.icon}
-                                            <span className="font-bold text-[#1F2937] text-[14px]">{item.title}</span>
+                                            <span className="font-medium text-[#1F2937] text-[14px]">{item.title}</span>
                                         </div>
                                         <span className="font-bold text-[#1F2937] text-sm">{item.score}</span>
                                     </div>

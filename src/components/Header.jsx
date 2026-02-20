@@ -119,10 +119,10 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                 {/* Notification Bell */}
                 <div
                     onClick={() => navigate("/notifications")}
-                    className="bg-[rgba(224,122,95,0.2)] p-2 rounded-lg relative cursor-pointer hover:bg-[rgba(224,122,95,0.3)] transition-colors"
+                    className="bg-[#2F6F6D33] p-2 rounded-lg relative cursor-pointer"
                 >
                     <TbBell className="text-lg md:text-2xl text-[#1F4F4D]" />
-                    <span className="flex absolute -top-1 -right-1 bg-[#E07A5F] text-white text-[9px] font-bold rounded-full w-4 h-4 items-center justify-center border-2 border-white">
+                    <span className="flex absolute -top-1 -right-1 bg-[#FF0000] text-white text-[9px] font-bold rounded-full w-4 h-4 items-center justify-center border-2 border-white">
                         10
                     </span>
                 </div>
@@ -177,6 +177,8 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                             </button>
                             <button
                                 onClick={() => {
+                                    localStorage.removeItem("token");
+                                    localStorage.removeItem("isprofilecompleted");
                                     setIsDropdownOpen(false);
                                     navigate("/login");
                                 }}

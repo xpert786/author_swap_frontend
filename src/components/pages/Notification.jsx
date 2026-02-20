@@ -78,7 +78,7 @@ const Badge = ({ type, text }) => {
     switch (type) {
         case 'swap':
             return (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#E8F5E9] text-black border border-[#C8E6C9]">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#16A34A33] text-[#111827] border border-[#C8E6C9]">
                     {text}
                 </span>
             );
@@ -125,7 +125,7 @@ const Notification = () => {
         <div className="max-w-full mx-auto px-2">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <h1 className="text-2xl font-bold text-[#111827]">All Notifications</h1>
+                <h1 className="text-2xl font-semibold">All Notifications</h1>
 
                 <div className="relative w-full md:w-72">
                     <input
@@ -145,10 +145,10 @@ const Notification = () => {
                     {Object.keys(groupedNotifications).length > 0 ? (
                         Object.entries(groupedNotifications).map(([section, items]) => (
                             <div key={section} className="space-y-4">
-                                <div className="flex items-center justify-between border-b pb-2" style={{ borderBottom: "1px solid rgba(181, 181, 181, 1)" }}>
-                                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{section}</h2>
+                                <div className="flex items-center justify-between border-b pb-2 border-[#B5B5B5]">
+                                    <h2 className="text-sm font-semibold text-[#2D2F33] uppercase tracking-wider">{section}</h2>
                                     {section === "Yesterday" && (
-                                        <span className="text-xs text-gray-400 font-medium tracking-wide">12-12-2026</span>
+                                        <span className="text-xs text-[#374151] font-normal tracking-wide">12-12-2026</span>
                                     )}
                                 </div>
                                 <div className="grid gap-3">
@@ -160,16 +160,16 @@ const Notification = () => {
                                                 border: "1px solid rgba(181, 181, 181, 1)",
                                                 backgroundColor: (selectedId === item.id) ? "rgba(224, 122, 95, 0.05)" : "white"
                                             }}
-                                            className="group relative flex flex-col md:flex-row md:items-center justify-between p-4 px-6 rounded-2xl transition-all duration-200 hover:bg-[rgba(224,122,95,0.05)] cursor-pointer"
+                                            className="group relative flex flex-col md:flex-row md:items-center justify-between p-4 px-6 rounded-[10px] transition-all duration-200 hover:bg-[rgba(224,122,95,0.05)] cursor-pointer"
                                         >
                                             <div className="flex-1 min-w-0 pr-4">
                                                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                    <h3 className={`text-sm md:text-base font-bold text-gray-900 truncate`}>
+                                                    <h3 className={`text-sm md:text-base font-medium text-[#2D2F33] truncate`}>
                                                         {item.title}
                                                     </h3>
                                                     {item.badge && <Badge type={item.badgeType} text={item.badge} />}
                                                 </div>
-                                                <p className="text-xs md:text-sm text-gray-600 leading-relaxed max-w-2xl">
+                                                <p className="text-xs md:text-sm text-[#374151] leading-relaxed max-w-2xl">
                                                     {item.message}
                                                 </p>
                                             </div>

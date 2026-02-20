@@ -43,7 +43,7 @@ const CommunicationList = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Communication Tools</h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
           Request, manage, and track newsletter partnerships
         </p>
       </div>

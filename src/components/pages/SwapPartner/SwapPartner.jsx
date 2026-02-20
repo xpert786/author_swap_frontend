@@ -98,95 +98,88 @@ const partners = [
 // ─── Partner Card ─────────────────────────────────────────────────────────────
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const navigate = useNavigate();
+
+    // Status badges logic based on image
+    const getBadges = () => {
+        const badges = [];
+        if (partner.paid) {
+            badges.push({ text: partner.paidAmount, bg: "bg-[#E8E8E8]" });
+            badges.push({ text: "Paid", bg: "bg-[#16A34A33]" });
+        }
+        if (partner.badge) {
+            badges.push({ text: partner.badge, bg: "bg-[#E8E8E8]" });
+        }
+        badges.push({ text: "Available", bg: "bg-[#16A34A33]" });
+        return badges;
+    };
+
     return (
         <div
-            className="bg-white rounded-2xl p-5 flex flex-col gap-3.5 cursor-pointer transition-shadow hover:shadow-md"
-            style={{
-                border: isSelected
-                    ? "1px solid rgba(224, 122, 95, 1)"
-                    : "1px solid rgba(181, 181, 181, 1)",
-            }}
+            className={`bg-white rounded-[10px] p-5 flex flex-col gap-5 cursor-pointer transition-all duration-200 border relative
+                ${isSelected ? "border-[#E07A5F] ring-[0.5px] ring-[#E07A5F]" : "border-[#B5B5B5] shadow-sm hover:border-[#E07A5F80]"}
+            `}
             onClick={onClick}
         >
-            {/* ── Row 1: Avatar + Name + Status ── */}
-            <div className="flex items-start gap-2.5">
-                <div className="shrink-0">
+            {/* ── Header Row ── */}
+            <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
                     <img
                         src={partner.photo}
                         alt={partner.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                        onError={(e) => {
-                            e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "flex";
-                        }}
+                        className="w-10 h-10 rounded-full object-cover shrink-0"
                     />
-                    <div
-                        className="hidden w-12 h-12 rounded-full bg-[#2F6F6D] text-white font-bold text-base items-center justify-center"
-                    >
-                        {partner.name.split(" ").map((n) => n[0]).join("")}
+                    <div className="min-w-0">
+                        <p className="text-[14px] font-medium text-black leading-none truncate">
+                            {partner.name}
+                        </p>
+                        <p className="text-[10px] text-[#374151] mt-1">{partner.swaps} swaps completed</p>
                     </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="min-w-0">
-                            <p className="text-sm font-bold text-black truncate" title={partner.name}>
-                                {partner.name}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                            {partner.paid && (
-                                <div className="flex items-center gap-1">
-                                    <span className="bg-[#E8E8E8] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                                        {partner.paidAmount}
-                                    </span>
-                                    <span className="bg-[rgba(22,163,74,0.15)] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                                        Paid
-                                    </span>
-                                </div>
-                            )}
-                            <span className="bg-[rgba(22,163,74,0.15)] text-black text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                                Available
-                            </span>
-                        </div>
-                    </div>
-                    <p className="text-[11px] text-gray-500">{partner.swaps} swaps completed</p>
+                <div className="flex items-center gap-1 shrink-0">
+                    {getBadges().map((b, i) => (
+                        <span key={i} className={`${b.bg} text-black text-[10px] font-medium px-2 py-0.5 rounded-full`}>
+                            {b.text}
+                        </span>
+                    ))}
                 </div>
             </div>
 
-            {/* ── Row 2: Tags ── */}
+            {/* ── Tags Row ── */}
             <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-[rgba(22,163,74,0.2)] text-black text-xs font-semibold px-3 py-0.5 rounded-full">
+                <span className="bg-[#EBF5EE] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     {partner.genre}
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-[rgba(224,122,95,0.2)] text-black text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    <PartnersIcon size={14} /> {partner.partners}
+                <span className="inline-flex items-center gap-1 bg-[#FDECE8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+                    <PartnersIcon size={12} /> {partner.partners}
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-[rgba(232,232,232,1)] text-black text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    <PublicIcon size={15} /> {partner.visibility}
+                <span className="inline-flex items-center gap-1 bg-[#E8E8E8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+                    <PublicIcon size={12} /> {partner.visibility}
                 </span>
             </div>
 
-            {/* ── Row 3: Date / Time / Audience ── */}
-            <div className="grid grid-cols-3 gap-2 py-1">
-                <div>
-                    <p className="text-xs text-black mb-0.5">Date</p>
-                    <p className="text-sm font-bold text-black">{partner.date}</p>
+            {/* ── Data Grid ── */}
+            <div className="grid grid-cols-3 gap-1 py-1">
+                <div className="space-y-1">
+                    <p className="text-[11px] text-[#111827] font-medium">Date</p>
+                    <p className="text-[12px] font-medium text-[#111827]">{partner.date}</p>
                 </div>
-                <div>
-                    <p className="text-xs text-black mb-0.5">Time</p>
-                    <p className="text-sm font-bold text-black">{partner.time}</p>
+                <div className="space-y-1">
+                    <p className="text-[11px] text-[#111827] font-medium">Time</p>
+                    <p className="text-[12px] font-medium text-[#111827]">{partner.time}</p>
                 </div>
-                <div>
-                    <p className="text-xs text-black mb-0.5">Audience</p>
-                    <p className="text-sm font-bold text-black">{partner.audience}</p>
+                <div className="space-y-1">
+                    <p className="text-[11px] text-[#111827] font-medium">Audience</p>
+                    <p className="text-[12px] font-medium text-[#111827]">{partner.audience}</p>
                 </div>
             </div>
 
-            {/* ── Row 4: Buttons ── */}
-            <div className="grid grid-cols-2 gap-2 mt-auto">
+            {/* ── Action Buttons ── */}
+            <div className="flex gap-2 mt-auto pt-1">
                 <button
-                    className="w-full px-2 py-2 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-[13px] font-bold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
+                    className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] transition-all text-[11px] font-medium
+                        ${isSelected ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" : "bg-white text-black hover:bg-gray-50"}
+                    `}
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate("/swap-details", {
@@ -199,11 +192,14 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        onSendRequest(); // Trigger modal open via parent
+                        onSendRequest();
                     }}
-                    className="w-full px-2 py-2 border-[1.5px] border-gray-300 rounded-xl bg-transparent text-black text-[13px] font-bold cursor-pointer transition-all duration-200 hover:bg-[#1F4F4D] hover:border-[#1F4F4D] hover:text-white hover:-translate-y-px text-center"
+                    className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] transition-all text-[11px] font-medium
+                        ${partner.paid ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" : "bg-white text-black hover:bg-gray-50"}
+                        ${!partner.paid && isSelected ? "bg-white text-black" : ""} 
+                    `}
                 >
-                    {partner.paid ? "Request Paid" : "Send Request"}
+                    {partner.paid ? "Request Paid Swaps" : "Send Request"}
                 </button>
             </div>
         </div>
@@ -227,12 +223,12 @@ const FilterDropdown = ({ label, options }) => {
     return (
         <div ref={ref} className="relative">
             <button
-                className="flex items-center gap-1.5 px-3.5 py-[7px] border border-gray-300 rounded-lg bg-white text-[13px] text-black font-medium cursor-pointer whitespace-nowrap transition-all hover:border-gray-400 hover:bg-gray-50"
+                className="flex items-center gap-2 px-4 py-1.5 border border-[#B5B5B5] rounded-lg bg-white text-[13px] text-black font-medium cursor-pointer whitespace-nowrap transition-all hover:bg-gray-50"
                 onClick={() => setOpen((o) => !o)}
             >
                 {selected || label}
                 <FiChevronDown
-                    size={13}
+                    size={14}
                     style={{
                         transform: open ? "rotate(180deg)" : "rotate(0deg)",
                         transition: "transform 0.2s ease",
@@ -241,11 +237,11 @@ const FilterDropdown = ({ label, options }) => {
             </button>
 
             {open && (
-                <div className="absolute top-[calc(100%+6px)] left-0 min-w-[160px] bg-white border border-gray-200 rounded-xl shadow-lg z-[100] py-2 animate-[fadeIn_0.15s_ease]">
+                <div className="absolute top-[calc(100%+6px)] right-0 md:left-0 min-w-[170px] bg-white border border-[#B5B5B5] rounded-lg shadow-xl z-[100] py-2">
                     {options.map((opt) => (
                         <div
                             key={opt}
-                            className={`px-5 py-2.5 text-sm text-black cursor-pointer transition-colors hover:bg-gray-100 ${selected === opt ? "text-[#1F4F4D] font-semibold bg-green-50" : ""
+                            className={`px-5 py-2.5 text-sm text-black cursor-pointer transition-colors hover:bg-gray-100 ${selected === opt ? "text-[#2F6F6D] font-semibold bg-green-50" : ""
                                 }`}
                             onClick={() => {
                                 setSelected(opt === selected ? null : opt);
@@ -264,7 +260,7 @@ const FilterDropdown = ({ label, options }) => {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const SwapPartner = () => {
     const [search, setSearch] = useState("");
-    const [selectedId, setSelectedId] = useState(null);
+    const [selectedId, setSelectedId] = useState(1); // Default highlight first card
     const [isRequestOpen, setIsRequestOpen] = useState(false);
 
     const filtered = partners.filter((p) =>
@@ -272,48 +268,50 @@ const SwapPartner = () => {
     );
 
     return (
-        <div className="min-h-screen">
-            {/* Page Header */}
-            <h1 className="text-2xl md:text-[26px] font-bold text-black mb-1">Swap Partner</h1>
-            <p className="text-sm text-black mb-5">Find places to promote your book</p>
+        <div className="min-h-screen pb-10 bg-white">
+            {/* Header Section */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-semibold">Swap Partner</h1>
+                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Find places to promote your book</p>
+            </div>
 
-            {/* Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
-                {/* Search */}
-                <div className="sp-search flex items-center gap-2 border border-gray-300 rounded-lg px-3.5 py-2 bg-white w-full md:max-w-[240px]">
-                    <FiSearch size={14} color="#9ca3af" />
+            {/* Filter Section */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10">
+                {/* Search Input */}
+                <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white w-full lg:max-w-[200px]">
+                    <FiSearch size={14} className="text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Search.."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="border-none outline-none text-[13px] text-black bg-transparent w-full"
+                        className="border-none outline-none text-[13px] text-gray-900 bg-transparent w-full"
                     />
                 </div>
 
-                {/* Filters */}
-                <div className="sp-filters flex flex-wrap gap-2 md:ml-auto">
+                {/* Filter Controls */}
+                <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                     <FilterDropdown
                         label="Genre"
                         options={["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]}
-                    />
-                    <FilterDropdown
-                        label="All Status"
-                        options={["Available", "Booked", "Pending"]}
                     />
                     <FilterDropdown
                         label="Audience Size"
                         options={["0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
                     />
                     <FilterDropdown
+                        label="Available Slots"
+                        options={["1 Slot", "2 Slots", "3+ Slots"]}
+                    />
+                    <FilterDropdown
                         label="Free"
-                        options={["Paid", "Genre-Specific"]}
+                        options={["Free", "Paid"]}
                     />
                 </div>
             </div>
 
-            {/* Cards Grid */}
-            <div className="sp-grid grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-5">
+            {/* Grid Content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((partner) => (
                     <PartnerCard
                         key={partner.id}
@@ -331,7 +329,7 @@ const SwapPartner = () => {
             />
 
             {filtered.length === 0 && (
-                <div className="text-center py-16 text-gray-400 text-[15px]">
+                <div className="text-center py-16 text-gray-400 text-sm italic">
                     No partners found matching "{search}"
                 </div>
             )}

@@ -136,7 +136,7 @@ const SwapDetails = () => {
     const swaps = passed.swaps ?? detail.swaps;
 
     return (
-        <div className="p-7 min-h-screen w-full">
+        <div className="in-h-screen">
 
             {/* Page Title with Back Button */}
             <div className="flex items-center gap-4 mb-5">
@@ -148,8 +148,8 @@ const SwapDetails = () => {
                     <FiArrowLeft size={20} />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-bold text-black mb-0.5 leading-tight">Swap Detail</h1>
-                    <p className="text-sm text-black opacity-70">Find places to promote your book</p>
+                    <h1 className="text-2xl font-semibold">Swap Detail</h1>
+                    <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Find places to promote your book</p>
                 </div>
             </div>
 

@@ -24,6 +24,8 @@ import AddNewsSlot from "./AddNewsSlot";
 import EditNewsSlot from "./EditNewsSlot";
 import DeleteNewsSlot from "./DeleteNewsSlot";
 import SlotDetails from "./SlotDetails";
+import { MdOutlineRemoveRedEye } from "react-icons/md";
+import Edit from "../../../assets/edit.png"
 
 
 const Newsletter = () => {
@@ -98,7 +100,7 @@ const Newsletter = () => {
             visibility: "Public",
             audience: "12,450",
             status: "Available",
-            statusColor: "text-green-600 bg-[#F0FDF4] border-green-100",
+            statusColor: "bg-[#16A34A33]",
         },
         {
             id: 2,
@@ -109,7 +111,7 @@ const Newsletter = () => {
             visibility: "Friends Only",
             audience: "5,450",
             status: "Booked",
-            statusColor: "text-[#D97706] bg-[#FEF3C7] border-amber-100",
+            statusColor: "bg-[#F59E0B33]",
         },
         {
             id: 3,
@@ -120,7 +122,7 @@ const Newsletter = () => {
             visibility: "Public",
             audience: "1,598",
             status: "Available",
-            statusColor: "text-green-600 bg-[#F0FDF4] border-green-100",
+            statusColor: "bg-[#16A34A33]",
         },
     ];
 
@@ -128,14 +130,14 @@ const Newsletter = () => {
         <div className="pb-10">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Newsletter & Slot Management</h1>
-                <p className="text-gray-500 text-sm mt-1">Schedule, manage, and track your newsletter promotions</p>
+                <h1 className="text-2xl font-semibold">Newsletter & Slot Management</h1>
+                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Schedule, manage, and track your newsletter promotions</p>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white p-4 rounded-[20px] border border-gray-100 shadow-sm flex flex-col justify-between min-h-[120px] hover:shadow-md transition-shadow gap-8">
+                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
                         <div className="flex justify-between items-center">
                             {stat.isCustom ? (
                                 <stat.icon size={36} />
@@ -144,11 +146,11 @@ const Newsletter = () => {
                                     <stat.icon size={36} />
                                 </div>
                             )}
-                            <span className="text-[12px] font-medium text-[#111827] text-right whitespace-nowrap uppercase tracking-wider">
+                            <span className="text-[11px] md:text-[13px] font-medium text-[#374151]">
                                 {stat.label}
                             </span>
                         </div>
-                        <div className="mt-2 text-2xl font-medium text-[#111827] tracking-tight">
+                        <div className="text-2xl font-bold text-gray-900 leading-none">
                             {stat.value}
                         </div>
                     </div>
@@ -157,7 +159,7 @@ const Newsletter = () => {
 
             {/* Filter & Action Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-                <h2 className="text-lg font-bold text-gray-800">All Slots for October 4, 2025</h2>
+                <h2 className="text-lg font-medium text-gray-800">All Slots for October 4, 2025</h2>
 
                 <div className="flex flex-wrap items-center gap-2">
 
@@ -170,7 +172,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "genre" ? null : "genre")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
                             >
                                 {genre}
                                 <ChevronDown
@@ -212,7 +214,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "visibility" ? null : "visibility")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
                             >
                                 {visibility}
                                 <ChevronDown
@@ -246,7 +248,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "status" ? null : "status")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
                             >
                                 {status}
                                 <ChevronDown
@@ -276,14 +278,12 @@ const Newsletter = () => {
 
                     </div>
 
-                    {/* EXPORT BUTTON (UNCHANGED) */}
-                    {/* EXPORT BUTTON */}
                     <div className="relative">
                         <button
                             onClick={() =>
                                 setOpenDropdown(openDropdown === "export" ? null : "export")
                             }
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
                         >
                             <Download size={14} className="text-gray-400" />
                             Export with
@@ -315,7 +315,7 @@ const Newsletter = () => {
                     {/* ADD SLOT BUTTON */}
                     <button
                         onClick={() => setOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2 bg-[#1F4F4D] text-white rounded-lg text-[13px] font-black hover:bg-[#1a4341] transition-all shadow-lg shadow-[#1F4F4D]/20 active:scale-[0.98]"
+                        className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium"
                     >
                         <Plus size={16} />
                         Add New slot
@@ -408,30 +408,33 @@ const Newsletter = () => {
                         </div>
 
                         {/* Legend */}
-                        <div className="mt-8 grid grid-cols-2 gap-y-3 gap-x-2">
-                            {[
-                                { label: "Published slots", color: "bg-[#FAD4C0]" },
-                                { label: "Confirmed Slots", color: "bg-[#96CEA5]" },
-                                { label: "Pending slots", color: "bg-[#FEF1D3]" },
-                                { label: "Verified slots", color: "bg-[#A7C0BD]" },
-                            ].map((item) => (
-                                <div key={item.label} className="flex items-center gap-2">
-                                    <div
-                                        className={`w-2.5 h-2.5 rounded-sm ${item.color} shadow-sm flex-shrink-0`}
-                                    />
-                                    <span className="text-[9px] font-black text-gray-500 uppercase leading-none">
-                                        {item.label}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+
+                    </div>
+                    <div className="mt-8 grid grid-cols-4 gap-y-3 gap-x-2">
+                        {[
+                            { label: "Published slots", color: "bg-[#FAD4C0]" },
+                            { label: "Confirmed Slots", color: "bg-[#96CEA5]" },
+                            { label: "Pending slots", color: "bg-[#FEF1D3]" },
+                            { label: "Verified slots", color: "bg-[#A7C0BD]" },
+                        ].map((item) => (
+                            <div key={item.label} className="flex items-center gap-2">
+                                <div
+                                    className={`w-2.5 h-2.5 ${item.color} shadow-sm flex-shrink-0`}
+                                />
+                                <span className="text-[9px] font-medium text-black uppercase leading-none">
+                                    {item.label}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </div>
+
+
 
                 <div className="flex flex-col gap-10">
                     {["Morning", "Afternoon", "Evening"].map((period) => (
                         <div key={period}>
-                            <h3 className="text-[11px] font-black text-gray-400 mb-6 uppercase tracking-[0.2em]">
+                            <h3 className="text-[11px] font-medium text-[#374151] mb-6 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">
                                 {period}
                             </h3>
 
@@ -439,18 +442,18 @@ const Newsletter = () => {
                                 {slots.filter(s => s.period === period).map((slot) => (
                                     <div
                                         key={slot.id}
-                                        className="bg-white rounded-2xl border border-gray-200 p-5 transition hover:shadow-md"
+                                        className="bg-white rounded-2xl border border-[#B5B5B5] p-5 hover:border-[#E07A5F]"
                                     >
                                         <div className="flex flex-col gap-4">
 
                                             {/* Top Row */}
                                             <div className="flex items-start justify-between">
-                                                <h4 className="text-[15px] font-semibold text-gray-800">
+                                                <h4 className="text-[15px] font-semibold text-[#111827]">
                                                     {slot.time}
                                                 </h4>
 
                                                 <span
-                                                    className={`px-3 py-1 text-[11px] font-medium rounded-full ${slot.statusColor}`}
+                                                    className={`px-3 py-1 text-[11px] font-normal rounded-full ${slot.statusColor}`}
                                                 >
                                                     {slot.status}
                                                 </span>
@@ -458,17 +461,17 @@ const Newsletter = () => {
 
                                             {/* Tags Row */}
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[11px] font-medium">
+                                                <span className="px-3 py-1 bg-[#16A34A33] rounded-full text-[11px] font-normal">
                                                     {slot.genre}
                                                 </span>
 
-                                                <span className="px-3 py-1 bg-rose-100 text-rose-600 rounded-full text-[11px] font-medium flex items-center gap-1">
+                                                <span className="px-3 py-1 bg-[#E07A5F33] rounded-full text-[11px] font-normal flex items-center gap-1">
                                                     <Users size={12} />
                                                     {slot.partners}
                                                 </span>
 
-                                                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[11px] font-medium flex items-center gap-1">
-                                                    <Globe size={12} />
+                                                <span className="px-3 py-1 bg-[#E8E8E8] rounded-full text-[11px] font-normal flex items-center gap-1">
+                                                    <MdOutlineRemoveRedEye size={12} />
                                                     {slot.visibility}
                                                 </span>
                                             </div>
@@ -484,56 +487,59 @@ const Newsletter = () => {
                                                     </p>
                                                 </div>
 
-                                                {/* Action Button */}
-                                                <div>
-                                                    {slot.status === "Available" ? (
-                                                        <div className="flex gap-2">
-                                                            <button onClick={() => setEditOpen(true)}
-                                                                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-                                                                <Edit2 size={14} className="text-gray-600" />
-                                                            </button>
-                                                            <button onClick={() => setDeleteOpen(true)} className="p-2 bg-gray-100 hover:bg-red-100 rounded-lg transition">
-                                                                <Trash2 size={14} className="text-red-500" />
-                                                            </button>
-
-                                                            <EditNewsSlot
-                                                                isOpen={editOpen}
-                                                                onClose={() => setEditOpen(false)}
-                                                                onSave={(data) => {
-                                                                    console.log(data);
-                                                                    setEditOpen(false);
-                                                                }}
-                                                            />
-
-                                                            <DeleteNewsSlot
-                                                                isOpen={deleteOpen}
-                                                                onClose={() => setDeleteOpen(false)}
-                                                                onConfirm={() => {
-                                                                    console.log("Deleted");
-                                                                    setDeleteOpen(false);
-                                                                }}
-                                                                slotName="The Midnight Garden"
-                                                            />
-                                                        </div>
 
 
-                                                    ) : (
-                                                        <>
-                                                            <button onClick={() => setDetailsOpen(true)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-                                                                <Eye size={14} className="text-gray-600" />
-                                                            </button>
+                                            </div>
 
-                                                            <SlotDetails
-                                                                isOpen={detailsOpen}
-                                                                onClose={() => setDetailsOpen(false)}
-                                                                onEdit={() => {
-                                                                    console.log("Go to edit");
-                                                                    setDetailsOpen(false);
-                                                                }}
-                                                            /></>
-                                                    )}
+                                            {/* Action Button */}
+                                            <div>
+                                                {slot.status === "Available" ? (
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => setEditOpen(true)}
+                                                            className="p-2 bg-gray-100">
+                                                            <img src={Edit} alt="" className="w-5 h-5" />
 
-                                                </div>
+                                                        </button>
+                                                        <button onClick={() => setDeleteOpen(true)} className="p-2 bg-gray-100">
+                                                            <Trash2 size={14} />
+                                                        </button>
+
+                                                        <EditNewsSlot
+                                                            isOpen={editOpen}
+                                                            onClose={() => setEditOpen(false)}
+                                                            onSave={(data) => {
+                                                                console.log(data);
+                                                                setEditOpen(false);
+                                                            }}
+                                                        />
+
+                                                        <DeleteNewsSlot
+                                                            isOpen={deleteOpen}
+                                                            onClose={() => setDeleteOpen(false)}
+                                                            onConfirm={() => {
+                                                                console.log("Deleted");
+                                                                setDeleteOpen(false);
+                                                            }}
+                                                            slotName="The Midnight Garden"
+                                                        />
+                                                    </div>
+
+
+                                                ) : (
+                                                    <>
+                                                        <button onClick={() => setDetailsOpen(true)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                                            <Eye size={14} className="text-gray-600" />
+                                                        </button>
+
+                                                        <SlotDetails
+                                                            isOpen={detailsOpen}
+                                                            onClose={() => setDetailsOpen(false)}
+                                                            onEdit={() => {
+                                                                console.log("Go to edit");
+                                                                setDetailsOpen(false);
+                                                            }}
+                                                        /></>
+                                                )}
 
                                             </div>
                                         </div>
