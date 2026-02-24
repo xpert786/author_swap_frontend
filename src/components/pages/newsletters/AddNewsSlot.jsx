@@ -3,7 +3,7 @@ import { createNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
-const AddNewsSlot = ({ isOpen, onClose }) => {
+const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     send_date: "",
     send_time: "",
@@ -49,6 +49,11 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
 
     try {
       await createNewsSlot(formData);
+
+      if (onSubmit) {
+        await onSubmit();
+      }
+
       onClose();
       setFormData({
         send_date: "",

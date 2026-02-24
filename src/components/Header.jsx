@@ -4,6 +4,7 @@ import { FiArrowLeft, FiArrowRight, FiUser, FiLogOut, FiMenu, FiSearch } from "r
 import { TbBell } from "react-icons/tb";
 import { GoChevronDown, GoChevronUp } from "react-icons/go";
 import { LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide-react";
+import { getProfile } from "../apis/profile";
 
 const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -24,6 +25,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const dropdownRef = useRef(null);
     const searchRef = useRef(null);
+    const [profile, setProfile] = useState(null);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -37,6 +39,19 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const { data } = await getProfile();
+                setProfile(data);
+            } catch (error) {
+                console.error("Failed to load profile", error);
+            }
+        };
+
+        fetchProfile();
     }, []);
 
     const handleSearchChange = (e) => {
@@ -134,7 +149,10 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         onClick={toggleDropdown}
                     >
                         <img
-                            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100"
+                            src={
+                                profile?.profile_picture ||
+                                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100"
+                            }
                             alt="profile"
                             className="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-[#E07A5F33] transition-all shrink-0"
                         />
@@ -142,8 +160,16 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         {/* Text + Arrow wrapper */}
                         <div className="flex items-center gap-2">
                             <div className="hidden md:flex flex-col">
-                                <p className="text-sm font-bold text-gray-900 leading-tight">Jane Author</p>
-                                <p className="text-[11px] text-gray-500">Fantasy Author</p>
+                                <p className="text-sm font-bold text-gray-900 leading-tight">
+                                    {(profile?.name || profile?.username || "User")
+                                        .toLowerCase()
+                                        .replace(/\b\w/g, char => char.toUpperCase())}
+                                </p>
+                                <p className="text-[11px] text-gray-500">
+                                    {profile?.primary_genre
+                                        ? `${profile.primary_genre.charAt(0).toUpperCase() + profile.primary_genre.slice(1)} Author`
+                                        : "Author"}
+                                </p>
                             </div>
                             {isDropdownOpen ? (
                                 <GoChevronUp className="text-gray-400 text-lg" />

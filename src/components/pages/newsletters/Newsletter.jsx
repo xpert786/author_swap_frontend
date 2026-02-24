@@ -402,8 +402,8 @@ const Newsletter = () => {
                     <AddNewsSlot
                         isOpen={open}
                         onClose={() => setOpen(false)}
-                        onSubmit={() => {
-                            console.log("Slot Created");
+                        onSubmit={async () => {
+                            await fetchSlots();   // 🔥 Refetch slots
                             setOpen(false);
                         }}
                     />
