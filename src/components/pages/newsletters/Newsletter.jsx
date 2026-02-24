@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import { useMemo } from "react";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { updateNewsSlot, getNewsSlot } from "../../../apis/newsletter";
+import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
 
@@ -41,9 +42,10 @@ const Newsletter = () => {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [slots, setSlots] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedGenreValue, setSelectedGenreValue] = useState("");
 
 
-    const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
+
 
     // Calendar logic for May 2024
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -68,14 +70,16 @@ const Newsletter = () => {
 
     const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
     const today = useMemo(() => dayjs(), []);
+    const [genres, setGenres] = useState([]);
     const [loadingGenres, setLoadingGenres] = useState(true);
 
     useEffect(() => {
         const loadGenres = async () => {
             try {
-                const data = await getGenres();
-                setGenres(data);
+                const response = await getGenres();
+                setGenres(response);
             } catch (error) {
+                console.error(error);
                 toast.error("Failed to load genres");
             } finally {
                 setLoadingGenres(false);
@@ -208,14 +212,9 @@ const Newsletter = () => {
                     >
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
 
-                            {stat.isCustom ? (
-                                <stat.icon size={28} className="sm:w-9 sm:h-9" />
-                            ) : (
-                                <div className={`rounded-lg ${stat.color} p-1.5 sm:p-2`}>
-                                    <stat.icon size={24} className="sm:w-9 sm:h-9" />
-                                </div>
-                            )}
-
+                            <div className="w-10 h-10 flex items-center justify-center">
+                                <stat.icon className="w-6 h-6" />
+                            </div>
                             <span className="text-xs sm:text-sm font-medium text-[#374151]">
                                 {stat.label}
                             </span>
@@ -260,24 +259,30 @@ const Newsletter = () => {
 
                             {openDropdown === "genre" && (
                                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    {[
-                                        "Select Genre",
-                                        "Fantasy",
-                                        "Scifi",
-                                        "Romance",
-                                        "Mystery",
-                                        "Thriller",
-                                        "Nonfiction",
-                                    ].map((item) => (
+
+                                    {/* Default Option */}
+                                    <button
+                                        onClick={() => {
+                                            setGenre("Select Genre");
+                                            setOpenDropdown(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        Select Genre
+                                    </button>
+
+                                    {/* Dynamic Genres */}
+                                    {genres.map((genre) => (
                                         <button
-                                            key={item}
+                                            key={genre.value}
                                             onClick={() => {
-                                                setGenre(item);
+                                                setGenre(genre.label);              // what shows in button
+                                                setSelectedGenreValue(genre.value); // what you send to backend (create this state)
                                                 setOpenDropdown(null);
                                             }}
                                             className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 transition-colors"
                                         >
-                                            {item}
+                                            {genre.label}
                                         </button>
                                     ))}
                                 </div>

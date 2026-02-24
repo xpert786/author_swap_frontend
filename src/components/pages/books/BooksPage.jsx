@@ -241,13 +241,13 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-8">
 
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 whitespace-nowrap">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                     My Books
                 </h2>
 
-                <div className="flex flex-col sm:flex-row lg:flex-nowrap flex-wrap gap-3 sm:gap-4 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
 
                     {/* Search */}
                     <div className="relative w-full sm:w-64 lg:w-72 xl:w-80">
@@ -418,7 +418,9 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
 
                         <div className="flex gap-1.5 mt-1.5">
                             <span className="text-[10px] font-semibold bg-[#16A34A33] px-2 py-0.5 rounded-md">
-                                {book.primary_genre}
+                                {book.primary_genre
+                                    ?.replace(/_/g, " ")
+                                    .replace(/\b\w/g, (char) => char.toUpperCase())}
                             </span>
                         </div>
                     </div>
