@@ -27,8 +27,12 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+
+      window.location.replace(
+        `${import.meta.env.VITE_API_BASE_URL}login`
+      );
     }
+
     return Promise.reject(error);
   }
 );
