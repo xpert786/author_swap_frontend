@@ -85,18 +85,19 @@ const BooksPage = () => {
     }, []);
 
     /* ---------------- FETCH GENRES ---------------- */
-    useEffect(() => {
-        const fetchGenres = async () => {
-            try {
-                const data = await getGenres();
-                setGenres(data || []);
-            } catch (err) {
-                console.error("Failed to fetch genres:", err);
-            }
-        };
-        fetchGenres();
-    }, []);
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const data = await getGenres();
+        console.log("GENRES API:", data); // 👈 ADD THIS
+        setGenres(data);
+      } catch (error) {
+        toast.error("Failed to load genres");
+      }
+    };
 
+    loadGenres();
+  }, []);
     /* ---------------- FETCH STATS ---------------- */
     useEffect(() => {
         const fetchStats = async () => {
@@ -229,7 +230,22 @@ const BooksPage = () => {
                     Add New Book
                 </button>
 
-                {isOpen && <AddBooks onClose={() => setIsOpen(false)} />}
+                {isOpen && (
+                    <AddBooks
+                        onClose={() => setIsOpen(false)}
+                        onBookAdded={(newBook) => {
+                            const formattedBook = {
+                                ...newBook,
+                                book_cover: newBook.book_cover?.startsWith("http")
+                                    ? newBook.book_cover
+                                    : `${import.meta.env.VITE_BACKEND_URL}${newBook.book_cover}`,
+                                rating: Number(newBook.rating) || 0,
+                            };
+
+                            setBooks((prev) => [formattedBook, ...prev]);
+                        }}
+                    />
+                )}
             </div>
 
             {/* STATS */}
@@ -241,13 +257,13 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
 
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 w-full xl:w-auto">
                     My Books
                 </h2>
 
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
+                <div className="flex flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
 
                     {/* Search */}
                     <div className="relative w-full sm:w-64 lg:w-72 xl:w-80">

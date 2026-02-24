@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useEffect } from "react";
 import { getGenres, getSubGenres } from "../../../apis/genre"; // adjust path
 
-const AddBooks = ({ onClose }) => {
+const AddBooks = ({ onClose, onBookAdded }) => {
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
@@ -135,7 +135,12 @@ const AddBooks = ({ onClose }) => {
         data.append("book_cover", formData.coverImage);
       }
 
-      await createBook(data);
+      const response = await createBook(data);
+      const savedBook = response?.data;
+
+      if (onBookAdded && savedBook) {
+        onBookAdded(savedBook);
+      }
 
       toast.success("Book added successfully!");
       onClose();
@@ -315,7 +320,7 @@ const AddBooks = ({ onClose }) => {
                 </select>
               </div>
 
-                <div>
+              <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Ratings
                 </label>
