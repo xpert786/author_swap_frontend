@@ -230,21 +230,29 @@ export default function SubscriptionPage() {
                             <div className="mt-6 space-y-2">
                                 {tier.secondaryCta && (
                                     <button className="w-full text-xs border border-gray-300 rounded-md py-2 bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
-                                        <Crown size={14} className="text-gray-500" />
                                         {tier.secondaryCta}
                                     </button>
                                 )}
 
                                 <button
                                     className={`w-full text-xs rounded-md py-3 font-medium flex items-center justify-center gap-2
-      ${tier.popular
+    ${tier.popular
                                             ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] hover:opacity-90"
                                             : "bg-gray-100 hover:bg-gray-200 text-[#111827]"
                                         }`}
                                 >
+                                    {/* Show Rocket for popular */}
                                     {tier.popular && <Rocket size={14} className="opacity-90" />}
+
+                                    {/* Show Crown for Tier 4 */}
+                                    {tier.name === "TIER 4" && <Crown size={14} />}
+
                                     {tier.primaryCta}
-                                    <ArrowRight size={14} className={tier.popular ? "opacity-90" : "text-gray-600"} />
+
+                                    <ArrowRight
+                                        size={14}
+                                        className={tier.popular ? "opacity-90" : "text-gray-600"}
+                                    />
                                 </button>
                             </div>
 

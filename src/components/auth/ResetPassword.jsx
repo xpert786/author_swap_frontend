@@ -38,10 +38,15 @@ const ResetPassword = () => {
       }, 1500);
 
     } catch (error) {
-      toast.error(
+      const errorMessage =
+        error?.response?.data?.detail ||   // ✅ handle this API structure
         error?.response?.data?.message ||
-        "Something went wrong. Please try again."
-      );
+        error?.response?.data?.email?.[0] ||
+        error?.response?.data?.non_field_errors?.[0] ||
+        error.message ||
+        "Something went wrong. Please try again.";
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -96,11 +101,9 @@ const ResetPassword = () => {
                         message: "Minimum 6 characters required",
                       },
                     })}
-                    className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
-                    ${errors.password
-                        ? "border-red-500 focus:ring-red-400"
-                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
-                      }`}
+                    className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs 
+  focus:outline-none focus:ring-2 focus:ring-gray-200 
+  bg-gray-50/30 transition-all pr-12"
                   />
                   <button
                     type="button"
@@ -131,11 +134,9 @@ const ResetPassword = () => {
                       validate: (value) =>
                         value === password || "Passwords do not match",
                     })}
-                    className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
-                    ${errors.confirmPassword
-                        ? "border-red-500 focus:ring-red-400"
-                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
-                      }`}
+                    className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs 
+  focus:outline-none focus:ring-2 focus:ring-gray-200 
+  bg-gray-50/30 transition-all pr-12"
                   />
                   <button
                     type="button"
@@ -156,7 +157,7 @@ const ResetPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98] disabled:opacity-60"
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-[8px] font-medium text-sm shadow-lg"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>

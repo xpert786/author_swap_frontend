@@ -133,20 +133,20 @@ const OtpVerification = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-[0.98] disabled:opacity-60"
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-[8px] font-medium text-sm shadow-lg"
               >
                 {loading ? "Verifying..." : "Continue"}
               </button>
             </form>
 
             <div className="flex flex-col items-center mt-8">
-              <p className="text-xs font-semibold text-gray-500">
+              <p className="text-xs font-medium text-gray-500">
                 Didn’t get the OTP yet?{" "}
                 <button
                   onClick={() => {
                     toast.success("OTP resent successfully");
                   }}
-                  className="text-[#2F6F6D] font-bold hover:underline transition-all"
+                  className="text-[#2F6F6D] font-medium hover:underline transition-all"
                 >
                   Resend OTP
                 </button>

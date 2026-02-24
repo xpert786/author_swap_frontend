@@ -3,6 +3,7 @@ import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { useNavigate } from "react-router-dom";
 import { forgetPassword } from "../../apis/auth";
+import toast from "react-hot-toast";
 
 const ForgetPassword = () => {
   const {
@@ -21,18 +22,26 @@ const ForgetPassword = () => {
 
       console.log("OTP Sent:", response);
 
-      // Optional: store email for OTP screen
+      toast.success("OTP sent successfully!");
+
       localStorage.setItem("resetEmail", data.email);
 
-      navigate("/otp-verification");
+      setTimeout(() => {
+        navigate("/otp-verification");
+      }, 1500);
+
     } catch (error) {
       console.error("Forget password failed:", error);
-      alert(
+
+      const errorMessage =
+        error?.response?.data?.email?.[0] ||
         error?.response?.data?.message ||
         error.message ||
-        "Something went wrong"
-      );
+        "Something went wrong";
+
+      toast.error(errorMessage);
     }
+
   };
 
   return (
@@ -83,11 +92,9 @@ const ForgetPassword = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className={`w-full border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all
-                  ${errors.email
-                      ? "border-red-500 focus:ring-red-400"
-                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
-                    }`}
+                  className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs 
+  focus:outline-none focus:ring-2 focus:ring-gray-200 
+  bg-gray-50/30 transition-all"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-[10px] mt-1 font-medium ml-0.5">
@@ -99,7 +106,7 @@ const ForgetPassword = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98] mt-2"
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-[8px] font-medium text-sm transition-all shadow-lg active:scale-[0.98] mt-2"
               >
                 Continue
               </button>

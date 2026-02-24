@@ -77,6 +77,7 @@ const Dashboard = () => {
   };
 
   const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
+  const today = useMemo(() => dayjs(), []);
 
   const handleCreateSlot = () => {
     setShowAddSlot(false);
@@ -180,7 +181,7 @@ const Dashboard = () => {
             ))}
             {calendarDays.map((date, idx) => {
               const isCurrentMonth = date.isSame(currentMonth, "month");
-              const isToday = date.isSame(dayjs(), "day");
+              const isToday = date.isSame(today, "day");
 
               return (
                 <div
@@ -214,9 +215,13 @@ const Dashboard = () => {
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
             {mockData.recentActivity.map((activity) => (
-              <div key={activity.id} className="flex gap-3">
+              <div
+                key={activity.id}
+                className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
+              >
                 <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
-                <div className="pb-3 border-b border-[#B5B5B5] w-full last:border-0 last:pb-0">
+
+                <div className="w-full">
                   <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug">
                     {activity.title}
                   </p>
@@ -256,22 +261,26 @@ const Dashboard = () => {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setShowAddBook(true)}
-              className="flex items-center gap-3 bg-[#FFF9F7] border border-[#FEE2D9] rounded-[8px] p-3.5 hover:shadow-sm transition-all group"
+              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
             >
               <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80] text-[#EA580C]">
                 <LuPlus size={18} className="text-black" />
               </div>
-              <span className="text-[13px] font-medium text-black">Add New Book</span>
+              <span className="text-[13px] font-medium text-black">
+                Add New Book
+              </span>
             </button>
 
             <button
               onClick={() => setShowAddSlot(true)}
-              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:shadow-sm transition-all group"
+              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
             >
               <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80]">
                 <LuPlus size={18} className="text-black" />
               </div>
-              <span className="text-[13px] font-bold text-black">Add Newsletter Slot</span>
+              <span className="text-[13px] font-medium text-black">
+                Add Newsletter Slot
+              </span>
             </button>
           </div>
         </div>

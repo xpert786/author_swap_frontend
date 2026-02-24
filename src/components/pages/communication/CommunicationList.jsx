@@ -88,12 +88,12 @@ const CommunicationList = () => {
           {/* Sidebar */}
           <div className="w-64 border-r border-[#B5B5B5] p-4">
             <ul className="space-y-4 text-sm">
-              <li className="flex justify-between items-center text-red-500 font-medium">
+              <li className="flex justify-between items-center bg-[#E07A5F33] p-2 rounded-md font-medium">
                 <div className="flex items-center gap-2">
                   <Mail size={16} />
                   Inbox
                 </div>
-                <span className="bg-red-100 text-red-500 px-2 py-0.5 rounded-full text-xs">
+                <span className="text-xs">
                   3
                 </span>
               </li>

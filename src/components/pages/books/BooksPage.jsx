@@ -233,7 +233,7 @@ const BooksPage = () => {
             </div>
 
             {/* STATS */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                 <StatCard title="Total Books" value={stats.total} icon={<LuBookOpen size={18} />} bgColor="bg-[#2F6F6D33]" />
                 <StatCard title="Active Promotions" value={stats.activePromos} icon={<MegaPhone />} bgColor="bg-[#E07A5F33]" />
                 <StatCard title="Primary Promo" value={stats.primaryPromo} icon={<Star size={18} />} bgColor="bg-[#16A34A33]" />
@@ -331,7 +331,7 @@ const BooksPage = () => {
 /* ---------------- STAT CARD ---------------- */
 const StatCard = ({ title, value, icon, bgColor }) => (
     <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between">
             <div className={`p-2 rounded-lg ${bgColor}`}>{icon}</div>
             <p className="text-[13px] font-medium text-[#374151]">{title}</p>
         </div>

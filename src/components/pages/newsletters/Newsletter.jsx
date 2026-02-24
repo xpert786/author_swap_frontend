@@ -28,6 +28,7 @@ import { MdOutlineRemoveRedEye } from "react-icons/md";
 import Edit from "../../../assets/edit.png"
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 
 const Newsletter = () => {
@@ -41,6 +42,34 @@ const Newsletter = () => {
     const [visibility, setVisibility] = useState("All Visibility");
     const [status, setStatus] = useState("All Status");
     const [genre, setGenre] = useState("Genre");
+      const [selectedGenre, setSelectedGenre] = useState("Genre");
+        const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+
+          const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
+
+  // Calendar logic for May 2024
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+          const generateCalendar = () => {
+            const startOfMonth = currentMonth.startOf("month");
+            const endOfMonth = currentMonth.endOf("month");
+        
+            const startDate = startOfMonth.startOf("week");
+            const endDate = endOfMonth.endOf("week");
+        
+            let date = startDate.clone();   // must be let
+            const days = [];
+        
+            while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+              days.push(date.clone());
+              date = date.add(1, "day");
+            }
+        
+            return days;
+          };
+        
+          const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
+          const today = useMemo(() => dayjs(), []);
 
 
     const openModal = () => setShowAddBook(true);
@@ -81,23 +110,23 @@ const Newsletter = () => {
         />
     );
 
-    const calendarDays = useMemo(() => {
-        const startOfMonth = currentMonth.startOf("month");
-        const endOfMonth = currentMonth.endOf("month");
+    // const calendarDays = useMemo(() => {
+    //     const startOfMonth = currentMonth.startOf("month");
+    //     const endOfMonth = currentMonth.endOf("month");
 
-        const startDate = startOfMonth.startOf("week");
-        const endDate = endOfMonth.endOf("week");
+    //     const startDate = startOfMonth.startOf("week");
+    //     const endDate = endOfMonth.endOf("week");
 
-        let date = startDate.clone();
-        const days = [];
+    //     let date = startDate.clone();
+    //     const days = [];
 
-        while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-            days.push(date);
-            date = date.add(1, "day"); // IMPORTANT (no infinite loop)
-        }
+    //     while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+    //         days.push(date);
+    //         date = date.add(1, "day"); // IMPORTANT (no infinite loop)
+    //     }
 
-        return days;
-    }, [currentMonth]);
+    //     return days;
+    // }, [currentMonth]);
 
 
     // Mock data for stats
@@ -356,104 +385,112 @@ const Newsletter = () => {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
 
                 {/* ================= LEFT SIDE - CALENDAR ================= */}
-                <div className="xl:sticky xl:top-2">
-                    <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
-                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    <ChevronLeft size={16} className="text-gray-400" />
-                                </button>
-
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">
-                                    {currentMonth.format("MMMM YYYY")} Calendar
-                                </h3>
-
-                                <button
-                                    onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
-                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    <ChevronRight size={16} className="text-gray-400" />
-                                </button>
-                            </div>
-
-                            <button className="text-[10px] font-black text-gray-400 hover:text-gray-800 transition-colors uppercase tracking-widest">
-                                Today
+                <div className="xl:col-span-3 bg-white rounded-[10px] border border-[#B5B5B5] p-5 shadow-sm">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                            >
+                                <IoChevronBack size={18} />
                             </button>
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                            >
+                                <IoChevronForward size={18} />
+                            </button>
+                            <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight ml-1">
+                                {currentMonth.format("MMMM YYYY")} Calendar
+                            </h3>
                         </div>
-
-                        {/* Days Header */}
-                        <div className="grid grid-cols-7 mb-2">
-                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                <div
-                                    key={day}
-                                    className="text-center py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest"
+                        <div className="flex gap-2">
+                            <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+                                View Full
+                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowGenreDropdown(!showGenreDropdown)}
+                                    className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
                                 >
-                                    {day}
-                                </div>
-                            ))}
+                                    {selectedGenre} <IoChevronDown size={12} className={`transition-transform ${showGenreDropdown ? "rotate-180" : ""}`} />
+                                </button>
+
+                                {showGenreDropdown && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setShowGenreDropdown(false)}
+                                        />
+                                        <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-100 rounded-lg shadow-lg z-20 py-1 overflow-hidden">
+                                            {genres.map((genre) => (
+                                                <button
+                                                    key={genre}
+                                                    onClick={() => {
+                                                        setSelectedGenre(genre === "All Genres" ? "Genre" : genre);
+                                                        setShowGenreDropdown(false);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-[11px] font-medium text-gray-600 hover:bg-gray-50 hover:text-[#E07A5F] transition-colors"
+                                                >
+                                                    {genre}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
-
-                        {/* Calendar Grid */}
-                        <div className="grid grid-cols-7 border-t border-l border-gray-50 rounded-lg overflow-hidden">
-                            {calendarDays.map((date, i) => {
-                                const isCurrentMonth = date.isSame(currentMonth, "month");
-                                const isToday = date.isSame(dayjs(), "day");
-
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`aspect-square border-r border-b border-gray-50 p-1 flex flex-col items-end relative transition-all hover:bg-gray-50 cursor-pointer
-            ${!isCurrentMonth ? "bg-gray-50/40" : "bg-white"}
-            ${isToday ? "bg-[#FAD4C0]" : ""}
-            `}
-                                    >
-                                        <span
-                                            className={`text-[10px] font-black
-                ${isCurrentMonth ? "text-gray-700" : "text-gray-300"}
-                ${isToday ? "text-black" : ""}
-                `}
-                                        >
-                                            {date.date() < 10 ? `0${date.date()}` : date.date()}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Legend */}
-
                     </div>
-                    <div className="mt-8 grid grid-cols-4 gap-y-3 gap-x-2">
-                        {[
-                            { label: "Published slots", color: "bg-[#FAD4C0]" },
-                            { label: "Confirmed Slots", color: "bg-[#96CEA5]" },
-                            { label: "Pending slots", color: "bg-[#FEF1D3]" },
-                            { label: "Verified slots", color: "bg-[#A7C0BD]" },
-                        ].map((item) => (
-                            <div key={item.label} className="flex items-center gap-2">
-                                <div
-                                    className={`w-2.5 h-2.5 ${item.color} shadow-sm flex-shrink-0`}
-                                />
-                                <span className="text-[9px] font-medium text-black uppercase leading-none">
-                                    {item.label}
-                                </span>
+
+                    <div className="grid grid-cols-7 border-l border-t border-gray-50">
+                        {days.map((day) => (
+                            <div
+                                key={day}
+                                className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase border-r border-b border-gray-50 bg-gray-50/20"
+                            >
+                                {day}
                             </div>
                         ))}
+                        {calendarDays.map((date, idx) => {
+                            const isCurrentMonth = date.isSame(currentMonth, "month");
+                            const isToday = date.isSame(today, "day");
+
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative
+                      ${!isCurrentMonth ? "bg-gray-50/30" : "bg-white"}
+                    `}
+                                >
+                                    <span
+                                        className={`text-[10px] md:text-[11px] font-bold
+                        ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}
+                        ${isToday ? "text-[#E07A5F]" : ""}
+                      `}
+                                    >
+                                        {date.date()}
+                                    </span>
+
+                                    {isToday && (
+                                        <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-[#E07A5F] uppercase">
+                                            Today
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
 
 
-                <div className="flex flex-col gap-10">
+                <div className="xl:col-span-2 flex flex-col gap-6">
                     {["Morning", "Afternoon", "Evening"].map((period) => (
                         <div key={period}>
-                            <h3 className="text-[11px] font-medium text-[#374151] mb-6 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">
+                            <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">
                                 {period}
                             </h3>
 

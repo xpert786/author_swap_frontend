@@ -11,6 +11,7 @@ import {
     CalendarIcon,
 } from "../../icons";
 import "./SwapDetails.css";
+import SwapIcon from "../../../assets/swap.png";
 
 // ─── Mock Detail Data ─────────────────────────────────────────────────────────
 const detail = {
@@ -154,14 +155,14 @@ const SwapDetails = () => {
             </div>
 
             {/* ── Profile Card ── */}
-            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-6 mb-7">
+            <div className="bg-white border border-[#B5B5B5] rounded-xl p-4 mb-7">
                 {/* Avatar + Name */}
                 <div className="flex items-center gap-3.5 mb-4">
                     <img src={photo} alt={name} className="w-14 h-14 rounded-full object-cover shrink-0" />
                     <div>
-                        <p className="text-base font-bold text-black mb-0.5">{name}</p>
+                        <p className="text-base font-medium text-[Medium] mb-0.5">{name}</p>
                         <p className="text-xs text-black flex items-center gap-1">
-                            <FiRefreshCw size={12} /> {swaps} swaps completed
+                            <img src={SwapIcon} alt="" className="w-3 h-3 object-contain"  /> {swaps} swaps completed
                         </p>
                     </div>
                 </div>
@@ -171,38 +172,38 @@ const SwapDetails = () => {
                     {/* Date & Time */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Date &amp; time</p>
-                        <p className="text-[13px] font-semibold text-black">{detail.dateTime}</p>
+                        <p className="text-[13px] font-medium text-black">{detail.dateTime}</p>
                     </div>
                     {/* Status */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Status</p>
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 w-fit">
+                        <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
                             {detail.status}
                         </span>
                     </div>
                     {/* Visibility */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Visibility</p>
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[rgba(232,232,232,1)] text-black w-fit">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(232,232,232,1)] text-black w-fit">
                             <PublicIcon size={12} /> {detail.visibility}
                         </span>
                     </div>
                     {/* Audience Size */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Audience Size</p>
-                        <p className="text-[13px] font-semibold text-black">{detail.audienceSize}</p>
+                        <p className="text-[13px] font-medium text-black">{detail.audienceSize}</p>
                     </div>
                     {/* Genre */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Genre</p>
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-green-100 text-black w-fit">
+                        <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
                             {detail.genre}
                         </span>
                     </div>
                     {/* Current Partners */}
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Current Partners</p>
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[rgba(224,122,95,0.2)] text-black w-fit">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(224,122,95,0.2)] text-black w-fit">
                             <PartnersIcon size={12} /> {detail.currentPartners}
                         </span>
                     </div>
@@ -210,20 +211,20 @@ const SwapDetails = () => {
             </div>
 
             {/* ── Analytics ── */}
-            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-6 mb-7">
-                <p className="text-xl font-bold text-black mb-4">Analytics</p>
+            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-4 mb-7">
+                <p className="text-xl font-medium text-black mb-4">Analytics</p>
                 <div className="sd-analytics-grid grid grid-cols-4 gap-3">
                     {detail.analytics.map((a) => (
                         <div key={a.label} className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                            <p className="text-[22px] font-bold text-black mb-1">{a.value}</p>
-                            <p className="text-xs text-black">{a.label}</p>
+                            <p className="text-[22px] font-medium text-black mb-1">{a.value}</p>
+                            <p className="text-xs text-[#374151]">{a.label}</p>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* ── Reputation Score Breakdown ── */}
-            <p className="text-lg font-bold text-black pb-3 mb-3.5 border-b border-gray-200">
+            <p className="text-lg font-medium text-black pb-3 mb-3.5 border-b border-gray-200">
                 Reputation Score Breakdown
             </p>
             {detail.reputation.map((r) => (
@@ -232,7 +233,7 @@ const SwapDetails = () => {
                         <span className="flex items-center gap-2 text-sm font-semibold text-black">
                             {r.icon} {r.label}
                         </span>
-                        <span className="text-[13px] font-semibold text-black">{r.score}</span>
+                        <span className="text-[13px] font-medium text-black">{r.score}</span>
                     </div>
                     <ProgressBar percent={r.barPercent} color={r.barColor} />
                     <div className="flex justify-between text-[11px] text-black">
@@ -243,12 +244,12 @@ const SwapDetails = () => {
             ))}
 
             {/* ── Reliability ── */}
-            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-6 mb-7">
-                <p className="text-xl font-bold text-black mb-0.5">Reliability</p>
+            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-4 mb-7">
+                <p className="text-xl font-medium text-black mb-0.5">Reliability</p>
                 <p className="text-xs text-black mb-2.5">Reliability Score</p>
                 <ProgressBar percent={detail.reliability.score} color="#22c55e" />
                 <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-[13px] font-semibold text-black">{detail.reliability.score}/100</span>
+                    <span className="text-[13px] font-medium text-black">{detail.reliability.score}/100</span>
                     <span className="text-xs font-medium text-black">{detail.reliability.label}</span>
                 </div>
 
