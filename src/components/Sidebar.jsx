@@ -3,20 +3,172 @@ import { NavLink, useLocation } from "react-router-dom";
 import { X, LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide-react";
 import { LogoutIcon } from "./icons";
 import Logo from "../assets/logo.png";
+import { useNavigate } from "react-router-dom";
+import NewLetterIconImg from '../assets/news-sidebar.png'
+import SwapPartnerIconImg from '../assets/swap-parter.png'
+import SwapManagementIconImg from '../assets/swap-manegement.png'
+import CommunicationIconImg from '../assets/communication-tools.png'
+import SubscribeIconImg from '../assets/subscribe.png'
+import ReputationIconImg from '../assets/repotation.png'
+import DashboardIconImg from '../assets/dashboard.png'
+import BookManegementIconImg from '../assets/open-book.png'
 
-const menuItems = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { name: "Books Management", path: "/books", icon: BookOpen },
-  { name: "Newsletter Slot", path: "/newsletter", icon: Mail },
-  { name: "Swap Partner", path: "/swap-partner", icon: Users },
-  { name: "Swap Management", path: "/swap-management", icon: Users },
-  { name: "Communication Tools", path: "/communication-list", icon: Mail },
-  { name: "Subscriber & Analytics", path: "/subscription", icon: BarChart3 },
-  { name: "Author Reputation", path: "/reputation", icon: Award },
-];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const NewLetterIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={NewLetterIconImg}
+          alt="Newsletter Slot"
+          style={{
+            width: size,
+            height: size,
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+  const SwapPartnerIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={SwapPartnerIconImg}
+          alt="Swap Partner"
+          style={{
+            width: "26px",
+            height: "27px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+  const SwapManagementIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={SwapManagementIconImg}
+          alt="Swap Management"
+          style={{
+            width: "37px",
+            height: "29px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+  const CommunicationIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={CommunicationIconImg}
+          alt="Communication Tools"
+          style={{
+            width: "31px",
+            height: "29px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+  const SubscribeIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={SubscribeIconImg}
+          alt="Subscriber & Analytics"
+          style={{
+            width: "32px",
+            height: "24px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+  const ReputationIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={ReputationIconImg}
+          alt="Author Reputation"
+          style={{
+            width: "23px",
+            height: "21px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+  const BookManegementIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={BookManegementIconImg}
+          alt="Books Management"
+          style={{
+            width: "26px",
+            height: "30px",
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+  const DashboardIcon = ({ size, isActive, className }) => {
+    return (
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src={DashboardIconImg}
+          alt="Dashboard"
+          style={{
+            width: size,
+            height: size,
+            filter: isActive ? 'brightness(0) invert(1)' : 'none',
+            objectFit: 'contain'
+          }}
+          className={className}
+        />
+      </div>
+    )
+  }
+
+
+  const menuItems = [
+    { name: "Dashboard", path: "/dashboard", icon: DashboardIcon },
+    { name: "Books Management", path: "/books", icon: BookManegementIcon },
+    { name: "Newsletter Slot", path: "/newsletter", icon: NewLetterIcon },
+    { name: "Swap Partner", path: "/swap-partner", icon: SwapPartnerIcon },
+    { name: "Swap Management", path: "/swap-management", icon: SwapManagementIcon },
+    { name: "Communication Tools", path: "/communication-list", icon: CommunicationIcon },
+    { name: "Subscriber & Analytics", path: "/subscription", icon: SubscribeIcon },
+    { name: "Author Reputation", path: "/reputation", icon: ReputationIcon },
+  ];
 
   return (
     <>
@@ -64,7 +216,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-[15px] font-semibold active:scale-[0.98] group relative
                   ${isActive || extraActive
-                    ? "bg-[#1F4F4D] text-white shadow-md shadow-[#1F4F4D]/20 z-10"
+                    ? "bg-[#1F4F4D] text-white rounded-[8px] shadow-md shadow-[#1F4F4D]/20 z-10"
                     : "hover:bg-[#1F4F4D]/5 text-[#111827] hover:text-[#1F4F4D] active:bg-[#1F4F4D]/10"
                   }`
                 }
@@ -73,7 +225,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   const isReallyActive = isActive || extraActive;
                   return (
                     <>
-                      <Icon size={14} className={`transition-transform duration-200 group-hover:scale-110 ${isReallyActive ? "" : "text-[#111827] group-hover:text-[#1F4F4D]"}`} />
+                      <Icon
+                        size={18}
+                        isActive={isReallyActive}
+                        className={`transition-all duration-200 group-hover:scale-110 block`}
+                      />
                       <span className="relative z-10">{item.name}</span>
                     </>
                   );
@@ -83,11 +239,18 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           })}
         </nav>
 
-        {/* <div className="px-4 mt-auto mb-6">
-          <button className="w-full flex items-center gap-3 rounded-xl py-3 px-6 transition-all duration-200 text-[15px] font-semibold text-[#111827]" style={{ border: "1px solid rgba(47, 111, 109, 1)", background: "transparent" }}>
-            <LogoutIcon size={16} color="#111827" /> Logout
+        <div className="px-4 mt-auto mb-6">
+          <button onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("isprofilecompleted");
+            navigate("/login");
+          }} className="w-full flex items-center gap-3 rounded-xl py-3 px-6 transition-all duration-200 text-[15px] font-semibold text-[#111827] cursor-pointer border border-[#2F6F6D] rounded-[8px]">
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <LogoutIcon size={18} color="#111827" />
+            </div>
+            Logout
           </button>
-        </div> */}
+        </div>
       </aside>
     </>
   );

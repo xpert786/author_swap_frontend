@@ -1,7 +1,7 @@
 import React from "react";
 import { Trash2, X } from "lucide-react";
 
-const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle }) => {
+const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle, loading }) => {
   if (!isOpen) return null;
 
   return (
@@ -45,9 +45,12 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle }) => {
 
           <button
             onClick={onConfirm}
-            className="px-6 py-1.5 text-[13px] rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-sm font-medium"
+            disabled={loading}
+            className="px-6 py-1.5 text-[13px] rounded-lg bg-red-600 text-white 
+             hover:bg-red-700 transition shadow-sm font-medium
+             disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Delete
+            {loading ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>

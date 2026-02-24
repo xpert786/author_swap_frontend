@@ -1,7 +1,17 @@
 import React, { useState } from "react";
+import { createBook } from "../../../apis/bookManegment";
+import toast from "react-hot-toast";
+import { useEffect } from "react";
+import { getGenres, getSubGenres } from "../../../apis/genre"; // adjust path
 
 const AddBooks = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
+  const [genres, setGenres] = useState([]);
+  const [loadingGenres, setLoadingGenres] = useState(true);
+  const [loadingSubGenres, setLoadingSubGenres] = useState(false);
+  const [allSubGenres, setAllSubGenres] = useState({});
+  const [subGenres, setSubGenres] = useState([]);
+  const [preview, setPreview] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -19,47 +29,124 @@ const AddBooks = ({ onClose }) => {
     isPrimary: false,
   });
 
+  useEffect(() => {
+    const loadSubGenres = async () => {
+      try {
+        const data = await getSubGenres();
+        setAllSubGenres(data); // this is object
+      } catch (error) {
+        toast.error("Failed to load subgenres");
+      }
+    };
+
+    loadSubGenres();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  useEffect(() => {
+    console.log("Selected Genre:", formData.genre);
+    console.log("All SubGenres:", allSubGenres);
+
+    if (!formData.genre) {
+      setSubGenres([]);
+      return;
+    }
+
+    const selectedSubGenres = allSubGenres[formData.genre] || [];
+    console.log("Filtered SubGenres:", selectedSubGenres);
+
+    setSubGenres(selectedSubGenres);
+  }, [formData.genre, allSubGenres]);
+
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const data = await getGenres();
+        console.log("GENRES API:", data); // 👈 ADD THIS
+        setGenres(data);
+      } catch (error) {
+        toast.error("Failed to load genres");
+      }
+    };
+
+    loadGenres();
+  }, []);
+
+
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
-    if (type === "file") {
-      setFormData({ ...formData, coverImage: files[0] });
-    } else if (type === "checkbox") {
-      setFormData({ ...formData, [name]: checked });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData((prev) => {
+      if (type === "file") {
+        const file = files[0];
+
+        if (file) {
+          setPreview(URL.createObjectURL(file)); // 👈 create preview
+        }
+
+        return { ...prev, coverImage: file };
+      }
+
+      if (type === "checkbox") {
+        return { ...prev, [name]: checked };
+      }
+
+      if (name === "genre") {
+        return {
+          ...prev,
+          genre: value,
+          subgenre: "",
+        };
+      }
+
+      return { ...prev, [name]: value };
+    });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-
-  //   try {
-  //     const data = new FormData();
-  //     Object.keys(formData).forEach((key) => {
-  //       data.append(key, formData[key]);
-  //     });
-
-  //     const response = await fetch("/api/books", {
-  //       method: "POST",
-  //       body: data,
-  //     });
-
-  //     if (!response.ok) throw new Error("Failed");
-
-  //     onClose();
-  //   } catch (err) {
-  //     console.error(err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onClose();
+    setLoading(true);
+
+    try {
+      const data = new FormData();
+
+      data.append("title", formData.title);
+      data.append("primary_genre", formData.genre);
+      data.append("subgenres", formData.subgenre);
+      data.append("price_tier", formData.price);
+      data.append("availability", formData.availability);
+      data.append("publish_date", formData.publishDate);
+      data.append("description", formData.description);
+      data.append("amazon_url", formData.amazonUrl);
+      data.append("apple_url", formData.appleUrl);
+      data.append("kobo_url", formData.koboUrl);
+      data.append("barnes_noble_url", formData.barnesUrl);
+      data.append("is_primary_promo", formData.isPrimary);
+      data.append("rating", formData.ratings);
+
+      if (formData.coverImage) {
+        data.append("book_cover", formData.coverImage);
+      }
+
+      await createBook(data);
+
+      toast.success("Book added successfully!");
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || "Failed to add book"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,9 +204,12 @@ const AddBooks = ({ onClose }) => {
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
                 >
                   <option value="">Select Genre</option>
-                  <option>Fantasy</option>
-                  <option>Romance</option>
-                  <option>Thriller</option>
+
+                  {genres.map((genre) => (
+                    <option key={genre.value} value={genre.value}>
+                      {genre.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -128,14 +218,27 @@ const AddBooks = ({ onClose }) => {
                 <label className="text-[13px] font-medium text-gray-600">
                   Subgenre
                 </label>
-                <input
-                  type="text"
+                <select
                   name="subgenre"
-                  placeholder="e.g., Epic Fantasy"
                   value={formData.subgenre}
                   onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                  disabled={!formData.genre || loadingSubGenres}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                >
+                  <option value="">
+                    {loadingSubGenres
+                      ? "Loading..."
+                      : formData.genre
+                        ? "Select Subgenre"
+                        : "Select Genre First"}
+                  </option>
+
+                  {subGenres.map((sub) => (
+                    <option key={sub.value} value={sub.value}>
+                      {sub.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Price */}
@@ -149,10 +252,11 @@ const AddBooks = ({ onClose }) => {
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 >
-                  <option value="">Standard Price</option>
-                  <option>$0.99</option>
-                  <option>$2.99</option>
-                  <option>$4.99</option>
+                  <option value="">Select Price</option>
+                  <option value="free">Free</option>
+                  <option value="discount">Discount</option>
+                  <option value="0.99">$0.99</option>
+                  <option value="standard">Standard</option>
                 </select>
               </div>
             </div>
@@ -163,19 +267,33 @@ const AddBooks = ({ onClose }) => {
                 Book Cover Image
               </label>
 
-              <label className="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-36 cursor-pointer hover:border-[#2F6F6D] transition bg-gray-50/30">
+              <label className="mt-2 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-36 cursor-pointer hover:border-[#2F6F6D] transition bg-gray-50/30 overflow-hidden">
+
                 <input
                   type="file"
                   name="coverImage"
+                  accept="image/*"
                   onChange={handleChange}
                   className="hidden"
                 />
-                <span className="text-gray-500 text-[13px]">
-                  Drop Files Here or Click To Browse
-                </span>
-                <span className="text-[11px] text-gray-400 mt-1">
-                  Maximum file size 5MB
-                </span>
+
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <span className="text-gray-500 text-[13px] block">
+                      Drop Files Here or Click To Browse
+                    </span>
+                    <span className="text-[11px] text-gray-400 mt-1 block">
+                      Maximum file size 5MB
+                    </span>
+                  </div>
+                )}
+
               </label>
             </div>
 
@@ -192,9 +310,22 @@ const AddBooks = ({ onClose }) => {
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 >
                   <option value="">Select</option>
-                  <option>Available</option>
-                  <option>Coming Soon</option>
+                  <option value="wide">Wide</option>
+                  <option value="kindle_unlimited">Kindle Unlimited</option>
                 </select>
+              </div>
+
+                <div>
+                <label className="text-[13px] font-medium text-gray-600">
+                  Ratings
+                </label>
+                <input
+                  type="number"
+                  name="ratings"
+                  value={formData.ratings}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                />
               </div>
 
               <div>

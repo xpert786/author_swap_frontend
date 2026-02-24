@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { useNavigate } from "react-router-dom";
+import { forgetPassword } from "../../apis/auth";
 
 const ForgetPassword = () => {
   const {
@@ -12,10 +13,26 @@ const ForgetPassword = () => {
 
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    // After validation success
-    navigate("/otp-verification");
+  const onSubmit = async (data) => {
+    try {
+      const response = await forgetPassword({
+        email: data.email,
+      });
+
+      console.log("OTP Sent:", response);
+
+      // Optional: store email for OTP screen
+      localStorage.setItem("resetEmail", data.email);
+
+      navigate("/otp-verification");
+    } catch (error) {
+      console.error("Forget password failed:", error);
+      alert(
+        error?.response?.data?.message ||
+        error.message ||
+        "Something went wrong"
+      );
+    }
   };
 
   return (

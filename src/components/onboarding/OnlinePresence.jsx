@@ -1,67 +1,173 @@
 import { useForm } from "react-hook-form";
+import { onboardingStep2, getProfile } from "../../apis/onboarding";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 const OnlinePresence = ({ next, prev }) => {
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-  const onSubmit = (data) => {
-    next(data);
+  const [loading, setLoading] = useState(false);
+
+  const urlPattern = {
+    value: /^(https?:\/\/)?([\w\d-]+\.)+\w{2,}(\/.*)?$/,
+    message: "Please enter a valid URL",
   };
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      const toastId = toast.loading("Loading profile...");
+      try {
+        const response = await getProfile();
+        const data = response.data;
+
+        reset({
+          website: data.website_url || "",
+          instagram: data.instagram_url || "",
+          tiktok: data.tiktok_url || "",
+          facebook: data.facebook_url || "",
+          collaborationStatus: data.collaboration_status || "",
+        });
+
+        toast.success("Profile loaded", { id: toastId });
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to load profile",
+          { id: toastId }
+        );
+      }
+    };
+
+    loadProfile();
+  }, [reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("website_url", data.website);
+      formData.append("instagram_url", data.instagram);
+      formData.append("tiktok_url", data.tiktok);
+      formData.append("facebook_url", data.facebook);
+      formData.append("collaboration_status", data.collaborationStatus);
+
+      const response = await onboardingStep2(formData);
+
+      toast.success("Online presence saved successfully");
+
+      next(response);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="w-full flex items-center justify-center p-6">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl">
-
         <p className="text-sm text-gray-500 mb-1">Step 2 of 3</p>
         <h2 className="text-2xl font-semibold mb-6">Online Presence</h2>
 
         <div className="bg-white p-8 rounded-xl border border-[#7C7C7C] shadow-sm space-y-4">
 
+          {/* Website */}
           <div>
-            <label className="block text-sm mb-2">Website URL</label>
+            <label className="block text-sm mb-2">Website URL *</label>
             <input
-              {...register("website")}
+              {...register("website", {
+                required: "Website URL is required",
+                pattern: urlPattern,
+              })}
               placeholder="Enter Website URL"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.website && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.website.message}
+              </p>
+            )}
           </div>
 
+          {/* Instagram */}
           <div>
-            <label className="block text-sm mb-2">Instagram</label>
+            <label className="block text-sm mb-2">Instagram *</label>
             <input
-              {...register("instagram")}
+              {...register("instagram", {
+                required: "Instagram link is required",
+                pattern: urlPattern,
+              })}
               placeholder="Enter Instagram link"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.instagram && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.instagram.message}
+              </p>
+            )}
           </div>
 
+          {/* TikTok */}
           <div>
-            <label className="block text-sm mb-2">TikTok</label>
+            <label className="block text-sm mb-2">TikTok *</label>
             <input
-              {...register("tiktok")}
+              {...register("tiktok", {
+                required: "TikTok link is required",
+                pattern: urlPattern,
+              })}
               placeholder="Enter TikTok link"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.tiktok && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.tiktok.message}
+              </p>
+            )}
           </div>
 
+          {/* Facebook */}
           <div>
-            <label className="block text-sm mb-2">Facebook</label>
+            <label className="block text-sm mb-2">Facebook *</label>
             <input
-              {...register("facebook")}
+              {...register("facebook", {
+                required: "Facebook link is required",
+                pattern: urlPattern,
+              })}
               placeholder="Enter Facebook link"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.facebook && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.facebook.message}
+              </p>
+            )}
           </div>
 
+          {/* Collaboration Status */}
           <div>
-            <label className="block text-sm mb-2">Collaboration Status</label>
+            <label className="block text-sm mb-2">Collaboration Status *</label>
             <select
-              {...register("collaborationStatus")}
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-600"
+              {...register("collaborationStatus", {
+                required: "Please select a collaboration status",
+              })}
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             >
               <option value="">Select an option</option>
-              <option value="open">Open to swaps</option>
-              <option value="invite">Invite only</option>
+              <option value="open to swap">Open to swaps</option>
+              <option value="invite only">Invite only</option>
             </select>
+            {errors.collaborationStatus && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.collaborationStatus.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -76,12 +182,12 @@ const OnlinePresence = ({ next, prev }) => {
 
           <button
             type="submit"
-            className="px-6 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800"
+            disabled={loading}
+            className="px-6 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 disabled:opacity-50"
           >
-            Next
+            {loading ? "Submitting..." : "Next"}
           </button>
         </div>
-
       </form>
     </div>
   );

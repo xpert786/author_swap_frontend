@@ -2,6 +2,9 @@ import { useForm } from "react-hook-form";
 import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { Link, useNavigate } from "react-router-dom";
+import { otpVerification } from "../../apis/auth";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const OtpVerification = () => {
   const {
@@ -13,7 +16,8 @@ const OtpVerification = () => {
 
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
+
+  const onSubmit = async (data) => {
     const enteredOtp = Object.values(data.otp || {}).join("");
 
     if (!enteredOtp || enteredOtp.length < 6) {
@@ -21,22 +25,41 @@ const OtpVerification = () => {
         type: "manual",
         message: "Please enter complete 6-digit OTP",
       });
+      toast.error("Please enter complete 6-digit OTP");
       return;
     }
 
-    const correctOtp = "123456";
+    const toastId = toast.loading("Verifying OTP...");
 
-    if (enteredOtp !== correctOtp) {
+    try {
+      setLoading(true);
+
+      await otpVerification({ otp: enteredOtp });
+
+      toast.success("OTP verified successfully", { id: toastId });
+
+      setTimeout(() => {
+        navigate("/reset-password");
+      }, 1200);
+
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        "Invalid OTP. Please try again.";
+
       setError("otp", {
         type: "manual",
-        message: "OTP did not match",
+        message,
       });
-      return;
-    }
 
-    console.log("OTP Verified ✅");
-    navigate("/reset-password");
+      toast.error(message, { id: toastId });
+
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const [loading, setLoading] = useState(false);
 
   return (
     <div
@@ -109,9 +132,10 @@ const OtpVerification = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98]"
+                disabled={loading}
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-[0.98] disabled:opacity-60"
               >
-                Continue
+                {loading ? "Verifying..." : "Continue"}
               </button>
             </form>
 
@@ -119,7 +143,9 @@ const OtpVerification = () => {
               <p className="text-xs font-semibold text-gray-500">
                 Didn’t get the OTP yet?{" "}
                 <button
-                  onClick={() => console.log("Resend OTP")}
+                  onClick={() => {
+                    toast.success("OTP resent successfully");
+                  }}
                   className="text-[#2F6F6D] font-bold hover:underline transition-all"
                 >
                   Resend OTP

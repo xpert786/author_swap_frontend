@@ -4,10 +4,14 @@ import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { resetPassword } from "../../apis/auth";
+import toast from "react-hot-toast";
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
 
   const {
     register,
@@ -18,10 +22,29 @@ const ResetPassword = () => {
 
   const password = watch("password");
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    // Simulate reset success
-    navigate("/login");
+  const onSubmit = async (data) => {
+    try {
+      setLoading(true);
+
+      const response = await resetPassword({
+        new_password: data.password,
+        confirm_password: data.confirmPassword,
+      });
+
+      toast.success("Password reset successfully");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -132,9 +155,10 @@ const ResetPassword = () => {
               {/* Reset Password Button */}
               <button
                 type="submit"
-                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98] mt-2"
+                disabled={loading}
+                className="w-full bg-[#E07A5F] text-white py-3 rounded-xl hover:bg-[#d96b57] font-bold text-sm transition-all shadow-lg active:scale-[0.98] disabled:opacity-60"
               >
-                Reset Password
+                {loading ? "Resetting..." : "Reset Password"}
               </button>
             </form>
           </div>

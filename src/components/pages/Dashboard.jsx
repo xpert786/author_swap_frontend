@@ -6,14 +6,22 @@ import AddBooks from "../pages/books/AddBooks";
 import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import OpenBookIcon from "../../assets/open-book.png"
+
+
+const OpenBook = () => {
+  return (
+    <img src={OpenBookIcon} alt="" className="w-7 h-7" />
+  )
+}
 
 const Dashboard = () => {
   const mockData = {
     stats: [
-      { label: "Book", value: "3", icon: <FiBookOpen />, color: "bg-[#2F6F6D33]" },
-      { label: "Newsletter Slots", value: "5", icon: <FiBookOpen />, color: "bg-[#E07A5F80]" },
-      { label: "Completed Swaps", value: "3", icon: <FiBookOpen />, color: "bg-[#16A34A33]" },
-      { label: "Reliability", value: "3", icon: <FiBookOpen />, color: "bg-[#DC262633]" },
+      { label: "Book", value: "3", icon: OpenBook, color: "bg-[#2F6F6D33]" },
+      { label: "Newsletter Slots", value: "5", icon: OpenBook, color: "bg-[#E07A5F80]" },
+      { label: "Completed Swaps", value: "3", icon: OpenBook, color: "bg-[#16A34A33]" },
+      { label: "Reliability", value: "3", icon: OpenBook, color: "bg-[#DC262633]" },
     ],
     recentActivity: [
       { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
@@ -92,7 +100,7 @@ const Dashboard = () => {
           <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
-                {stat.icon}
+                <stat.icon />
               </div>
               <span className="text-[11px] md:text-[13px] font-medium text-[#374151]">{stat.label}</span>
             </div>

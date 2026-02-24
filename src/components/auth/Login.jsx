@@ -5,6 +5,7 @@ import LoginBg from "../../assets/Login.png";
 import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../apis/auth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,11 +17,28 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    localStorage.setItem("token", "mock-token");
-    localStorage.setItem("isprofilecompleted", "true");
-    navigate("/dashboard");
+  const onSubmit = async (data) => {
+    try {
+      const response = await login({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (!response?.token) {
+        throw new Error("Token not received");
+      }
+
+      localStorage.setItem("token", response.token);
+      localStorage.setItem(
+        "isprofilecompleted",
+        response.isprofilecompleted?.toString() || "true"
+      );
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert(error?.response?.data?.message || error.message || "Login failed");
+    }
   };
 
   return (

@@ -1,6 +1,39 @@
 import { FiEdit2, FiGlobe } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { getProfile } from "../../apis/onboarding";
+import Edit from "../../assets/edit.png"
 
-const Confirmation = ({ prev, finish }) => {
+
+const Confirmation = ({ prev, finish, goToStep }) => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await getProfile();
+        setProfile(response.data);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to load profile"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
@@ -14,28 +47,46 @@ const Confirmation = ({ prev, finish }) => {
 
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-medium text-lg">Profile Preview</h3>
-            <button className="p-2 bg-gray-100 rounded-md hover:bg-gray-200">
-              <FiEdit2 size={16} />
+            <button
+              onClick={() => goToStep(1)}
+              className="p-1 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              <img src={Edit} alt="" className="w-5 h-5" />
             </button>
           </div>
 
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gray-300" />
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-300">
+              {profile?.profile_photo ? (
+                <img
+                  src={`${import.meta.env.VITE_BACKEND_URL}${profile.profile_photo}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+            </div>
             <div>
-              <h4 className="font-semibold">Jane Doe</h4>
+              <h4 className="font-semibold">
+                {profile?.pen_name || "N/A"}
+              </h4>
               <p className="text-sm text-gray-600">
-                Author of reflective essays and short fiction. Published weekly.
+                {profile?.author_bio || "No bio added"}
               </p>
-              <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                Fantasy
-              </span>
+              {profile?.primary_genre && (
+                <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                  {profile.primary_genre}
+                </span>
+              )}
             </div>
           </div>
 
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-medium text-lg">Online Presence</h3>
-            <button className="p-2 bg-gray-100 rounded-md hover:bg-gray-200">
-              <FiEdit2 size={16} />
+            <button
+              onClick={() => goToStep(2)}
+              className="p-1 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              <img src={Edit} alt="" className="w-5 h-5" />
             </button>
           </div>
 
@@ -44,28 +95,28 @@ const Confirmation = ({ prev, finish }) => {
               <span className="flex items-center gap-2">
                 <FiGlobe size={14} /> Website
               </span>
-              <span>https://johndoe.com</span>
+              <span>{profile?.website_url || "-"}</span>
             </div>
 
             <div className="flex justify-between">
               <span className="flex items-center gap-2">
                 <FiGlobe size={14} /> Instagram
               </span>
-              <span>@johnDoe</span>
+              <span>{profile?.instagram_url || "-"}</span>
             </div>
 
             <div className="flex justify-between">
               <span className="flex items-center gap-2">
                 <FiGlobe size={14} /> TikTok
               </span>
-              <span>@johnDoe</span>
+              <span>{profile?.tiktok_url || "-"}</span>
             </div>
 
             <div className="flex justify-between">
               <span className="flex items-center gap-2">
                 <FiGlobe size={14} /> Facebook
               </span>
-              <span>@johnDoe</span>
+              <span>{profile?.facebook_url || "-"}</span>
             </div>
           </div>
         </div>

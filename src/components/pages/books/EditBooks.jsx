@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const EditBooks = ({ bookData, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState(bookData);
+  const [formData, setFormData] = useState(() => bookData || {});
 
   useEffect(() => {
     setFormData(bookData);
@@ -20,17 +20,52 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log("SUBMIT CLICKED", formData);  // 👈 ADD THIS
+  setLoading(true);
 
-    onSave(formData);
-
-    setLoading(false);
+  try {
+    await onSave(formData);
     onClose();
-  };
+  } catch (error) {
+    console.error("Update failed:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  if (bookData) {
+    setFormData({
+      ...bookData,
+      publishDate: bookData.publish_date || "",
+      genre: bookData.primary_genre || "",
+      isPrimary: bookData.is_primary_promo || false,
+      amazonUrl: bookData.amazon_url || "",
+      appleUrl: bookData.apple_url || "",
+      koboUrl: bookData.kobo_url || "",
+      barnesUrl: bookData.barnes_url || "",
+      coverImage: bookData.book_cover || null,
+    });
+  }
+}, [bookData]);
 
   if (!formData) return null;
+
+  useEffect(() => {
+    let previewUrl;
+
+    if (formData?.coverImage instanceof File) {
+      previewUrl = URL.createObjectURL(formData.coverImage);
+      setFormData((prev) => ({ ...prev, preview: previewUrl }));
+    }
+
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [formData?.coverImage]);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -136,11 +171,7 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
                 {/* Preview */}
                 {formData.coverImage ? (
                   <img
-                    src={
-                      typeof formData.coverImage === "string"
-                        ? formData.coverImage
-                        : URL.createObjectURL(formData.coverImage)
-                    }
+                    src={formData.preview || formData.coverImage}
                     alt="preview"
                     className="h-full object-contain"
                   />

@@ -5,6 +5,8 @@ import LoginBg from "../../assets/Login.png";
 import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
+import { signup } from "../../apis/auth";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,11 +21,23 @@ const SignUp = () => {
 
   const password = watch("password");
 
-  const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("isProfileComplete", "false");
-    navigate("/onboarding");
+  const onSubmit = async (data) => {
+    const signupPromise = signup({
+      email: data.email,
+      password: data.password,
+      confirm_password: data.confirmPassword,
+    });
+
+    toast.promise(signupPromise, {
+      loading: "Creating account...",
+      success: (response) => {
+        localStorage.setItem("token", response.token);
+        navigate("/onboarding");
+        return "Account created successfully!";
+      },
+      error: (error) =>
+        error?.response?.data?.message || "Signup failed",
+    });
   };
 
   return (
