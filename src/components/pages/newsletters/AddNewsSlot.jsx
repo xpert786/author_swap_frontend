@@ -1,18 +1,37 @@
-import React, { useState } from "react";
-import { createNewsSlot } from "../../../apis/newsletter"; // adjust path
+import React, { useState, useEffect } from "react";
+import { createNewsSlot } from "../../../apis/newsletter";
+import { getGenres } from "../../../apis/genre";
+import toast from "react-hot-toast";
 
 const AddNewsSlot = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     send_date: "",
     send_time: "",
     audience_size: "",
-    preferred_genre: "Romance",
+    preferred_genre: "",
     max_partners: "",
     visibility: "Public",
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const [genres, setGenres] = useState([]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await getGenres();
+
+        console.log("GENRES RESPONSE:", response);
+
+        setGenres(response);
+      } catch (error) {
+        console.error("Failed to fetch genres:", error);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -26,7 +45,6 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -41,13 +59,24 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
         visibility: "Public",
       });
     } catch (err) {
-      setError(
-        err?.response?.data?.message || "Something went wrong. Try again."
-      );
+      const data = err?.response?.data;
+
+      if (data && typeof data === "object") {
+        Object.values(data).forEach((messages) => {
+          if (Array.isArray(messages)) {
+            messages.forEach((msg) => toast.error(msg));
+          }
+        });
+      } else {
+        toast.error("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -70,12 +99,6 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
               ✕
             </button>
           </div>
-
-          {error && (
-            <div className="mb-4 text-sm text-red-500 bg-red-50 p-2 rounded">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
@@ -126,15 +149,20 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
                 <label className="text-[13px] font-medium text-gray-600">
                   Preferred Genre
                 </label>
+
                 <select
                   name="preferred_genre"
                   value={formData.preferred_genre}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm"
                 >
-                  <option>Romance</option>
-                  <option>Tech</option>
-                  <option>Finance</option>
+                  <option value="">Select Genre</option>
+
+                  {genres.map((genre) => (
+                    <option key={genre.value} value={genre.value}>
+                      {genre.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -162,8 +190,9 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm"
                 >
-                  <option>Public</option>
-                  <option>Private</option>
+                  <option value="friend_only">Friend Only</option>
+                  <option value="single_use_private_link">Single-use private link</option>
+                  <option value="hidden">Hidden</option>
                 </select>
               </div>
 

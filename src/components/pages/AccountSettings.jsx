@@ -1,171 +1,144 @@
-import React, { useState } from "react";
-import Edit from "../../assets/edit.png"
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { getProfile, updateProfile } from "../../apis/profile";
+import Edit from "../../assets/edit.png";
+
+const defaultProfile = {
+    name: "",
+    email: "",
+    location: "",
+    genre: "",
+    website: "",
+    instagram: "",
+    tiktok: "",
+    facebook: "",
+    bio: "",
+};
 
 const AccountSettings = () => {
-    const [formData, setFormData] = useState({
-        name: "Jane Doe",
-        email: "John.doe@author.com",
-        location: "Portland, OR",
-        genre: "Fantasy",
-        website: "https://www.janedoeauthor.com",
-        instagram: "https://instagram.com/janedoeauthor",
-        tiktok: "https://tiktok.com/",
-        facebook: "https://facebook.com/janedoeauthor",
-        bio: "Fantasy author with over 28K newsletter subscribers. I write epic fantasy novels and share writing tips with my audience.",
-    });
+    const [formData, setFormData] = useState(defaultProfile);
+    const [originalData, setOriginalData] = useState(defaultProfile);
+    const [saving, setSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const { data } = await getProfile();
+                setFormData(data);
+                setOriginalData(data);
+            } catch (err) {
+                console.error(err);
+                toast.error("Failed to load profile");
+            }
+        };
+
+        fetchProfile();
+    }, []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setFormData(prev => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }));
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            await updateProfile(formData);
+            toast.success("Profile updated successfully");
+            setOriginalData(formData);
+            setIsEditing(false);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to update profile");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleCancel = () => {
+        setFormData(originalData);
+        setIsEditing(false);
     };
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header section */}
-            <div className="mb-6">
-                <h1 className="text-2xl font-semibold text-black">Profile Setting</h1>
-                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Manage your profile and settings</p>
-            </div>
 
-            {/* Profile Info Section */}
-            <div className="flex items-center justify-between mb-10">
-                <div className="flex items-center gap-4">
-                    <div className="relative">
+            {/* Header */}
+            <div className="mb-6 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-semibold text-black">
+                        Profile Setting
+                    </h1>
+                    <p className="text-[13px] text-[#374151] font-medium mt-0.5">
+                        Manage your profile and settings
+                    </p>
+                </div>
+
+                {!isEditing && (
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-2 bg-[#374151] text-white px-4 py-2 rounded-md text-sm hover:bg-[#1f2937]"
+                    >
                         <img
-                            src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150"
-                            alt="Profile"
-                            className="w-[85px] h-[85px] rounded-full object-cover"
+                            src={Edit}
+                            alt="Edit"
+                            className="w-4 h-4 filter brightness-0 invert"
                         />
-                        <button className="absolute bottom-0 right-0 bg-[#374151] text-white p-1.5 rounded-full border-2 border-white shadow-sm">
-                            <img
-                                src={Edit}
-                                alt="Edit"
-                                className="w-4 h-4 filter brightness-0 invert"
-                            />
-                        </button>
-                    </div>
-                    <div className="space-y-1">
-                        <h2 className="text-[20px] font-semibold text-black leading-none">{formData.name}</h2>
-                        <p className="text-[13px] text-gray-500">{formData.genre} Author</p>
-                    </div>
-                </div>
-                <button className="flex items-center gap-2 bg-[#2F6F6D] text-white px-4 py-2 rounded-[6px] text-[12px] font-medium transition-all hover:bg-[#255755] shadow-sm">
-                    <img
-                        src={Edit}
-                        alt="Edit"
-                        className="w-4 h-4 filter brightness-0 invert"
-                    />
-                    Edit
-                </button>
+                        Edit Profile
+                    </button>
+                )}
             </div>
 
-            {/* Form Fields Section */}
+            {/* Profile Info */}
+            <div className="flex items-center gap-4 mb-10">
+                <img
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150"
+                    alt="Profile"
+                    className="w-[85px] h-[85px] rounded-full object-cover"
+                />
+                <div>
+                    <h2 className="text-[20px] font-semibold text-black">
+                        {formData.name}
+                    </h2>
+                    <p className="text-[13px] text-gray-500">
+                        {formData.genre} Author
+                    </p>
+                </div>
+            </div>
+
+            {/* Form Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                {/* Name */}
+
+                <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Location" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
+
+                {/* Genre */}
                 <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
+                    <label className="text-[12px] font-medium text-[#111827]">
+                        Primary Genre
+                    </label>
+                    <select
+                        name="genre"
+                        value={formData.genre}
                         onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
+                        disabled={!isEditing}
+                        className="w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] disabled:bg-gray-100"
+                    >
+                        <option value="Fantasy">Fantasy</option>
+                        <option value="Sci-Fi">Sci-Fi</option>
+                        <option value="Mystery">Mystery</option>
+                        <option value="Romance">Romance</option>
+                    </select>
                 </div>
 
-                {/* Email */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
-
-                {/* Location */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Location</label>
-                    <input
-                        type="text"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
-
-                {/* Primary Genre */}
-                <div className="space-y-1.5 relative">
-                    <label className="text-[12px] font-medium text-[#111827]">Primary Genre</label>
-                    <div className="relative">
-                        <select
-                            name="genre"
-                            value={formData.genre}
-                            onChange={handleChange}
-                            className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all appearance-none"
-                        >
-                            <option>Fantasy</option>
-                            <option>Sci-Fi</option>
-                            <option>Mystery</option>
-                            <option>Romance</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Website Link */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Website Link</label>
-                    <input
-                        type="text"
-                        name="website"
-                        value={formData.website}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
-
-                {/* Instagram Link */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Instagram Link</label>
-                    <input
-                        type="text"
-                        name="instagram"
-                        value={formData.instagram}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
-
-                {/* TikTok Link */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">TikTok Link</label>
-                    <input
-                        type="text"
-                        name="tiktok"
-                        value={formData.tiktok}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
-
-                {/* Facebook Link */}
-                <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Facebook Link</label>
-                    <input
-                        type="text"
-                        name="facebook"
-                        value={formData.facebook}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all"
-                    />
-                </div>
+                <Input label="Website Link" name="website" value={formData.website} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Instagram Link" name="instagram" value={formData.instagram} onChange={handleChange} disabled={!isEditing} />
+                <Input label="TikTok Link" name="tiktok" value={formData.tiktok} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Facebook Link" name="facebook" value={formData.facebook} onChange={handleChange} disabled={!isEditing} />
 
                 {/* Bio */}
                 <div className="md:col-span-2 space-y-1.5">
@@ -175,12 +148,50 @@ const AccountSettings = () => {
                         rows="4"
                         value={formData.bio}
                         onChange={handleChange}
-                        className="w-full bg-white border border-[#B5B5B5] rounded-[6px] px-4 py-3 text-[13px] text-black focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] transition-all resize-none leading-relaxed"
+                        disabled={!isEditing}
+                        className="w-full border border-[#B5B5B5] rounded-[6px] px-4 py-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] disabled:bg-gray-100"
                     />
                 </div>
             </div>
+
+            {/* Save / Cancel Buttons */}
+            {isEditing && (
+                <div className="mt-8 flex gap-4">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-[#2F6F6D] text-white px-6 py-2 rounded-md text-sm hover:bg-[#255755] disabled:opacity-50"
+                    >
+                        {saving ? "Saving..." : "Save Changes"}
+                    </button>
+
+                    <button
+                        onClick={handleCancel}
+                        className="border border-gray-400 px-6 py-2 rounded-md text-sm"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
+
+/* Reusable Input */
+const Input = ({ label, name, value, onChange, type = "text", disabled }) => (
+    <div className="space-y-1.5">
+        <label className="text-[12px] font-medium text-[#111827]">
+            {label}
+        </label>
+        <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            className="w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] disabled:bg-gray-100"
+        />
+    </div>
+);
 
 export default AccountSettings;

@@ -1,19 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-    ChevronLeft,
-    ChevronRight,
     Plus,
     Download,
     ChevronDown,
-    Edit2,
     Trash2,
     Eye,
-    ClipboardList,
-    Clock,
-    CheckCircle2,
-    BadgeCheck,
     Users,
-    Globe
 } from "lucide-react";
 import { Publish } from "../../icons";
 import pendingSwapIcon from "../../../assets/pendingswap.png";
@@ -29,6 +21,9 @@ import Edit from "../../../assets/edit.png"
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { updateNewsSlot, getNewsSlot } from "../../../apis/newsletter";
+import { getGenres } from "../../../apis/genre";
+import toast from "react-hot-toast";
 
 
 const Newsletter = () => {
@@ -42,34 +37,58 @@ const Newsletter = () => {
     const [visibility, setVisibility] = useState("All Visibility");
     const [status, setStatus] = useState("All Status");
     const [genre, setGenre] = useState("Genre");
-      const [selectedGenre, setSelectedGenre] = useState("Genre");
-        const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+    const [selectedGenre, setSelectedGenre] = useState("Genre");
+    const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+    const [selectedSlot, setSelectedSlot] = useState(null);
+    const [slots, setSlots] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedGenreValue, setSelectedGenreValue] = useState("");
 
-          const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
 
-  // Calendar logic for May 2024
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-          const generateCalendar = () => {
-            const startOfMonth = currentMonth.startOf("month");
-            const endOfMonth = currentMonth.endOf("month");
-        
-            const startDate = startOfMonth.startOf("week");
-            const endDate = endOfMonth.endOf("week");
-        
-            let date = startDate.clone();   // must be let
-            const days = [];
-        
-            while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-              days.push(date.clone());
-              date = date.add(1, "day");
+
+    // Calendar logic for May 2024
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const generateCalendar = () => {
+        const startOfMonth = currentMonth.startOf("month");
+        const endOfMonth = currentMonth.endOf("month");
+
+        const startDate = startOfMonth.startOf("week");
+        const endDate = endOfMonth.endOf("week");
+
+        let date = startDate.clone();   // must be let
+        const days = [];
+
+        while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+            days.push(date.clone());
+            date = date.add(1, "day");
+        }
+
+        return days;
+    };
+
+    const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
+    const today = useMemo(() => dayjs(), []);
+    const [genres, setGenres] = useState([]);
+    const [loadingGenres, setLoadingGenres] = useState(true);
+
+    useEffect(() => {
+        const loadGenres = async () => {
+            try {
+                const response = await getGenres();
+                setGenres(response);
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to load genres");
+            } finally {
+                setLoadingGenres(false);
             }
-        
-            return days;
-          };
-        
-          const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
-          const today = useMemo(() => dayjs(), []);
+        };
+
+        loadGenres();
+    }, []);
+
 
 
     const openModal = () => setShowAddBook(true);
@@ -110,26 +129,7 @@ const Newsletter = () => {
         />
     );
 
-    // const calendarDays = useMemo(() => {
-    //     const startOfMonth = currentMonth.startOf("month");
-    //     const endOfMonth = currentMonth.endOf("month");
 
-    //     const startDate = startOfMonth.startOf("week");
-    //     const endDate = endOfMonth.endOf("week");
-
-    //     let date = startDate.clone();
-    //     const days = [];
-
-    //     while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-    //         days.push(date);
-    //         date = date.add(1, "day"); // IMPORTANT (no infinite loop)
-    //     }
-
-    //     return days;
-    // }, [currentMonth]);
-
-
-    // Mock data for stats
     const stats = [
         { label: "Total", value: "33", icon: NewsIcon, color: "text-black", isCustom: true },
         { label: "Published Slots", value: "5", icon: Publish, color: "text-black", isCustom: true },
@@ -139,42 +139,61 @@ const Newsletter = () => {
     ];
 
 
-    // Mock data for slots
-    const slots = [
-        {
-            id: 1,
-            time: "26 Jan 2026 10:00 AM EST",
-            period: "Morning",
-            genre: "Fantasy",
-            partners: "0/3 Partners",
-            visibility: "Public",
-            audience: "12,450",
-            status: "Available",
-            statusColor: "bg-[#16A34A33]",
-        },
-        {
-            id: 2,
-            time: "2:30 PM EST",
-            period: "Afternoon",
-            genre: "Romance",
-            partners: "3/3 Partners",
-            visibility: "Friends Only",
-            audience: "5,450",
-            status: "Booked",
-            statusColor: "bg-[#F59E0B33]",
-        },
-        {
-            id: 3,
-            time: "7:00 PM EST",
-            period: "Evening",
-            genre: "SciFi",
-            partners: "1/3 Partners",
-            visibility: "Public",
-            audience: "1,598",
-            status: "Available",
-            statusColor: "bg-[#16A34A33]",
-        },
-    ];
+    const handleEditClick = (slot) => {
+        setSelectedSlot(slot);
+        setEditOpen(true);
+    };
+
+    const fetchSlots = async () => {
+        try {
+            setLoading(true);
+
+            const response = await getNewsSlot();
+
+            const dataArray = response.data.data; // ✅ correct path
+            const formatLabel = (value) => {
+                if (!value) return "";
+
+                return value
+                    .replace(/_/g, " ")            // replace underscores with spaces
+                    .toLowerCase()
+                    .replace(/\b\w/g, char => char.toUpperCase()); // capitalize words
+            };
+            const formatted = dataArray.map(item => ({
+                id: item.id,
+                time: `${item.formatted_date} ${item.formatted_time}`,
+                period: item.time_period,
+                genre: formatLabel(item.preferred_genre),
+                partners: `0/${item.max_partners} Partners`,
+                visibility: formatLabel(item.visibility),
+                audience: item.audience_size,
+                status: formatLabel(item.status),
+                statusColor:
+                    item.status === "available"
+                        ? "bg-[#16A34A33]"
+                        : "bg-[#F59E0B33]",
+            }));
+            setSlots(formatted);
+
+        } catch (error) {
+            console.error("Failed to fetch slots", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSlots();
+    }, []);
+
+
+    const getPeriod = (time) => {
+        const hour = dayjs(time, "HH:mm:ss").hour();
+
+        if (hour < 12) return "Morning";
+        if (hour < 17) return "Afternoon";
+        return "Evening";
+    };
 
     return (
         <div className="pb-10">
@@ -185,22 +204,23 @@ const Newsletter = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
-                        <div className="flex justify-between items-center">
-                            {stat.isCustom ? (
-                                <stat.icon size={36} />
-                            ) : (
-                                <div className={`rounded-lg ${stat.color}`}>
-                                    <stat.icon size={36} />
-                                </div>
-                            )}
-                            <span className="text-[11px] md:text-[13px] font-medium text-[#374151]">
+                    <div
+                        key={index}
+                        className="bg-white rounded-[10px] border border-[#B5B5B5] p-3 sm:p-4 flex flex-col gap-3 justify-between shadow-sm min-h-[100px]"
+                    >
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+
+                            <div className="w-10 h-10 flex items-center justify-center">
+                                <stat.icon className="w-6 h-6" />
+                            </div>
+                            <span className="text-xs sm:text-sm font-medium text-[#374151]">
                                 {stat.label}
                             </span>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900 leading-none">
+
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">
                             {stat.value}
                         </div>
                     </div>
@@ -208,13 +228,18 @@ const Newsletter = () => {
             </div>
 
             {/* Filter & Action Bar */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
-                <h2 className="text-lg font-medium text-gray-800">All Slots for October 4, 2025</h2>
+            <div className="relative flex flex-col gap-4 mb-8 xl:flex-row xl:items-center xl:justify-between overflow-visible">
 
-                <div className="flex flex-wrap items-center gap-2">
+                {/* Title */}
+                <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
+                    All Slots for October 4, 2025
+                </h2>
 
-                    {/* FILTER BUTTONS */}
-                    <div className="flex items-center gap-2">
+                {/* Actions */}
+                <div className="flex flex-wrap items-center gap-3 xl:flex-nowrap xl:w-auto w-full">
+
+                    {/* ================= FILTER GROUP ================= */}
+                    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap">
 
                         {/* GENRE */}
                         <div className="relative">
@@ -222,7 +247,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "genre" ? null : "genre")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827] whitespace-nowrap"
                             >
                                 {genre}
                                 <ChevronDown
@@ -233,25 +258,31 @@ const Newsletter = () => {
                             </button>
 
                             {openDropdown === "genre" && (
-                                <div className="absolute mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-50">
-                                    {[
-                                        "Select Genre",
-                                        "Fantasy",
-                                        "Scifi",
-                                        "Romance",
-                                        "Mystery",
-                                        "Thriller",
-                                        "Nonfiction",
-                                    ].map((item) => (
+                                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+
+                                    {/* Default Option */}
+                                    <button
+                                        onClick={() => {
+                                            setGenre("Select Genre");
+                                            setOpenDropdown(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        Select Genre
+                                    </button>
+
+                                    {/* Dynamic Genres */}
+                                    {genres.map((genre) => (
                                         <button
-                                            key={item}
+                                            key={genre.value}
                                             onClick={() => {
-                                                setGenre(item);
+                                                setGenre(genre.label);              // what shows in button
+                                                setSelectedGenreValue(genre.value); // what you send to backend (create this state)
                                                 setOpenDropdown(null);
                                             }}
                                             className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 transition-colors"
                                         >
-                                            {item}
+                                            {genre.label}
                                         </button>
                                     ))}
                                 </div>
@@ -264,7 +295,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "visibility" ? null : "visibility")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827] whitespace-nowrap"
                             >
                                 {visibility}
                                 <ChevronDown
@@ -275,7 +306,7 @@ const Newsletter = () => {
                             </button>
 
                             {openDropdown === "visibility" && (
-                                <div className="absolute mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-50">
+                                <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
                                     {["Public", "Friend Only", "Private"].map((item) => (
                                         <button
                                             key={item}
@@ -298,7 +329,7 @@ const Newsletter = () => {
                                 onClick={() =>
                                     setOpenDropdown(openDropdown === "status" ? null : "status")
                                 }
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827] whitespace-nowrap"
                             >
                                 {status}
                                 <ChevronDown
@@ -309,7 +340,7 @@ const Newsletter = () => {
                             </button>
 
                             {openDropdown === "status" && (
-                                <div className="absolute mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-50">
+                                <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
                                     {["Available", "Booked", "Pending"].map((item) => (
                                         <button
                                             key={item}
@@ -325,15 +356,15 @@ const Newsletter = () => {
                                 </div>
                             )}
                         </div>
-
                     </div>
 
+                    {/* ================= EXPORT ================= */}
                     <div className="relative">
                         <button
                             onClick={() =>
                                 setOpenDropdown(openDropdown === "export" ? null : "export")
                             }
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]"
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827] whitespace-nowrap"
                         >
                             <Download size={14} className="text-gray-400" />
                             Export with
@@ -345,13 +376,11 @@ const Newsletter = () => {
                         </button>
 
                         {openDropdown === "export" && (
-                            <div className="absolute mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-50">
+                            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
                                 {["Google Calendar", "Outlook", "ICS"].map((item) => (
                                     <button
                                         key={item}
-                                        onClick={() => {
-                                            setOpenDropdown(null);
-                                        }}
+                                        onClick={() => setOpenDropdown(null)}
                                         className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 transition-colors"
                                     >
                                         {item}
@@ -361,14 +390,13 @@ const Newsletter = () => {
                         )}
                     </div>
 
-
-                    {/* ADD SLOT BUTTON */}
+                    {/* ================= ADD SLOT ================= */}
                     <button
                         onClick={() => setOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium"
+                        className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium whitespace-nowrap"
                     >
                         <Plus size={16} />
-                        Add New slot
+                        Add New Slot
                     </button>
 
                     <AddNewsSlot
@@ -379,9 +407,7 @@ const Newsletter = () => {
                             setOpen(false);
                         }}
                     />
-
                 </div>
-
             </div>
 
             {/* Main Content Grid */}
@@ -404,7 +430,7 @@ const Newsletter = () => {
                                 <IoChevronForward size={18} />
                             </button>
                             <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight ml-1">
-                                {currentMonth.format("MMMM YYYY")} Calendar
+                                {currentMonth.format("MMMM YYYY")}
                             </h3>
                         </div>
                         <div className="flex gap-2">
@@ -539,7 +565,7 @@ const Newsletter = () => {
                                                 <div>
                                                     <p className="text-[12px] text-gray-500">Audience:</p>
                                                     <p className="text-[16px] font-semibold text-gray-900">
-                                                        {slot.audience}
+                                                        {Number(slot.audience).toLocaleString("en-US")}
                                                     </p>
                                                 </div>
 
@@ -551,21 +577,32 @@ const Newsletter = () => {
                                             <div>
                                                 {slot.status === "Available" ? (
                                                     <div className="flex gap-2">
-                                                        <button onClick={() => setEditOpen(true)}
-                                                            className="p-2 bg-gray-100">
+                                                        <button onClick={() => handleEditClick(slot)}
+                                                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
                                                             <img src={Edit} alt="" className="w-5 h-5" />
 
                                                         </button>
-                                                        <button onClick={() => setDeleteOpen(true)} className="p-2 bg-gray-100">
+                                                        <button onClick={() => setDeleteOpen(true)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
                                                             <Trash2 size={14} />
                                                         </button>
 
                                                         <EditNewsSlot
                                                             isOpen={editOpen}
+                                                            slotData={selectedSlot}
                                                             onClose={() => setEditOpen(false)}
-                                                            onSave={(data) => {
-                                                                console.log(data);
-                                                                setEditOpen(false);
+                                                            onSave={async (data) => {
+                                                                try {
+                                                                    await updateNewsSlot(selectedSlot.id, data);
+                                                                    setSlots(prev =>
+                                                                        prev.map(s =>
+                                                                            s.id === selectedSlot.id ? { ...s, ...data } : s
+                                                                        )
+                                                                    );
+
+                                                                    setEditOpen(false);
+                                                                } catch (error) {
+                                                                    console.error("Update failed", error);
+                                                                }
                                                             }}
                                                         />
 
