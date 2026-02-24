@@ -13,5 +13,5 @@ export const deleteNewsSlot = async (id) => {
 } 
 
 export const updateNewsSlot = async (id, formData) => {
-    return apiClient.put(`newsletter-slot/${id}/`, formData);
+    return apiClient.patch(`newsletter-slot/${id}/`, formData);
 } 

@@ -241,13 +241,20 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-gray-900">My Books</h2>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
 
-                <div className="flex items-center gap-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 whitespace-nowrap">
+                    My Books
+                </h2>
 
-                    <div className="relative w-80">
-                        <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <div className="flex flex-col sm:flex-row lg:flex-nowrap flex-wrap gap-3 sm:gap-4 w-full lg:w-auto">
+
+                    {/* Search */}
+                    <div className="relative w-full sm:w-64 lg:w-72 xl:w-80">
+                        <Search
+                            size={18}
+                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
                         <input
                             type="text"
                             placeholder="Search books by title..."
@@ -257,12 +264,22 @@ const BooksPage = () => {
                         />
                     </div>
 
-                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm min-w-[150px]">
+                    {/* Status */}
+                    <select
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        className="min-w-[140px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
+                    >
                         <option value="all">All Books</option>
                         <option value="primary">Primary Promo</option>
                     </select>
 
-                    <select value={genre} onChange={(e) => setGenre(e.target.value)} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm min-w-[150px]">
+                    {/* Genre */}
+                    <select
+                        value={genre}
+                        onChange={(e) => setGenre(e.target.value)}
+                        className="min-w-[160px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
+                    >
                         <option value="all">All Genres</option>
                         {genres.map((g) => (
                             <option key={g.value} value={g.value}>
@@ -271,7 +288,12 @@ const BooksPage = () => {
                         ))}
                     </select>
 
-                    <select value={availability} onChange={(e) => setAvailability(e.target.value)} className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm min-w-[180px]">
+                    {/* Availability */}
+                    <select
+                        value={availability}
+                        onChange={(e) => setAvailability(e.target.value)}
+                        className="min-w-[170px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
+                    >
                         <option value="all">Availability</option>
                         <option value="wide">Wide</option>
                         <option value="kindle">Kindle Unlimited</option>

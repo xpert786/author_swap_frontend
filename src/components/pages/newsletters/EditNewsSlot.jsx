@@ -13,8 +13,10 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
   const [formData, setFormData] = useState(defaultData);
 
   useEffect(() => {
-    if (slotData) setFormData(slotData);
-  }, [slotData]);
+    if (isOpen && slotData) {
+      setFormData(slotData);
+    }
+  }, [slotData, isOpen]);
 
   if (!isOpen) return null;
 

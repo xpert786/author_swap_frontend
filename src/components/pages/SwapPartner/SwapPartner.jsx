@@ -115,35 +115,46 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
     return (
         <div
-            className={`bg-white rounded-[10px] p-5 flex flex-col gap-5 cursor-pointer transition-all duration-200 border relative
-                ${isSelected ? "border-[#E07A5F] ring-[0.5px] ring-[#E07A5F]" : "border-[#B5B5B5] shadow-sm hover:border-[#E07A5F80]"}
-            `}
+            className="bg-white rounded-[10px] p-5 flex flex-col gap-5 cursor-pointer 
+               transition-all duration-200 border border-[#B5B5B5] 
+               hover:border-[#E07A5F] relative"
             onClick={onClick}
         >
             {/* ── Header Row ── */}
-            <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-3">
-                    <img
-                        src={partner.photo}
-                        alt={partner.name}
-                        className="w-10 h-10 rounded-full object-cover shrink-0"
-                    />
-                    <div className="min-w-0">
-                        <p className="text-[14px] font-medium text-black leading-none truncate">
-                            {partner.name}
-                        </p>
-                        <p className="text-[10px] text-[#374151] mt-1">{partner.swaps} swaps completed</p>
-                    </div>
-                </div>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2">
 
-                <div className="flex items-center gap-1 shrink-0">
-                    {getBadges().map((b, i) => (
-                        <span key={i} className={`${b.bg} text-black text-[10px] font-medium px-2 py-0.5 rounded-full`}>
-                            {b.text}
-                        </span>
-                    ))}
-                </div>
-            </div>
+    {/* Left Section */}
+    <div className="flex items-start gap-3">
+        <img
+            src={partner.photo}
+            alt={partner.name}
+            className="w-10 h-10 rounded-full object-cover shrink-0"
+        />
+
+        <div>
+            {/* Name + Swaps in column */}
+            <p className="text-[14px] font-medium text-black leading-none">
+                {partner.name}
+            </p>
+            <p className="text-[10px] text-[#374151] mt-1">
+                {partner.swaps} swaps completed
+            </p>
+        </div>
+    </div>
+
+    {/* Badges */}
+    <div className="flex flex-wrap gap-1 mt-2 lg:mt-0">
+        {getBadges().map((b, i) => (
+            <span
+                key={i}
+                className={`${b.bg} text-black text-[10px] font-medium px-2 py-0.5 rounded-full`}
+            >
+                {b.text}
+            </span>
+        ))}
+    </div>
+
+</div>
 
             {/* ── Tags Row ── */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -162,42 +173,57 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             <div className="grid grid-cols-3 gap-1 py-1">
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Date</p>
-                    <p className="text-[12px] font-medium text-[#111827]">{partner.date}</p>
+                    <p className="text-[12px] font-medium text-[#111827]">
+                        {partner.date}
+                    </p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Time</p>
-                    <p className="text-[12px] font-medium text-[#111827]">{partner.time}</p>
+                    <p className="text-[12px] font-medium text-[#111827]">
+                        {partner.time}
+                    </p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Audience</p>
-                    <p className="text-[12px] font-medium text-[#111827]">{partner.audience}</p>
+                    <p className="text-[12px] font-medium text-[#111827]">
+                        {partner.audience}
+                    </p>
                 </div>
             </div>
 
             {/* ── Action Buttons ── */}
             <div className="flex gap-2 mt-auto pt-1">
                 <button
-                    className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] transition-all text-[11px] font-medium
-                        ${isSelected ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" : "bg-white text-black hover:bg-gray-50"}
-                    `}
+                    className="flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] 
+                       transition-all text-[11px] font-medium
+                       bg-white text-black 
+                       hover:bg-[#2F6F6D] hover:text-white hover:border-[#2F6F6D]"
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate("/swap-details", {
-                            state: { name: partner.name, photo: partner.photo, swaps: partner.swaps },
+                            state: {
+                                name: partner.name,
+                                photo: partner.photo,
+                                swaps: partner.swaps,
+                            },
                         });
                     }}
                 >
                     View Details
                 </button>
+
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         onSendRequest();
                     }}
-                    className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] transition-all text-[11px] font-medium
-                        ${partner.paid ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" : "bg-white text-black hover:bg-gray-50"}
-                        ${!partner.paid && isSelected ? "bg-white text-black" : ""} 
-                    `}
+                    className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] 
+                transition-all text-[11px] font-medium
+                ${partner.paid
+                            ? "bg-[#2F6F6D] text-white border-[#2F6F6D]"
+                            : "bg-white text-black hover:bg-gray-50"
+                        }
+            `}
                 >
                     {partner.paid ? "Request Paid Swaps" : "Send Request"}
                 </button>
