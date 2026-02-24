@@ -5,6 +5,17 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
+// Send cookies with requests so Django can set/read CSRF cookie
+apiClient.defaults.withCredentials = true;
+
+// Helper to read a cookie by name
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
 
 apiClient.interceptors.request.use(
   (config) => {
@@ -14,6 +25,16 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       delete config.headers.Authorization;
+    }
+
+    // Add CSRF token header for unsafe HTTP methods
+    const method = (config.method || "get").toLowerCase();
+    const unsafeMethods = ["post", "put", "patch", "delete"];
+    if (unsafeMethods.includes(method)) {
+      const csrftoken = getCookie('csrftoken');
+      if (csrftoken) {
+        config.headers['X-CSRFToken'] = csrftoken;
+      }
     }
 
 
