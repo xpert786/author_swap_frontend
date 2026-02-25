@@ -5,6 +5,7 @@ import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import { getExploreSlots } from "../../../apis/swapPartner";
 import "./SwapPartner.css";
+import dayjs from "dayjs";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const partners = [
@@ -138,7 +139,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                                 {partner.name}
                             </p>
                             <p className="text-[10px] text-[#374151] font-medium">
-                                ({partner.swaps} swaps completed)
+                                {partner.swaps} swaps completed
                             </p>
                         </div>
                     </div>
@@ -174,9 +175,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             <div className="grid grid-cols-3 gap-1 py-1">
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Date</p>
-                    <p className="text-[12px] font-medium text-[#111827]">
-                        {partner.date}
-                    </p>
+                 <p className="text-[12px] font-medium text-[#111827]">
+    {dayjs(partner.date).format("DD MMM YYYY")}
+</p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Time</p>

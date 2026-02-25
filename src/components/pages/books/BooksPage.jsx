@@ -306,7 +306,7 @@ const BooksPage = () => {
             {/* FILTERS */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
                 <div className="flex items-center gap-4 w-full lg:w-auto">
-                    <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap shrink-0">
+                    <h2 className="text-xl font-medium text-gray-900 whitespace-nowrap shrink-0">
                         My Books
                     </h2>
 
@@ -334,7 +334,9 @@ const BooksPage = () => {
                         onChange={setStatus}
                         options={[
                             { label: "All Books", value: "all" },
-                            { label: "Primary", value: "primary" }
+                            { label: "Active", value: "Active" },
+                            { label: "Primary promo", value: "primary" },
+                            { label: "Archived", value: "archived" }
                         ]}
                     />
 
@@ -355,7 +357,7 @@ const BooksPage = () => {
                         options={[
                             { label: "Availability", value: "all" },
                             { label: "Wide", value: "wide" },
-                            { label: "Kindle", value: "kindle" }
+                            { label: "Kindle Unlimited", value: "kindle" }
                         ]}
                     />
                 </div>
@@ -411,7 +413,14 @@ const BooksPage = () => {
 
 /* ---------------- STAT CARD ---------------- */
 const StatCard = ({ title, value, icon, bgColor }) => (
-    <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
+    <div className="
+        bg-white rounded-[10px] border border-[#B5B5B5] 
+        p-4 flex flex-col gap-4 justify-between 
+        shadow-sm min-h-[110px]
+        transition-all duration-300
+        hover:shadow-[0_8px_20px_rgba(0,0,0,0.12)]
+        hover:-translate-y-1
+    ">
         <div className="flex items-center justify-between">
             <div className={`p-2 rounded-lg ${bgColor}`}>{icon}</div>
             <p className="text-[13px] font-medium text-[#374151]">{title}</p>
@@ -419,7 +428,6 @@ const StatCard = ({ title, value, icon, bgColor }) => (
         <p className="text-2xl font-bold text-gray-900">{value}</p>
     </div>
 );
-
 
 const BookCard = ({ book, onClick, onEdit, onDelete }) => {
 
@@ -436,7 +444,15 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
     return (
         <div
             onClick={() => onClick?.(book)}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+            className="
+        bg-white rounded-xl border border-gray-200 
+        shadow-sm 
+        hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+        hover:-translate-y-1
+        transition-all duration-300 
+        overflow-hidden flex flex-col cursor-pointer
+        hover:border-[#E07A5F]
+    "
         >
             {/* Cover */}
             <div className="relative">
