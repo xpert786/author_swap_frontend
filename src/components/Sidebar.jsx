@@ -13,8 +13,6 @@ import SubscribeIconImg from '../assets/subscribe.png'
 import ReputationIconImg from '../assets/repotation.png'
 import DashboardIconImg from '../assets/dashboard.png'
 import BookManegementIconImg from '../assets/open-book.png'
-
-
 export default function Sidebar({ isOpen, setIsOpen }) {
     const location = useLocation();
     const navigate = useNavigate();

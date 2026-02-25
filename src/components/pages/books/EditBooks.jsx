@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getGenres, getSubGenres } from "../../../apis/genre";
+import { getBookById } from "../../../apis/bookManegment";
 import toast from "react-hot-toast";
 
-const EditBooks = ({ bookData, onClose, onSave }) => {
+const EditBooks = ({ bookId, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [genres, setGenres] = useState([]);
   const [allSubGenres, setAllSubGenres] = useState({});
   const [subGenres, setSubGenres] = useState([]);
@@ -26,31 +28,64 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
     ratings: "",
   });
 
-  // Load initial data
+  // Fetch book data by ID when modal opens
   useEffect(() => {
-    if (bookData) {
-      setFormData({
-        id: bookData.id || "",
-        title: bookData.title || "",
-        genre: bookData.primary_genre || "",
-        subgenre: Array.isArray(bookData.subgenres)
-          ? bookData.subgenres[0]
-          : (bookData.subgenres || bookData.sub_genre || ""),
-        price: bookData.price_tier || "",
-        availability: bookData.availability || "",
-        publishDate: bookData.publish_date || "",
-        description: bookData.description || "",
-        amazonUrl: bookData.amazon_url || "",
-        appleUrl: bookData.apple_url || "",
-        koboUrl: bookData.kobo_url || "",
-        barnesUrl: bookData.barnes_noble_url || "",
-        coverImage: bookData.book_cover || null,
-        preview: bookData.book_cover || null,
-        isPrimary: bookData.is_primary_promo || false,
-        ratings: bookData.rating || "",
-      });
-    }
-  }, [bookData]);
+    const fetchBookData = async () => {
+      if (!bookId) return;
+      
+      try {
+        setFetchLoading(true);
+        const response = await getBookById(bookId);
+        const bookData = response?.data;
+        
+        if (bookData) {
+          // Handle malformed subgenres array like ["['bad_boy_romance']"]
+          let parsedSubgenre = "";
+          if (Array.isArray(bookData.subgenres) && bookData.subgenres.length > 0) {
+            const firstItem = bookData.subgenres[0];
+            // Check if it's a string representation of array like "['bad_boy_romance']"
+            if (typeof firstItem === 'string' && firstItem.includes('[')) {
+              try {
+                // Extract value between quotes
+                const match = firstItem.match(/'([^']+)'/);
+                parsedSubgenre = match ? match[1] : firstItem;
+              } catch {
+                parsedSubgenre = firstItem;
+              }
+            } else {
+              parsedSubgenre = firstItem;
+            }
+          }
+
+          setFormData({
+            id: bookData.id || "",
+            title: bookData.title || "",
+            genre: bookData.primary_genre || "",
+            subgenre: parsedSubgenre,
+            price: bookData.price_tier || "",
+            availability: bookData.availability || "",
+            publishDate: bookData.publish_date || "",
+            description: bookData.description || "",
+            amazonUrl: bookData.amazon_url || "",
+            appleUrl: bookData.apple_url || "",
+            koboUrl: bookData.kobo_url || "",
+            barnesUrl: bookData.barnes_noble_url || "",
+            coverImage: bookData.book_cover || null,
+            preview: bookData.book_cover || null,
+            isPrimary: bookData.is_primary_promo || false,
+            ratings: bookData.rating || "",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch book:", error);
+        toast.error("Failed to load book details");
+      } finally {
+        setFetchLoading(false);
+        }
+    };
+
+    fetchBookData();
+  }, [bookId]);
 
   // Load Genres and Subgenres
   useEffect(() => {
@@ -125,9 +160,20 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
     }
   };
 
-  if (!bookData) return null;
+  if (!bookId) return null;
 
-  
+  if (fetchLoading) {
+    return (
+      <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
+        <div className="bg-white w-[600px] rounded-[10px] shadow-xl p-8 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F6F6D]"></div>
+            <p className="text-gray-600">Loading book details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">

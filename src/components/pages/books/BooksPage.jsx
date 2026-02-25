@@ -387,7 +387,7 @@ const BooksPage = () => {
 
             {showEditModal && selectedBook && (
                 <EditBooks
-                    bookData={selectedBook}
+                    bookId={selectedBook.id}
                     onClose={() => {
                         setShowEditModal(false);
                         setSelectedBook(null);
