@@ -13,7 +13,7 @@ export default function MainLayout() {
 
       {/* Right Side */}
       <div
-        className={`flex-1 flex flex-col min-w-0 h-full transition-all duration-300 ${isSidebarOpen ? "lg:ml-72" : "lg:ml-0"}`}
+        className={`flex-1 flex flex-col min-w-0 h-full transition-all duration-300 ${isSidebarOpen ? "lg:ml-72" : "lg:ml-20"}`}
       >
         {/* Fixed Header */}
         <Header

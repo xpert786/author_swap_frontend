@@ -68,7 +68,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
     return (
-        <div className={`fixed top-0 right-0 bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between z-40 transition-all duration-300 ${isOpen ? "left-0 lg:left-72" : "left-0"}`}>
+        <div className={`fixed top-0 right-0 bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between z-40 transition-all duration-300 ${isOpen ? "left-0 lg:left-72" : "left-0 lg:left-20"}`}>
             {/* Left Side */}
             <div className="flex items-center gap-2 md:gap-4">
                 {/* Sidebar Toggle Button */}

@@ -148,7 +148,7 @@ const AccountSettings = () => {
                 {!isEditing && (
                     <button
                         onClick={handleEdit}
-                        className="flex items-center gap-2 bg-[#374151] text-white px-4 py-2 rounded-[6px] text-[12px] font-medium shadow-sm"
+                        className="flex items-center gap-2 bg-[#2F6F6D] text-white px-4 py-2 rounded-[6px] text-[12px] font-medium shadow-sm hover:bg-[#255755] transition-all"
                     >
                         <img
                             src={Edit}
@@ -177,7 +177,7 @@ const AccountSettings = () => {
                             <>
                                 <button
                                     onClick={() => document.getElementById("profileUpload").click()}
-                                    className="absolute bottom-0 right-0 bg-[#374151] text-white p-1.5 rounded-full border-2 border-white shadow-sm"
+                                    className="absolute bottom-0 right-0 bg-[#2F6F6D] text-white p-1.5 rounded-full border-2 border-white shadow-sm hover:bg-[#255755] transition-all"
                                 >
                                     <img
                                         src={Edit}
