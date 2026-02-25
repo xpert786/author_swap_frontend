@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { getProfile, updateProfile } from "../../apis/profile";
 import Edit from "../../assets/edit.png";
 import { getGenres } from "../../apis/genre";
+import { useProfile } from "../../context/ProfileContext";
 
 const defaultProfile = {
     name: "",
@@ -17,6 +18,7 @@ const defaultProfile = {
 };
 
 const AccountSettings = () => {
+    const { refreshProfile } = useProfile();
     const [formData, setFormData] = useState(defaultProfile);
     const [originalData, setOriginalData] = useState(defaultProfile);
     const [saving, setSaving] = useState(false);
@@ -108,6 +110,7 @@ const AccountSettings = () => {
             }
 
             await updateProfile(formPayload);
+            await refreshProfile(); // Sync Header
 
             toast.success("Profile updated successfully");
             setOriginalData(formData);
