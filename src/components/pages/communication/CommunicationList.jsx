@@ -91,12 +91,12 @@ const CommunicationList = () => {
           <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#B5B5B5] bg-gray-50/30">
             <div className="p-4">
               <ul className="space-y-1 text-sm">
-                <li className="flex justify-between items-center bg-[#E07A5F33] text-[#E07A5F] p-2.5 rounded-md font-medium cursor-pointer">
+                <li className="flex justify-between items-center bg-[#E07A5F33] text-black p-2.5 rounded-md font-medium cursor-pointer">
                   <div className="flex items-center gap-3">
                     <Mail size={16} />
                     <span>Inbox</span>
                   </div>
-                  <span className="bg-[#E07A5F] text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] px-1.5 py-0.">
                     3
                   </span>
                 </li>

@@ -106,6 +106,12 @@ const AddBooks = ({ onClose, onBookAdded }) => {
         };
       }
 
+      if (name === "ratings") {
+        const val = parseFloat(value);
+        if (val > 5) return { ...prev, [name]: 5 };
+        if (val < 0) return { ...prev, [name]: 0 };
+      }
+
       return { ...prev, [name]: value };
     });
   };
@@ -327,6 +333,9 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                 <input
                   type="number"
                   name="ratings"
+                  step="0.1"
+                  min="0"
+                  max="5"
                   value={formData.ratings}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"

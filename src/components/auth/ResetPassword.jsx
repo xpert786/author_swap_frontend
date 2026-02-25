@@ -97,8 +97,8 @@ const ResetPassword = () => {
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
-                        value: 6,
-                        message: "Minimum 6 characters required",
+                        value: 8,
+                        message: "Minimum 8 characters required",
                       },
                     })}
                     className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs 

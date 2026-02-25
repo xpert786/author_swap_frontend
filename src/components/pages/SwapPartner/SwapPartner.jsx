@@ -121,7 +121,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             onClick={onClick}
         >
             {/* ── Header Row ── */}
-            <div className="flex flex-wrap items-start justify-start gap-x-4 gap-y-2">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                 {/* Left Section - Avatar, Name, Swaps */}
                 <div className="flex items-start gap-3 min-w-0">
                     <img
@@ -132,7 +132,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
                     <div className="min-w-0">
                         {/* Name + Swaps forced into one line */}
-                        <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                        <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
                             <p className="text-[14px] font-bold text-black leading-tight">
                                 {partner.name}
                             </p>

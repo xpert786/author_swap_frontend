@@ -244,7 +244,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             localStorage.removeItem("token");
             localStorage.removeItem("isprofilecompleted");
             navigate("/login");
-          }} className="w-full flex items-center gap-3 rounded-xl py-3 px-6 transition-all duration-200 text-[15px] font-semibold text-[#111827] cursor-pointer border border-[#2F6F6D] rounded-[8px]">
+          }} className="w-full flex items-center gap-3 rounded-xl p-3 transition-all duration-200 text-[15px] font-semibold text-[#111827] cursor-pointer border border-[#2F6F6D] rounded-[8px]">
             <div className="w-6 h-6 flex items-center justify-center shrink-0">
               <LogoutIcon size={18} color="#111827" />
             </div>

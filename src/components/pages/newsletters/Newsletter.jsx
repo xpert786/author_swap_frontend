@@ -20,7 +20,7 @@ import { MdOutlineRemoveRedEye } from "react-icons/md";
 import Edit from "../../../assets/edit.png";
 import dayjs from "dayjs";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
-import { updateNewsSlot, getNewsSlot, deleteNewsSlot } from "../../../apis/newsletter";
+import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
@@ -42,6 +42,13 @@ const Newsletter = () => {
     const [selectedGenreValue, setSelectedGenreValue] = useState("");
     const [genres, setGenres] = useState([]);
     const [loadingGenres, setLoadingGenres] = useState(true);
+    const [newsletterStats, setNewsletterStats] = useState({
+        total_slots: 0,
+        published_slots: 0,
+        pending_swap_requests: 0,
+        confirmed_swaps: 0,
+        verified_sent: 0
+    });
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -121,8 +128,18 @@ const Newsletter = () => {
         }
     };
 
+    const fetchStats = async () => {
+        try {
+            const response = await statsNewsSlot();
+            setNewsletterStats(response.data);
+        } catch (error) {
+            console.error("Failed to fetch newsletter stats", error);
+        }
+    };
+
     useEffect(() => {
         fetchSlots();
+        fetchStats();
     }, []);
 
     const handleEditClick = (slot) => {
@@ -148,11 +165,11 @@ const Newsletter = () => {
     const NewsIcon = ({ size = 36 }) => <img src={newsIcon} alt="News" width={size} height={size} />;
 
     const stats = [
-        { label: "Total", value: slots.length.toString(), icon: NewsIcon },
-        { label: "Published Slots", value: slots.filter(s => s.status === "Available").length.toString(), icon: Publish },
-        { label: "Pending swap requests", value: "4", icon: PendingSwapIcon },
-        { label: "Confirmed swaps", value: "12", icon: ConfirmedSwapIcon },
-        { label: "Verified sent", value: "12", icon: VerifiedSentIcon },
+        { label: "Total", value: String(newsletterStats.total_slots || 0), icon: NewsIcon },
+        { label: "Published Slots", value: String(newsletterStats.published_slots || 0), icon: Publish },
+        { label: "Pending swap requests", value: String(newsletterStats.pending_swap_requests || 0), icon: PendingSwapIcon },
+        { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps || 0), icon: ConfirmedSwapIcon },
+        { label: "Verified sent", value: String(newsletterStats.verified_sent || 0), icon: VerifiedSentIcon },
     ];
 
     return (
@@ -169,7 +186,7 @@ const Newsletter = () => {
                             <div className="w-10 h-10 flex items-center justify-center">
                                 <stat.icon className="w-6 h-6" />
                             </div>
-                            <span className="text-xs sm:text-sm font-medium text-[#374151]">{stat.label}</span>
+                            <span className="text-[12px] font-medium text-[#374151]">{stat.label}</span>
                         </div>
                         <div className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
                     </div>
@@ -232,7 +249,7 @@ const Newsletter = () => {
                         Add New Slot
                     </button>
 
-                    <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); setOpen(false); }} />
+                    <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); }} />
                 </div>
             </div>
 
@@ -293,7 +310,6 @@ const Newsletter = () => {
                                                         <p className="text-[12px] text-gray-500">Audience:</p>
                                                         <p className="text-[16px] font-semibold text-gray-900">{Number(slot.audience).toLocaleString("en-US")}</p>
                                                     </div>
-
                                                 </div>
 
                                                 <div className="flex gap-2">
@@ -332,6 +348,7 @@ const Newsletter = () => {
                             try {
                                 await updateNewsSlot(selectedSlot.id, data);
                                 await fetchSlots();
+                                await fetchStats();
                                 setEditOpen(false);
                                 setSelectedSlot(null);
                                 toast.success("Slot updated successfully");
@@ -349,6 +366,7 @@ const Newsletter = () => {
                             try {
                                 await deleteNewsSlot(selectedSlot.id);
                                 await fetchSlots();
+                                await fetchStats();
                                 setDeleteOpen(false);
                                 setSelectedSlot(null);
                                 toast.success("Slot deleted successfully");

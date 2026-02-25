@@ -257,64 +257,76 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 w-full xl:w-auto">
+            <div className="flex items-center justify-between mb-8 gap-4">
+                <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap shrink-0">
                     My Books
                 </h2>
 
-                <div className="flex flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
-
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
                     {/* Search */}
-                    <div className="relative w-full sm:w-64 lg:w-72 xl:w-80">
+                    <div className="relative flex-1 max-w-[320px] min-w-[140px]">
                         <Search
-                            size={18}
-                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         />
                         <input
                             type="text"
-                            placeholder="Search books by title..."
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-[#2F6F6D]"
+                            placeholder="Search books..."
+                            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none truncate"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
 
-                    {/* Status */}
-                    <select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="min-w-[140px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">All Books</option>
-                        <option value="primary">Primary Promo</option>
-                    </select>
+                    {/* Filters Group - Force single line on desktop, wrap only on mobile if necessary */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            className="hidden sm:block min-w-[90px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
+                        >
+                            <option value="all">All Books</option>
+                            <option value="primary">Primary</option>
+                        </select>
 
-                    {/* Genre */}
-                    <select
-                        value={genre}
-                        onChange={(e) => setGenre(e.target.value)}
-                        className="min-w-[160px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">All Genres</option>
-                        {genres.map((g) => (
-                            <option key={g.value} value={g.value}>
-                                {g.label}
-                            </option>
-                        ))}
-                    </select>
+                        <select
+                            value={genre}
+                            onChange={(e) => setGenre(e.target.value)}
+                            className="hidden md:block min-w-[100px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
+                        >
+                            <option value="all">All Genres</option>
+                            {genres.map((g) => (
+                                <option key={g.value} value={g.value}>
+                                    {g.label}
+                                </option>
+                            ))}
+                        </select>
 
-                    {/* Availability */}
-                    <select
-                        value={availability}
-                        onChange={(e) => setAvailability(e.target.value)}
-                        className="min-w-[170px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">Availability</option>
-                        <option value="wide">Wide</option>
-                        <option value="kindle">Kindle Unlimited</option>
-                    </select>
+                        <select
+                            value={availability}
+                            onChange={(e) => setAvailability(e.target.value)}
+                            className="hidden lg:block min-w-[100px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
+                        >
+                            <option value="all">Availability</option>
+                            <option value="wide">Wide</option>
+                            <option value="kindle">Kindle</option>
+                        </select>
 
+                        {/* Mobile dropdown for filters if needed, but for now let's just show them if they fit */}
+                        <div className="flex lg:hidden items-center gap-1.5">
+                            {/* Fallback for smaller screens to keep status/genre visible if space allows */}
+                            <select
+                                value={genre}
+                                onChange={(e) => setGenre(e.target.value)}
+                                className="md:hidden block min-w-[80px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
+                            >
+                                <option value="all">Genre</option>
+                                {genres.map((g) => (
+                                    <option key={g.value} value={g.value}>{g.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
