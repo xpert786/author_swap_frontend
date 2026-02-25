@@ -86,6 +86,7 @@ const AuthorReputationSystem = () => {
             try {
                 setLoading(true);
                 const response = await getAuthorReputation();
+                console.log(response);
                 setData(response.data);
             } catch (error) {
                 console.error("Failed to fetch reputation data:", error);
@@ -115,29 +116,40 @@ const AuthorReputationSystem = () => {
     };
 
     const getBreakdown = () => {
-        if (!data?.breakdown) return [];
-        return data.breakdown.map(item => {
-            // Handle score if it comes as an object {score, max}
-            let displayScore = item.score;
-            if (typeof item.score === 'object' && item.score !== null) {
-                displayScore = `${item.score.score}/${item.score.max}`;
-            }
+        const breakdownData = data?.reputation_score_breakdown;
+        if (!breakdownData) return [];
+
+        const mapping = {
+            confirmed_sends: { title: "Confirmed Sends", color: "bg-green-600" },
+            timeliness: { title: "Timeliness", color: "bg-orange-200" },
+            missed_sends: { title: "Missed Sends", color: "bg-red-600" },
+            communication: { title: "Communication", color: "bg-[#94B3B1]" },
+        };
+
+        return Object.entries(breakdownData).map(([key, item]) => {
+            const mapped = mapping[key] || { title: key, color: "bg-gray-400" };
+            const percentage = item.max > 0 ? (item.score / item.max) * 100 : 0;
 
             return {
-                ...item,
-                score: displayScore,
-                icon: breakdownIcons[item.title] || <CommunicationIcon size={32} />,
-                color: item.color || "bg-[#94B3B1]",
-                percentage: Number(item.percentage) || 0
+                title: mapped.title,
+                score: `${item.score}/${item.max}`,
+                percentage: percentage,
+                subtext: item.description,
+                points: item.points,
+                icon: breakdownIcons[mapped.title] || <CommunicationIcon size={32} />,
+                color: mapped.color
             };
         });
     };
 
     const getBadges = () => {
-        if (!data?.badges) return [];
-        return data.badges.map(badge => ({
-            ...badge,
-            icon: badgeIcons[badge.title] || <VerifiedSenderIcon size={32} />,
+        const badgeData = data?.reputation_badges;
+        if (!badgeData) return [];
+        return badgeData.map(badge => ({
+            title: badge.name,
+            desc: badge.description,
+            status: badge.status,
+            icon: badgeIcons[badge.name] || <VerifiedSenderIcon size={32} />,
             statusColor: badge.status === "Locked" ? "bg-[#16A34A33] text-[#111827]" : "bg-[#16A34A33]"
         }));
     };
@@ -173,20 +185,22 @@ const AuthorReputationSystem = () => {
                             </p>
                             <p className="text-[11px] font-normal text-[#111827] mt-0.5">Reputation Score</p>
                         </div>
-                        <div className="flex items-center justify-center gap-1.5 mt-2 py-1 px-2 " >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="16" height="16" rx="8" fill="#16A34A" />
-                                <g clipPath="url(#clip0_366_6466)">
-                                    <path d="M6.13582 9.85L11.9624 4.2C12.0999 4.06667 12.2603 4 12.4437 4C12.6269 4 12.7874 4.06667 12.9249 4.2C13.0624 4.33333 13.1312 4.49178 13.1312 4.67533C13.1312 4.85889 13.0624 5.01711 12.9249 5.15L6.61707 11.2833C6.47957 11.4167 6.31915 11.4833 6.13582 11.4833C5.95249 11.4833 5.79207 11.4167 5.65457 11.2833L2.69832 8.41667C2.56082 8.28333 2.49482 8.12511 2.50032 7.942C2.50582 7.75889 2.57755 7.60045 2.7155 7.46667C2.85346 7.33289 3.01686 7.26622 3.20569 7.26667C3.39453 7.26711 3.55769 7.33378 3.69519 7.46667L6.13582 9.85Z" fill="white" />
-                                </g>
-                                <defs>
-                                    <clipPath id="clip0_366_6466">
-                                        <rect width="11" height="8" fill="white" transform="translate(2.5 4)" />
-                                    </clipPath>
-                                </defs>
-                            </svg>
-                            <span className="text-[10px] font-medium text-[#16A34A]">Webhook Verified</span>
-                        </div>
+                        {data.is_webhook_verified && (
+                            <div className="flex items-center justify-center gap-1.5 mt-2 py-1 px-2 " >
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="16" height="16" rx="8" fill="#16A34A" />
+                                    <g clipPath="url(#clip0_366_6466)">
+                                        <path d="M6.13582 9.85L11.9624 4.2C12.0999 4.06667 12.2603 4 12.4437 4C12.6269 4 12.7874 4.06667 12.9249 4.2C13.0624 4.33333 13.1312 4.49178 13.1312 4.67533C13.1312 4.85889 13.0624 5.01711 12.9249 5.15L6.61707 11.2833C6.47957 11.4167 6.31915 11.4833 6.13582 11.4833C5.95249 11.4833 5.79207 11.4167 5.65457 11.2833L2.69832 8.41667C2.56082 8.28333 2.49482 8.12511 2.50032 7.942C2.50582 7.75889 2.57755 7.60045 2.7155 7.46667C2.85346 7.33289 3.01686 7.26622 3.20569 7.26667C3.39453 7.26711 3.55769 7.33378 3.69519 7.46667L6.13582 9.85Z" fill="white" />
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip0_366_6466">
+                                            <rect width="11" height="8" fill="white" transform="translate(2.5 4)" />
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                                <span className="text-[10px] font-medium text-[#16A34A]">Webhook Verified</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
@@ -200,7 +214,7 @@ const AuthorReputationSystem = () => {
                         </div>
                         <div>
                             <h3 className="font-medium text-[15px]">Platform Ranking</h3>
-                            <p className="text-xs mt-1">You're in the top {data.platform_ranking?.top_percentage || "--"}% of all authors based on reputation score</p>
+                            <p className="text-xs mt-1">You're in the top {data.platform_ranking?.percentile || data.platform_ranking?.top_percentage || "--"}% of all authors based on reputation score</p>
                         </div>
                     </div>
 

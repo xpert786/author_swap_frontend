@@ -144,7 +144,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 </div>
 
                 {/* Badges Row - Left aligned and drops down naturally */}
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1">
                     {getBadges().map((b, i) => (
                         <span
                             key={i}
@@ -157,7 +157,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             </div>
 
             {/* ── Tags Row ── */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap">
                 <span className="bg-[#EBF5EE] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     {partner.genre}
                 </span>
@@ -337,7 +337,7 @@ const SwapPartner = () => {
             </div>
 
             {/* Grid Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filtered.map((partner) => (
                     <PartnerCard
                         key={partner.id}
