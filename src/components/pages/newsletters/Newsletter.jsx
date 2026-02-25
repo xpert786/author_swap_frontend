@@ -104,10 +104,14 @@ const Newsletter = () => {
         try {
             setLoading(true);
             const response = await getNewsSlot();
-            const dataArray = response.data.data || [];
+            // Robust data extraction
+            const dataArray = Array.isArray(response.data)
+                ? response.data
+                : (response.data?.data || response.data?.results || []);
+
             const formatted = dataArray.map(item => ({
                 id: item.id,
-                time: `${item.formatted_date} ${item.formatted_time}`,
+                time: `${item.formatted_date || ""} ${item.formatted_time || ""}`,
                 period: getPeriod(item.send_time) || formatLabel(item.time_period),
                 genre: formatLabel(item.preferred_genre),
                 partners: `0/${item.max_partners} Partners`,
@@ -166,25 +170,24 @@ const Newsletter = () => {
     ];
 
     return (
-        <div className="pb-10">
+        <div className="pb-10 max-w-full overflow-hidden">
             <div className="mb-6">
                 <h1 className="text-2xl font-semibold">Newsletter & Slot Management</h1>
                 <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Schedule, manage, and track your newsletter promotions</p>
             </div>
-            <div className="flex flex-wrap xl:flex-nowrap gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] pl-1 pr-4 py-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] flex-1 min-w-[180px]">
+                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
                         <div className="flex justify-between items-start gap-2">
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
                                 <stat.icon size={24} />
                             </div>
-                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right whitespace-nowrap mt-1.5">{stat.label}</span>
+                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">{stat.label}</span>
                         </div>
-                        <div className="pl-3 text-xl md:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
                     </div>
                 ))}
             </div>
-
             <div className="relative flex flex-col gap-4 mb-8 xl:flex-row xl:items-center xl:justify-between">
                 <h2 className="text-lg font-medium text-gray-800">All Slots</h2>
                 <div className="flex flex-wrap items-center gap-3">
@@ -280,6 +283,11 @@ const Newsletter = () => {
                         <div key={period}>
                             <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">{period}</h3>
                             <div className="space-y-4">
+                                {slots.filter(s => s.period === period).length === 0 && (
+                                    <div className="text-center py-8 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-2xl">
+                                        No {period.toLowerCase()} slots scheduled
+                                    </div>
+                                )}
                                 {slots
                                     .filter(s => s.period === period)
                                     .filter(s => (genre === "Genre" || s.genre === genre))

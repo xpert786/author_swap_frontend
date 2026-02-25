@@ -195,7 +195,8 @@ const SwapManagement = () => {
                 }
                 setSwaps(data);
             } catch (error) {
-                console.error("Failed to fetch swaps:", error);
+                console.error("Failed to fetch swaps, showing static fallback data:", error);
+                setSwaps(staticSwaps);
             } finally {
                 setLoading(false);
             }

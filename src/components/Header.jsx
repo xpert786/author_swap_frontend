@@ -101,8 +101,8 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         />
                     </svg>
                 </button>
-                {/* Search - Visible on all screens with more spacing on mobile */}
-                <div className="relative w-full md:max-w-[900px] lg:max-w-[1100px] mx-2 md:mx-0" ref={searchRef}>
+                {/* Search - Responsive sizing to prevent layout blowout */}
+                <div className="relative w-full max-w-[400px] md:max-w-[500px] lg:max-w-[650px] mx-2 md:mx-0" ref={searchRef}>
                     <div className="relative">
                         <input
                             type="text"

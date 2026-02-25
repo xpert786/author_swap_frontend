@@ -307,8 +307,9 @@ const SwapPartner = () => {
             setSlots(data);
             if (data.length > 0) setSelectedId(data[0].id);
         } catch (error) {
-            console.error("Failed to fetch explore slots:", error);
-            // toast.error("Failed to load swap partners");
+            console.error("Failed to fetch explore slots, showing static fallback data:", error);
+            setSlots(partners);
+            if (partners.length > 0) setSelectedId(partners[0].id);
         } finally {
             setLoading(false);
         }
