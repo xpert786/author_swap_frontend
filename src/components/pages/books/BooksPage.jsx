@@ -197,11 +197,12 @@ const BooksPage = () => {
             setDeleteLoading(false);
         }
     };
-
     const handleEditClick = (book) => {
         setSelectedBook(book);
         setShowEditModal(true);
     };
+
+
 
     const MegaPhone = () => (
         <img src={Megaphone} alt="" className="w-[21px] h-[19px]" />

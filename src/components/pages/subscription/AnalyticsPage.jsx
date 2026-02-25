@@ -149,15 +149,10 @@ const AnalyticsPage = () => {
 
     const campaignDates = [...new Set(campaigns.map(c => c.date).filter(Boolean))];
 
-
-
-
-
     return (
         <div className="min-h-screen">
             <div className="mx-auto space-y-8 pb-10">
 
-                {/* ================= HEADER ================= */}
                 <div className="mb-6">
                   
                     <div className="flex justify-between items-end">

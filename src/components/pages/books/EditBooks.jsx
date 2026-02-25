@@ -30,11 +30,12 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
   useEffect(() => {
     if (bookData) {
       setFormData({
-        ...bookData,
         id: bookData.id || "",
         title: bookData.title || "",
         genre: bookData.primary_genre || "",
-        subgenre: bookData.subgenres || "",
+        subgenre: Array.isArray(bookData.subgenres)
+          ? bookData.subgenres[0]
+          : (bookData.subgenres || bookData.sub_genre || ""),
         price: bookData.price_tier || "",
         availability: bookData.availability || "",
         publishDate: bookData.publish_date || "",
@@ -118,13 +119,15 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
       onClose();
     } catch (error) {
       console.error("Update failed:", error);
-      toast.error("Failed to update book");
+      toast.error(error?.response?.data?.message || "Failed to update book");
     } finally {
       setLoading(false);
     }
   };
 
   if (!bookData) return null;
+
+  
 
   return (
     <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">

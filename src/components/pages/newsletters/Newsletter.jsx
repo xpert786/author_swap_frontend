@@ -18,6 +18,7 @@ import DeleteNewsSlot from "./DeleteNewsSlot";
 import SlotDetails from "./SlotDetails";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import Edit from "../../../assets/edit.png";
+import Swap from "../../../assets/swap-bg.png";
 import dayjs from "dayjs";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
@@ -156,14 +157,24 @@ const Newsletter = () => {
         setDeleteOpen(true);
     };
 
-    const PendingSwapIcon = ({ size = 20 }) => <img src={pendingSwapIcon} alt="Pending" style={{ width: size, height: size }} className="object-contain" />;
-    const ConfirmedSwapIcon = ({ size = 20 }) => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: size, height: size }} className="object-contain" />;
-    const VerifiedSentIcon = ({ size = 20 }) => <img src={verifiedSentIcon} alt="Verified" style={{ width: size, height: size }} className="object-contain" />;
-    const NewsIcon = ({ size = 20 }) => <img src={newsIcon} alt="News" style={{ width: size, height: size }} className="object-contain" />;
+    const PendingSwapIcon = ({ size = 20 }) => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
+    const ConfirmedSwapIcon = ({ size = 20 }) => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
+    const VerifiedSentIcon = ({ size = 20 }) => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
+    const NewsIcon = ({ size = 20 }) => <img src={newsIcon} alt="News" style={{ width: "33px", height: "32px" }} />;
+    const SwapIcon = ({ width = 20, height = 20 }) => (
+        <img
+            src={Swap}
+            alt="Swap"
+            style={{
+                width: "31px",
+                height: "29px",
+            }}
+        />
+    );
 
     const stats = [
         { label: "Total", value: String(newsletterStats.total_slots || 0), icon: NewsIcon },
-        { label: "Published Slots", value: String(newsletterStats.published_slots || 0), icon: Publish },
+        { label: "Published Slots", value: String(newsletterStats.published_slots || 0), icon: SwapIcon },
         { label: "Pending swap requests", value: String(newsletterStats.pending_swap_requests || 0), icon: PendingSwapIcon },
         { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps || 0), icon: ConfirmedSwapIcon },
         { label: "Verified sent", value: String(newsletterStats.verified_sent || 0), icon: VerifiedSentIcon },
@@ -179,7 +190,7 @@ const Newsletter = () => {
                 {stats.map((stat, index) => (
                     <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
                         <div className="flex justify-between items-start gap-2">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-lg">
                                 <stat.icon size={24} />
                             </div>
                             <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">{stat.label}</span>

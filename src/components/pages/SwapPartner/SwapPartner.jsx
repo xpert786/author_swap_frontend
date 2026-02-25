@@ -159,10 +159,10 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
             {/* ── Tags Row ── */}
             <div className="flex items-center gap-1 flex-wrap">
-                <span className="bg-[#EBF5EE] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+                <span className="bg-[#16A34A33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     {partner.genre}
                 </span>
-                <span className="inline-flex items-center gap-1 bg-[#FDECE8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 bg-[#E07A5F33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     <PartnersIcon size={12} /> {partner.partners}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-[#E8E8E8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
