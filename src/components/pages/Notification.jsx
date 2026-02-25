@@ -32,6 +32,12 @@ const Badge = ({ type, text }) => {
                     {text}
                 </span>
             );
+        case 'new':
+            return (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+                    {text}
+                </span>
+            );
         default:
             return (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-700 border border-gray-200">
@@ -57,10 +63,19 @@ const Notification = () => {
         try {
             setLoading(true);
             const response = await getNotifications();
-            // Handle different common API response structures
-            const entries = Array.isArray(response.data)
-                ? response.data
-                : (response.data?.results || response.data?.notifications || []);
+            // Handle different common API response structures, including grouped objects
+            let entries = [];
+            if (Array.isArray(response.data)) {
+                entries = response.data;
+            } else if (response.data?.results) {
+                entries = response.data.results;
+            } else if (response.data?.notifications) {
+                entries = response.data.notifications;
+            } else if (typeof response.data === 'object' && response.data !== null) {
+                // Handle grouping structure: { "Today": [...], "Yesterday": [...] }
+                entries = Object.values(response.data).flat();
+            }
+
             setNotifications(entries);
         } catch (error) {
             console.error("Failed to fetch notifications:", error);
@@ -106,11 +121,17 @@ const Notification = () => {
 
         const list = Array.isArray(unique) ? unique : [];
         const search = searchTerm.toLowerCase();
-        return list.filter(n => {
-            const title = (n.title || "").toLowerCase();
-            const message = (n.message || n.text || "").toLowerCase();
-            return title.includes(search) || message.includes(search);
-        });
+        return list
+            .filter(n => {
+                const title = (n.title || "").toLowerCase();
+                const message = (n.message || n.text || "").toLowerCase();
+                return title.includes(search) || message.includes(search);
+            })
+            .sort((a, b) => {
+                const timeA = dayjs(a.created_at || a.time || 0).valueOf();
+                const timeB = dayjs(b.created_at || b.time || 0).valueOf();
+                return timeB - timeA;
+            });
     }, [notifications, wsNotifications, searchTerm]);
 
     // Grouping logic moved to useMemo
@@ -190,7 +211,7 @@ const Notification = () => {
                                                         </h3>
                                                         {(item.badge || item.type) && (
                                                             <Badge
-                                                                type={item.badgeType || item.type?.toLowerCase()}
+                                                                type={item.badgeType || item.type?.toLowerCase() || item.badge?.toLowerCase()}
                                                                 text={item.badge || item.type}
                                                             />
                                                         )}

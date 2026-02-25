@@ -5,7 +5,8 @@ import {
     Trash2,
     Plus,
     Calendar,
-    Globe
+    Globe,
+    ChevronDown
 } from "lucide-react";
 import { SiAmazon } from "react-icons/si";
 import { FaApple } from "react-icons/fa";
@@ -210,6 +211,51 @@ const BooksPage = () => {
         <img src={UpGraphImg} alt="" className="w-[21px] h-[19px]" />
     );
 
+    const FilterDropdown = ({ label, options, value, onChange }) => {
+        const [open, setOpen] = useState(false);
+        const ref = React.useRef(null);
+
+        useEffect(() => {
+            const handler = (e) => {
+                if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+            };
+            document.addEventListener("mousedown", handler);
+            return () => document.removeEventListener("mousedown", handler);
+        }, []);
+
+        const selectedOption = options.find(opt => opt.value === value);
+        const displayLabel = selectedOption ? selectedOption.label : label;
+
+        return (
+            <div ref={ref} className="relative">
+                <button
+                    onClick={() => setOpen(!open)}
+                    className="flex items-center justify-between gap-3 px-4 py-2 border border-[#B5B5B5] rounded-[10px] bg-white text-[14px] text-black font-medium transition-all hover:border-[#2F6F6D] min-w-[120px]"
+                >
+                    <span className="whitespace-nowrap">{displayLabel}</span>
+                    <ChevronDown size={18} className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+                </button>
+
+                {open && (
+                    <div className="absolute top-[calc(100%+6px)] right-0 min-w-[180px] bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[100] overflow-y-auto max-h-[280px] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent animate-in fade-in slide-in-from-top-1">
+                        {options.map((opt) => (
+                            <div
+                                key={opt.value}
+                                className={`px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors ${value === opt.value ? "text-[#2F6F6D] font-bold bg-[#2F6F6D0D]" : ""}`}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setOpen(false);
+                                }}
+                            >
+                                {opt.label}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen">
 
@@ -257,14 +303,14 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex items-center justify-between mb-8 gap-4">
-                <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap shrink-0">
-                    My Books
-                </h2>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
+                <div className="flex items-center gap-4 w-full lg:w-auto">
+                    <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap shrink-0">
+                        My Books
+                    </h2>
 
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
                     {/* Search */}
-                    <div className="relative flex-1 max-w-[320px] min-w-[140px]">
+                    <div className="relative w-full max-w-[240px]">
                         <Search
                             size={16}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -277,56 +323,40 @@ const BooksPage = () => {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
+                </div>
 
-                    {/* Filters Group - Force single line on desktop, wrap only on mobile if necessary */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        <select
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="hidden sm:block min-w-[90px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
-                        >
-                            <option value="all">All Books</option>
-                            <option value="primary">Primary</option>
-                        </select>
+                <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:ml-auto">
+                    {/* Filters Group */}
+                    <FilterDropdown
+                        label="All Books"
+                        value={status}
+                        onChange={setStatus}
+                        options={[
+                            { label: "All Books", value: "all" },
+                            { label: "Primary", value: "primary" }
+                        ]}
+                    />
 
-                        <select
-                            value={genre}
-                            onChange={(e) => setGenre(e.target.value)}
-                            className="hidden md:block min-w-[100px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
-                        >
-                            <option value="all">All Genres</option>
-                            {genres.map((g) => (
-                                <option key={g.value} value={g.value}>
-                                    {g.label}
-                                </option>
-                            ))}
-                        </select>
+                    <FilterDropdown
+                        label="All Genres"
+                        value={genre}
+                        onChange={setGenre}
+                        options={[
+                            { label: "All Genres", value: "all" },
+                            ...genres
+                        ]}
+                    />
 
-                        <select
-                            value={availability}
-                            onChange={(e) => setAvailability(e.target.value)}
-                            className="hidden lg:block min-w-[100px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
-                        >
-                            <option value="all">Availability</option>
-                            <option value="wide">Wide</option>
-                            <option value="kindle">Kindle</option>
-                        </select>
-
-                        {/* Mobile dropdown for filters if needed, but for now let's just show them if they fit */}
-                        <div className="flex lg:hidden items-center gap-1.5">
-                            {/* Fallback for smaller screens to keep status/genre visible if space allows */}
-                            <select
-                                value={genre}
-                                onChange={(e) => setGenre(e.target.value)}
-                                className="md:hidden block min-w-[80px] px-2 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none"
-                            >
-                                <option value="all">Genre</option>
-                                {genres.map((g) => (
-                                    <option key={g.value} value={g.value}>{g.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+                    <FilterDropdown
+                        label="Availability"
+                        value={availability}
+                        onChange={setAvailability}
+                        options={[
+                            { label: "Availability", value: "all" },
+                            { label: "Wide", value: "wide" },
+                            { label: "Kindle", value: "kindle" }
+                        ]}
+                    />
                 </div>
             </div>
 

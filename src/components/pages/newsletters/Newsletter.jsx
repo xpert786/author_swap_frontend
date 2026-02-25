@@ -152,17 +152,10 @@ const Newsletter = () => {
         setDeleteOpen(true);
     };
 
-    const StatsIcon = ({ icon: Icon, size = 36 }) => {
-        if (typeof Icon === "function" && Icon.name.includes("Icon")) {
-            return <Icon size={size} />;
-        }
-        return <Icon size={size} />;
-    };
-
-    const PendingSwapIcon = ({ size = 36 }) => <img src={pendingSwapIcon} alt="Pending" width={size} height={size} />;
-    const ConfirmedSwapIcon = ({ size = 36 }) => <img src={confirmedSwapIcon} alt="Confirmed" width={size} height={size} />;
-    const VerifiedSentIcon = ({ size = 36 }) => <img src={verifiedSentIcon} alt="Verified" width={size} height={size} />;
-    const NewsIcon = ({ size = 36 }) => <img src={newsIcon} alt="News" width={size} height={size} />;
+    const PendingSwapIcon = ({ size = 20 }) => <img src={pendingSwapIcon} alt="Pending" style={{ width: size, height: size }} className="object-contain" />;
+    const ConfirmedSwapIcon = ({ size = 20 }) => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: size, height: size }} className="object-contain" />;
+    const VerifiedSentIcon = ({ size = 20 }) => <img src={verifiedSentIcon} alt="Verified" style={{ width: size, height: size }} className="object-contain" />;
+    const NewsIcon = ({ size = 20 }) => <img src={newsIcon} alt="News" style={{ width: size, height: size }} className="object-contain" />;
 
     const stats = [
         { label: "Total", value: String(newsletterStats.total_slots || 0), icon: NewsIcon },
@@ -178,17 +171,16 @@ const Newsletter = () => {
                 <h1 className="text-2xl font-semibold">Newsletter & Slot Management</h1>
                 <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Schedule, manage, and track your newsletter promotions</p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div className="flex flex-wrap xl:flex-nowrap gap-4 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-3 sm:p-4 flex flex-col gap-3 justify-between shadow-sm min-h-[100px]">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                            <div className="w-10 h-10 flex items-center justify-center">
-                                <stat.icon className="w-6 h-6" />
+                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] pl-1 pr-4 py-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] flex-1 min-w-[180px]">
+                        <div className="flex justify-between items-start gap-2">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+                                <stat.icon size={24} />
                             </div>
-                            <span className="text-[12px] font-medium text-[#374151]">{stat.label}</span>
+                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right whitespace-nowrap mt-1.5">{stat.label}</span>
                         </div>
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
+                        <div className="pl-3 text-xl md:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
                     </div>
                 ))}
             </div>
