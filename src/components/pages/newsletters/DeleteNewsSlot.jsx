@@ -31,7 +31,7 @@ const DeleteNewsSlot = ({ isOpen, onClose, onConfirm, slotName }) => {
                 </h2>
 
                 {/* Text */}
-                <p className="text-center text-[13px] text-gray-500 mb-6 px-4 leading-relaxed">
+                <p className="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">
                     Are you sure you want to cancel{" "}
                     <span className="font-semibold text-gray-700">
                         "{slotName || 'The Midnight Garden'}"

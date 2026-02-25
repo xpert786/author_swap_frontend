@@ -48,6 +48,26 @@ const StatusChip = ({ status }) => {
     );
 };
 
+const toCamel = (obj) => {
+    if (Array.isArray(obj)) return obj.map(v => toCamel(v));
+    if (obj !== null && obj.constructor === Object) {
+        return Object.keys(obj).reduce((result, key) => ({
+            ...result,
+            [key.replace(/_([a-z])/g, g => g[1].toUpperCase())]: toCamel(obj[key]),
+        }), {});
+    }
+    return obj;
+};
+
+const formatLabel = (str) => {
+    if (!str) return "N/A";
+    return str
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
 const SwapDetails = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -65,7 +85,7 @@ const SwapDetails = () => {
             try {
                 setLoading(true);
                 const response = await getSlotDetails(passed.id);
-                setDetail(response.data);
+                setDetail(toCamel(response.data));
             } catch (error) {
                 console.error("Failed to fetch slot details:", error);
             } finally {
@@ -109,15 +129,23 @@ const SwapDetails = () => {
                 {/* Avatar + Name */}
                 <div className="flex items-center gap-3.5 mb-4">
                     <img
-                        src={data.author_photo || data.photo || `https://ui-avatars.com/api/?name=${data.author_name || "A"}&background=random`}
+                        src={data.author?.profilePicture || data.photo || `https://ui-avatars.com/api/?name=${data.author?.name || "A"}&background=random`}
                         alt={data.name}
                         className="w-14 h-14 rounded-full object-cover shrink-0"
                     />
                     <div>
-                        <p className="text-base font-medium text-[Medium] mb-0.5">{data.author_name || data.name}</p>
-                        <p className="text-xs text-black flex items-center gap-1">
-                            <img src={SwapIcon} alt="" className="w-3 h-3 object-contain" /> {data.completed_swaps || data.swaps || 0} swaps completed
-                        </p>
+                        <p className="text-base font-medium text-[Medium] mb-0.5">{data.author?.name || data.name}</p>
+                        <div className="flex items-center gap-3">
+                            <p className="text-xs text-black flex items-center gap-1">
+                                <img src={SwapIcon} alt="" className="w-3 h-3 object-contain" /> {data.author?.swapsCompleted || 0} swaps completed
+                            </p>
+                            {data.author?.reputationScore && (
+                                <div className="flex items-center gap-1">
+                                    <Stars count={data.author.reputationScore} />
+                                    <span className="text-[10px] text-gray-500">({data.author.reputationScore}/5)</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -125,34 +153,34 @@ const SwapDetails = () => {
                 <div className="sd-meta-row flex items-start justify-between flex-wrap gap-5 border-t border-gray-100 pt-4">
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Date &amp; time</p>
-                        <p className="text-[13px] font-medium text-black">{data.date || "N/A"} at {data.time || "N/A"}</p>
+                        <p className="text-[13px] font-medium text-black">{data.sendDate || "N/A"} at {data.sendTime || "N/A"}</p>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Status</p>
                         <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
-                            {data.status || "Available"}
+                            {formatLabel(data.status)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Visibility</p>
                         <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(232,232,232,1)] text-black w-fit">
-                            <PublicIcon size={12} /> {data.visibility || "Public"}
+                            <PublicIcon size={12} /> {formatLabel(data.visibility)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Audience Size</p>
-                        <p className="text-[13px] font-medium text-black">{data.audience_size || data.audience || "0"} subscribers</p>
+                        <p className="text-[13px] font-medium text-black">{data.audienceSize || "0"} subscribers</p>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Genre</p>
                         <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
-                            {data.genre || "N/A"}
+                            {formatLabel(data.preferredGenre)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
                         <p className="text-[11px] text-black mb-1">Current Partners</p>
                         <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(224,122,95,0.2)] text-black w-fit">
-                            <PartnersIcon size={12} /> {data.current_partners || 0}/{data.max_partners || 3} Partners
+                            <PartnersIcon size={12} /> {data.currentPartnersCount || 0}/{data.maxPartners || 0} Partners
                         </span>
                     </div>
                 </div>
@@ -163,19 +191,19 @@ const SwapDetails = () => {
                 <p className="text-xl font-medium text-black mb-4">Analytics</p>
                 <div className="sd-analytics-grid grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.avg_open_rate || "43.3%"}</p>
+                        <p className="text-[22px] font-medium text-black mb-1">{data.avgOpenRate || "43.3%"}</p>
                         <p className="text-xs text-[#374151]">Avg Open Rate</p>
                     </div>
                     <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.avg_click_rate || "8.7%"}</p>
+                        <p className="text-[22px] font-medium text-black mb-1">{data.avgClickRate || "8.7%"}</p>
                         <p className="text-xs text-[#374151]">Avg Click Rate</p>
                     </div>
                     <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.monthly_growth || "+312"}</p>
+                        <p className="text-[22px] font-medium text-black mb-1">{data.monthlyGrowth || "+312"}</p>
                         <p className="text-xs text-[#374151]">Monthly Growth</p>
                     </div>
                     <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.send_reliability || "94%"}</p>
+                        <p className="text-[22px] font-medium text-black mb-1">{data.sendReliability || "94%"}</p>
                         <p className="text-xs text-[#374151]">Send Reliability</p>
                     </div>
                 </div>
@@ -190,7 +218,7 @@ const SwapDetails = () => {
                     <span className="flex items-center gap-2 text-sm font-semibold text-black">
                         <ConfirmedSendsIcon size={32} /> Confirmed Sends
                     </span>
-                    <span className="text-[13px] font-medium text-black">{data.confirmed_sends_score || "45/50"}</span>
+                    <span className="text-[13px] font-medium text-black">{data.confirmedSendsScore || "45/50"}</span>
                 </div>
                 <ProgressBar percent={90} color="#22c55e" />
                 <div className="flex justify-between text-[11px] text-black">
@@ -204,16 +232,16 @@ const SwapDetails = () => {
             <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-4 mb-7">
                 <p className="text-xl font-medium text-black mb-0.5">Reliability</p>
                 <p className="text-xs text-black mb-2.5">Reliability Score</p>
-                <ProgressBar percent={data.reliability_score || 92} color="#22c55e" />
+                <ProgressBar percent={data.reliabilityScore || 92} color="#22c55e" />
                 <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-[13px] font-medium text-black">{data.reliability_score || 92}/100</span>
+                    <span className="text-[13px] font-medium text-black">{data.reliabilityScore || 92}/100</span>
                     <span className="text-xs font-medium text-black">Excellent</span>
                 </div>
 
                 {/* ── Recent Swap History ── */}
                 <p className="text-base font-bold text-black mt-5 mb-3">Recent Swap History</p>
                 <div className="sd-history-grid grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                    {(data.recent_history || []).map((h, i) => (
+                    {(data.recentHistory || []).map((h, i) => (
                         <div key={i} className="border border-gray-200 rounded-xl p-3.5 flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-semibold text-black">{h.name}</span>
@@ -225,7 +253,7 @@ const SwapDetails = () => {
                             </span>
                         </div>
                     ))}
-                    {(!data.recent_history || data.recent_history.length === 0) && (
+                    {(!data.recentHistory || data.recentHistory.length === 0) && (
                         <p className="text-xs text-gray-400 italic">No recent history available</p>
                     )}
                 </div>

@@ -24,25 +24,20 @@ import { getSubscriberAnalytics } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
-const useResizeObserver = (ref) => {
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    useEffect(() => {
-        const observeTarget = ref.current;
-        const resizeObserver = new ResizeObserver((entries) => {
-            entries.forEach((entry) => {
-                setDimensions({
-                    width: entry.contentRect.width,
-                    height: entry.contentRect.height,
-                });
-            });
-        });
-        if (observeTarget) resizeObserver.observe(observeTarget);
-        return () => {
-            if (observeTarget) resizeObserver.unobserve(observeTarget);
-        };
-    }, [ref]);
-    return dimensions;
-};
+const defaultEmptyData = [
+    { month: "Jan", value: 0 },
+    { month: "Feb", value: 0 },
+    { month: "Mar", value: 0 },
+    { month: "Apr", value: 0 },
+    { month: "May", value: 0 },
+    { month: "Jun", value: 0 },
+    { month: "Jul", value: 0 },
+    { month: "Aug", value: 0 },
+    { month: "Sep", value: 0 },
+    { month: "Oct", value: 0 },
+    { month: "Nov", value: 0 },
+    { month: "Dec", value: 0 },
+];
 
 
 /* -------------------- DATA -------------------- */
@@ -97,11 +92,6 @@ const AnalyticsPage = () => {
     const [activeGraphTab, setActiveGraphTab] = useState("Open Rate");
     const [isMounted, setIsMounted] = useState(false);
 
-    const growthRef = React.useRef(null);
-    const trendRef = React.useRef(null);
-    const growthDim = useResizeObserver(growthRef);
-    const trendDim = useResizeObserver(trendRef);
-
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -141,8 +131,12 @@ const AnalyticsPage = () => {
 
     const campaigns = analytics?.campaign_analytics || [];
     const linkAnalysis = analytics?.link_level_ctr || [];
-    const subGrowth = Array.isArray(analytics?.growth_chart) ? analytics.growth_chart : [];
-    const histTrend = Array.isArray(analytics?.historical_trends) ? analytics.historical_trends : subGrowth;
+    const subGrowth = Array.isArray(analytics?.growth_chart) && analytics.growth_chart.length > 0
+        ? analytics.growth_chart
+        : defaultEmptyData;
+    const histTrend = Array.isArray(analytics?.historical_trends) && analytics.historical_trends.length > 0
+        ? analytics.historical_trends
+        : subGrowth;
 
     const filteredCampaigns = campaigns.filter(camp => {
         if (!camp) return false;
@@ -165,15 +159,7 @@ const AnalyticsPage = () => {
 
                 {/* ================= HEADER ================= */}
                 <div className="mb-6">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-gray-500 hover:text-[#2F6F6D] transition-all mb-4 group cursor-pointer"
-                    >
-                        <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#2F6F6D] group-hover:bg-[#2F6F6D0D] transition-all">
-                            <IoChevronBack className="text-lg transition-transform group-hover:-translate-x-0.5" />
-                        </div>
-                        <span className="text-sm font-medium">Back</span>
-                    </button>
+                  
                     <div className="flex justify-between items-end">
                         <div>
                             <h1 className="text-2xl font-semibold text-gray-900">
@@ -233,21 +219,34 @@ const AnalyticsPage = () => {
                     {/* ================= GROWTH CHART ================= */}
                     <div className="bg-white rounded-xl">
                         <h3 className="text-lg font-semibold mb-4">Subscriber Growth</h3>
-                        <div className="h-[320px]" ref={growthRef}>
-                            {isMounted && growthDim.width > 0 ? (
-                                <LineChart width={growthDim.width} height={320} data={subGrowth} key={`growth-${subGrowth.length}`}>
-                                    <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                                    <YAxis tick={{ fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="#059669"
-                                        strokeWidth={3}
-                                        dot={{ r: 4 }}
-                                    />
-                                </LineChart>
+                        <div className="h-[320px]">
+                            {isMounted ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={subGrowth} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
+                                        <XAxis
+                                            dataKey="month"
+                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            dy={10}
+                                        />
+                                        <YAxis
+                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <Tooltip />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="value"
+                                            stroke="#059669"
+                                            strokeWidth={3}
+                                            dot={{ r: 4, fill: '#059669', strokeWidth: 2, stroke: '#fff' }}
+                                            activeDot={{ r: 6 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             ) : (
                                 <div className="w-full h-full bg-gray-50 animate-pulse rounded-lg" />
                             )}
@@ -389,21 +388,33 @@ const AnalyticsPage = () => {
                             </div>
                         </div>
 
-                        <div className="h-[300px]" ref={trendRef}>
-                            {isMounted && trendDim.width > 0 ? (
-                                <AreaChart width={trendDim.width} height={300} data={histTrend} key={`trend-${activeGraphTab}`}>
-                                    <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                                    <YAxis tick={{ fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="#059669"
-                                        fill="#BBF7D0"
-                                        strokeWidth={3}
-                                    />
-                                </AreaChart>
+                        <div className="h-[300px]">
+                            {isMounted ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={histTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
+                                        <XAxis
+                                            dataKey="month"
+                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            dy={10}
+                                        />
+                                        <YAxis
+                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <Tooltip />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="value"
+                                            stroke="#059669"
+                                            fill="#BBF7D0"
+                                            strokeWidth={3}
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             ) : (
                                 <div className="w-full h-full bg-gray-50 animate-pulse rounded-lg" />
                             )}

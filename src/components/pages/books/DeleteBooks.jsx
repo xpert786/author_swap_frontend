@@ -28,7 +28,7 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle, loading }) => {
         </h2>
 
         {/* Message */}
-        <p className="text-center text-[13px] text-gray-500 mb-6 px-4 leading-relaxed">
+        <p className="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">
           Are you sure you want to delete{" "}
           <span className="font-semibold text-gray-700">"{bookTitle}"</span>{" "}
           book?

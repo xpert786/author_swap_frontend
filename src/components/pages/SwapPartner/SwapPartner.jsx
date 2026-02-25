@@ -187,7 +187,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Audience</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {partner.audience}
+                        {partner?.audience
+                            ? new Intl.NumberFormat('en-US').format(Number(partner.audience))
+                            : "0"}
                     </p>
                 </div>
             </div>
@@ -204,9 +206,21 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         navigate("/swap-details", {
                             state: {
                                 id: partner.id,
-                                name: partner.name,
-                                photo: partner.photo,
-                                swaps: partner.swaps,
+                                author: {
+                                    name: partner.author?.name,
+                                    profile_picture: partner.author?.profilePicture, // Keeping snake_case for the object keys if passed as they are, but better camel here too? 
+                                    // Actually, let's keep consistency. The recipient SwapDetails expects these specific keys in its "passed" object fallback.
+                                    swaps_completed: partner.author?.swapsCompleted,
+                                    reputation_score: partner.author?.reputationScore,
+                                },
+                                send_date: partner.sendDate,
+                                send_time: partner.sendTime,
+                                audience_size: partner.audienceSize,
+                                current_partners_count: partner.currentPartnersCount,
+                                max_partners: partner.maxPartners,
+                                preferred_genre: partner.preferredGenre,
+                                visibility: partner.visibility,
+                                status: partner.status,
                             },
                         });
                     }}
@@ -230,7 +244,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                     {partner.paid ? "Request Paid Swaps" : "Send Request"}
                 </button>
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -286,11 +300,32 @@ const FilterDropdown = ({ label, options }) => {
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+const toCamel = (obj) => {
+    if (Array.isArray(obj)) return obj.map(v => toCamel(v));
+    if (obj !== null && obj.constructor === Object) {
+        return Object.keys(obj).reduce((result, key) => ({
+            ...result,
+            [key.replace(/_([a-z])/g, g => g[1].toUpperCase())]: toCamel(obj[key]),
+        }), {});
+    }
+    return obj;
+};
+
+const formatLabel = (str) => {
+    if (!str) return "N/A";
+    return str
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
 const SwapPartner = () => {
     const [slots, setSlots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [selectedId, setSelectedId] = useState(null);
+    const [requestingId, setRequestingId] = useState(null);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
 
     const fetchSlots = async () => {
@@ -299,6 +334,9 @@ const SwapPartner = () => {
             const response = await getExploreSlots();
             // Handle common DRF structures or direct arrays
             let data = response.data?.results || response.data || [];
+            // Handle camelCase conversion
+            data = toCamel(data);
+
             // Fallback to static data if API returns empty list
             if (data.length === 0) {
                 console.log("No dynamic partners found, showing static fallback data.");
@@ -320,8 +358,8 @@ const SwapPartner = () => {
     }, []);
 
     const filtered = (Array.isArray(slots) ? slots : []).filter((p) =>
-        (p.author_name || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (p.genre || "").toLowerCase().includes(search.toLowerCase())
+        (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.preferredGenre || p.genre || "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -375,26 +413,32 @@ const SwapPartner = () => {
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filtered.map((partner) => (
                             <PartnerCard
                                 key={partner.id}
                                 partner={{
                                     ...partner,
                                     // Map API fields if they are different from UI requirements
-                                    name: partner.author_name || partner.name || "Anonymous",
-                                    photo: partner.author_photo || partner.photo || `https://ui-avatars.com/api/?name=${partner.author_name || "A"}&background=random`,
-                                    swaps: partner.completed_swaps || partner.swaps || 0,
-                                    date: partner.date || "N/A",
-                                    time: partner.time || "N/A",
-                                    audience: partner.audience_size || partner.audience || "0",
-                                    partners: `${partner.current_partners || 0}/${partner.max_partners || 3} Partners`,
-                                    visibility: partner.visibility || "Public",
-                                    genre: partner.genre || "N/A",
+                                    name: partner.author?.name || "Anonymous",
+                                    photo: partner.author?.profilePicture || `https://ui-avatars.com/api/?name=${partner.author?.name || "A"}&background=random`,
+                                    swaps: partner.author?.swapsCompleted || 0,
+                                    date: partner.sendDate || "N/A",
+                                    time: partner.sendTime || "N/A",
+                                    audience: partner.audienceSize || "0",
+                                    partners: `${partner.currentPartnersCount || 0}/${partner.maxPartners || 0} Partners`,
+                                    visibility: formatLabel(partner.visibility),
+                                    genre: formatLabel(partner.preferredGenre),
+                                    paid: partner.price && partner.price !== "0.00",
+                                    paidAmount: `$${partner.price || "0.00"}`,
+                                    badge: formatLabel(partner.promotionType),
                                 }}
                                 isSelected={selectedId === partner.id}
                                 onClick={() => setSelectedId(partner.id)}
-                                onSendRequest={() => setIsRequestOpen(true)}
+                                onSendRequest={() => {
+                                    setRequestingId(partner.id);
+                                    setIsRequestOpen(true);
+                                }}
                             />
                         ))}
                     </div>
@@ -409,7 +453,11 @@ const SwapPartner = () => {
 
             <SwapRequest
                 isOpen={isRequestOpen}
-                onClose={() => setIsRequestOpen(false)}
+                id={requestingId}
+                onClose={() => {
+                    setIsRequestOpen(false);
+                    setRequestingId(null);
+                }}
             />
 
         </div>
