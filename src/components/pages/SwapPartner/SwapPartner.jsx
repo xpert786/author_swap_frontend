@@ -121,33 +121,34 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             onClick={onClick}
         >
             {/* ── Header Row ── */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2">
-
-                {/* Left Section */}
-                <div className="flex items-start gap-3">
+            <div className="flex flex-wrap items-start justify-start gap-x-4 gap-y-2">
+                {/* Left Section - Avatar, Name, Swaps */}
+                <div className="flex items-start gap-3 min-w-0">
                     <img
                         src={partner.photo}
                         alt={partner.name}
                         className="w-10 h-10 rounded-full object-cover shrink-0"
                     />
 
-                    <div>
-                        {/* Name + Swaps in column */}
-                        <p className="text-[14px] font-medium text-black leading-none">
-                            {partner.name}
-                        </p>
-                        <p className="text-[10px] text-[#374151] mt-1">
-                            {partner.swaps} swaps completed
-                        </p>
+                    <div className="min-w-0">
+                        {/* Name + Swaps forced into one line */}
+                        <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                            <p className="text-[14px] font-bold text-black leading-tight">
+                                {partner.name}
+                            </p>
+                            <p className="text-[10px] text-[#374151] font-medium">
+                                ({partner.swaps} swaps completed)
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap gap-1 mt-2 lg:mt-0">
+                {/* Badges Row - Left aligned and drops down naturally */}
+                <div className="flex flex-wrap items-center gap-1.5">
                     {getBadges().map((b, i) => (
                         <span
                             key={i}
-                            className={`${b.bg} text-black text-[10px] font-medium px-2 py-0.5 rounded-full`}
+                            className={`${b.bg} text-black text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap`}
                         >
                             {b.text}
                         </span>

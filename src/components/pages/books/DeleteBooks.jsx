@@ -5,7 +5,7 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle, loading }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white w-[400px] rounded-[10px] shadow-xl p-6 relative">
         {/* Close Button */}
         <button

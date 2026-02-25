@@ -85,19 +85,19 @@ const BooksPage = () => {
     }, []);
 
     /* ---------------- FETCH GENRES ---------------- */
-  useEffect(() => {
-    const loadGenres = async () => {
-      try {
-        const data = await getGenres();
-        console.log("GENRES API:", data); // 👈 ADD THIS
-        setGenres(data);
-      } catch (error) {
-        toast.error("Failed to load genres");
-      }
-    };
+    useEffect(() => {
+        const loadGenres = async () => {
+            try {
+                const data = await getGenres();
+                console.log("GENRES API:", data); // 👈 ADD THIS
+                setGenres(data);
+            } catch (error) {
+                toast.error("Failed to load genres");
+            }
+        };
 
-    loadGenres();
-  }, []);
+        loadGenres();
+    }, []);
     /* ---------------- FETCH STATS ---------------- */
     useEffect(() => {
         const fetchStats = async () => {
@@ -427,8 +427,8 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
             <div className="p-4 flex flex-col flex-1 gap-3">
 
                 <div className="flex justify-between items-start gap-3">
-                    <div>
-                        <h3 className="font-medium text-[16px]">
+                    <div className="min-w-0">
+                        <h3 className="font-medium text-[16px] break-words">
                             {book.title}
                         </h3>
 
@@ -441,7 +441,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 shrink-0">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();

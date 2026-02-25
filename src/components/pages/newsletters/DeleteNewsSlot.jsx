@@ -5,7 +5,7 @@ const DeleteNewsSlot = ({ isOpen, onClose, onConfirm, slotName }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
             <div className="w-[400px] rounded-[10px] bg-white p-6 shadow-xl relative">
 
                 {/* Close Button */}

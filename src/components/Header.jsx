@@ -167,7 +167,10 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                                 </p>
                                 <p className="text-[11px] text-gray-500">
                                     {profile?.primary_genre
-                                        ? `${profile.primary_genre.charAt(0).toUpperCase() + profile.primary_genre.slice(1)} Author`
+                                        ? `${profile.primary_genre
+                                            .split("_")
+                                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                            .join(" ")} Author`
                                         : "Author"}
                                 </p>
                             </div>

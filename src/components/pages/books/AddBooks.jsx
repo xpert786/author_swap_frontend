@@ -155,7 +155,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
           {/* Header */}

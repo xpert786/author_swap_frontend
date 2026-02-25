@@ -20,37 +20,37 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("SUBMIT CLICKED", formData);  // 👈 ADD THIS
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("SUBMIT CLICKED", formData);  // 👈 ADD THIS
+    setLoading(true);
 
-  try {
-    await onSave(formData);
-    onClose();
-  } catch (error) {
-    console.error("Update failed:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      await onSave(formData);
+      onClose();
+    } catch (error) {
+      console.error("Update failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
-useEffect(() => {
-  if (bookData) {
-    setFormData({
-      ...bookData,
-      publishDate: bookData.publish_date || "",
-      genre: bookData.primary_genre || "",
-      isPrimary: bookData.is_primary_promo || false,
-      amazonUrl: bookData.amazon_url || "",
-      appleUrl: bookData.apple_url || "",
-      koboUrl: bookData.kobo_url || "",
-      barnesUrl: bookData.barnes_url || "",
-      coverImage: bookData.book_cover || null,
-    });
-  }
-}, [bookData]);
+  useEffect(() => {
+    if (bookData) {
+      setFormData({
+        ...bookData,
+        publishDate: bookData.publish_date || "",
+        genre: bookData.primary_genre || "",
+        isPrimary: bookData.is_primary_promo || false,
+        amazonUrl: bookData.amazon_url || "",
+        appleUrl: bookData.apple_url || "",
+        koboUrl: bookData.kobo_url || "",
+        barnesUrl: bookData.barnes_url || "",
+        coverImage: bookData.book_cover || null,
+      });
+    }
+  }, [bookData]);
 
   if (!formData) return null;
 
@@ -68,7 +68,7 @@ useEffect(() => {
   }, [formData?.coverImage]);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
           {/* Header */}
