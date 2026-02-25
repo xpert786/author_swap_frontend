@@ -5,7 +5,7 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle, loading }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white w-[400px] rounded-[10px] shadow-xl p-6 relative">
         {/* Close Button */}
         <button
@@ -28,7 +28,7 @@ const DeleteBooks = ({ isOpen, onClose, onConfirm, bookTitle, loading }) => {
         </h2>
 
         {/* Message */}
-        <p className="text-center text-[13px] text-gray-500 mb-6 px-4 leading-relaxed">
+        <p className="text-center text-[13px] text-gray-500 mb-6 leading-relaxed">
           Are you sure you want to delete{" "}
           <span className="font-semibold text-gray-700">"{bookTitle}"</span>{" "}
           book?

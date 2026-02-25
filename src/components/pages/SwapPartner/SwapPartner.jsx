@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
+import { getExploreSlots } from "../../../apis/swapPartner";
 import "./SwapPartner.css";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -121,47 +122,47 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             onClick={onClick}
         >
             {/* ── Header Row ── */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2">
-
-                {/* Left Section */}
-                <div className="flex items-start gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                {/* Left Section - Avatar, Name, Swaps */}
+                <div className="flex items-start gap-3 min-w-0">
                     <img
                         src={partner.photo}
                         alt={partner.name}
                         className="w-10 h-10 rounded-full object-cover shrink-0"
                     />
 
-                    <div>
-                        {/* Name + Swaps in column */}
-                        <p className="text-[14px] font-medium text-black leading-none">
-                            {partner.name}
-                        </p>
-                        <p className="text-[10px] text-[#374151] mt-1">
-                            {partner.swaps} swaps completed
-                        </p>
+                    <div className="min-w-0">
+                        {/* Name + Swaps forced into one line */}
+                        <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
+                            <p className="text-[14px] font-bold text-black leading-tight">
+                                {partner.name}
+                            </p>
+                            <p className="text-[10px] text-[#374151] font-medium">
+                                ({partner.swaps} swaps completed)
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap gap-1 mt-2 lg:mt-0">
+                {/* Badges Row - Left aligned and drops down naturally */}
+                <div className="flex flex-wrap items-center gap-1">
                     {getBadges().map((b, i) => (
                         <span
                             key={i}
-                            className={`${b.bg} text-black text-[10px] font-medium px-2 py-0.5 rounded-full`}
+                            className={`${b.bg} text-black text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap`}
                         >
                             {b.text}
                         </span>
                     ))}
                 </div>
-
             </div>
 
             {/* ── Tags Row ── */}
-            <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-[#EBF5EE] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+            <div className="flex items-center gap-1 flex-wrap">
+                <span className="bg-[#16A34A33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     {partner.genre}
                 </span>
-                <span className="inline-flex items-center gap-1 bg-[#FDECE8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 bg-[#E07A5F33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
                     <PartnersIcon size={12} /> {partner.partners}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-[#E8E8E8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
@@ -186,7 +187,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Audience</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {partner.audience}
+                        {partner?.audience
+                            ? new Intl.NumberFormat('en-US').format(Number(partner.audience))
+                            : "0"}
                     </p>
                 </div>
             </div>
@@ -202,9 +205,22 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         e.stopPropagation();
                         navigate("/swap-details", {
                             state: {
-                                name: partner.name,
-                                photo: partner.photo,
-                                swaps: partner.swaps,
+                                id: partner.id,
+                                author: {
+                                    name: partner.author?.name,
+                                    profile_picture: partner.author?.profilePicture, // Keeping snake_case for the object keys if passed as they are, but better camel here too? 
+                                    // Actually, let's keep consistency. The recipient SwapDetails expects these specific keys in its "passed" object fallback.
+                                    swaps_completed: partner.author?.swapsCompleted,
+                                    reputation_score: partner.author?.reputationScore,
+                                },
+                                send_date: partner.sendDate,
+                                send_time: partner.sendTime,
+                                audience_size: partner.audienceSize,
+                                current_partners_count: partner.currentPartnersCount,
+                                max_partners: partner.maxPartners,
+                                preferred_genre: partner.preferredGenre,
+                                visibility: partner.visibility,
+                                status: partner.status,
                             },
                         });
                     }}
@@ -228,7 +244,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                     {partner.paid ? "Request Paid Swaps" : "Send Request"}
                 </button>
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -284,13 +300,66 @@ const FilterDropdown = ({ label, options }) => {
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+const toCamel = (obj) => {
+    if (Array.isArray(obj)) return obj.map(v => toCamel(v));
+    if (obj !== null && obj.constructor === Object) {
+        return Object.keys(obj).reduce((result, key) => ({
+            ...result,
+            [key.replace(/_([a-z])/g, g => g[1].toUpperCase())]: toCamel(obj[key]),
+        }), {});
+    }
+    return obj;
+};
+
+const formatLabel = (str) => {
+    if (!str) return "N/A";
+    return str
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
 const SwapPartner = () => {
+    const [slots, setSlots] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [selectedId, setSelectedId] = useState(1); // Default highlight first card
+    const [selectedId, setSelectedId] = useState(null);
+    const [requestingId, setRequestingId] = useState(null);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
 
-    const filtered = partners.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase())
+    const fetchSlots = async () => {
+        try {
+            setLoading(true);
+            const response = await getExploreSlots();
+            // Handle common DRF structures or direct arrays
+            let data = response.data?.results || response.data || [];
+            // Handle camelCase conversion
+            data = toCamel(data);
+
+            // Fallback to static data if API returns empty list
+            if (data.length === 0) {
+                console.log("No dynamic partners found, showing static fallback data.");
+                data = partners;
+            }
+            setSlots(data);
+            if (data.length > 0) setSelectedId(data[0].id);
+        } catch (error) {
+            console.error("Failed to fetch explore slots, showing static fallback data:", error);
+            setSlots(partners);
+            if (partners.length > 0) setSelectedId(partners[0].id);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchSlots();
+    }, []);
+
+    const filtered = (Array.isArray(slots) ? slots : []).filter((p) =>
+        (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.preferredGenre || p.genre || "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -336,29 +405,61 @@ const SwapPartner = () => {
                 </div>
             </div>
 
-            {/* Grid Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filtered.map((partner) => (
-                    <PartnerCard
-                        key={partner.id}
-                        partner={partner}
-                        isSelected={selectedId === partner.id}
-                        onClick={() => setSelectedId(partner.id)}
-                        onSendRequest={() => setIsRequestOpen(true)}
-                    />
-                ))}
-            </div>
+            {/* Content Section */}
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                    <FiRefreshCw className="animate-spin text-[#2F6F6D] mb-4" size={40} />
+                    <p className="text-gray-500 font-medium tracking-tight">Loading swap partners...</p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filtered.map((partner) => (
+                            <PartnerCard
+                                key={partner.id}
+                                partner={{
+                                    ...partner,
+                                    // Map API fields if they are different from UI requirements
+                                    name: partner.author?.name || "Anonymous",
+                                    photo: partner.author?.profilePicture || `https://ui-avatars.com/api/?name=${partner.author?.name || "A"}&background=random`,
+                                    swaps: partner.author?.swapsCompleted || 0,
+                                    date: partner.sendDate || "N/A",
+                                    time: partner.sendTime || "N/A",
+                                    audience: partner.audienceSize || "0",
+                                    partners: `${partner.currentPartnersCount || 0}/${partner.maxPartners || 0} Partners`,
+                                    visibility: formatLabel(partner.visibility),
+                                    genre: formatLabel(partner.preferredGenre),
+                                    paid: partner.price && partner.price !== "0.00",
+                                    paidAmount: `$${partner.price || "0.00"}`,
+                                    badge: formatLabel(partner.promotionType),
+                                }}
+                                isSelected={selectedId === partner.id}
+                                onClick={() => setSelectedId(partner.id)}
+                                onSendRequest={() => {
+                                    setRequestingId(partner.id);
+                                    setIsRequestOpen(true);
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {filtered.length === 0 && (
+                        <div className="text-center py-16 text-gray-400 text-sm italic">
+                            No partners found matching "{search}"
+                        </div>
+                    )}
+                </>
+            )}
 
             <SwapRequest
                 isOpen={isRequestOpen}
-                onClose={() => setIsRequestOpen(false)}
+                id={requestingId}
+                onClose={() => {
+                    setIsRequestOpen(false);
+                    setRequestingId(null);
+                }}
             />
 
-            {filtered.length === 0 && (
-                <div className="text-center py-16 text-gray-400 text-sm italic">
-                    No partners found matching "{search}"
-                </div>
-            )}
         </div>
     );
 };

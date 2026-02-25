@@ -3,7 +3,7 @@ import { createNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
-const AddNewsSlot = ({ isOpen, onClose }) => {
+const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     send_date: "",
     send_time: "",
@@ -49,6 +49,11 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
 
     try {
       await createNewsSlot(formData);
+
+      if (onSubmit) {
+        await onSubmit();
+      }
+
       onClose();
       setFormData({
         send_date: "",
@@ -79,7 +84,7 @@ const AddNewsSlot = ({ isOpen, onClose }) => {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
 

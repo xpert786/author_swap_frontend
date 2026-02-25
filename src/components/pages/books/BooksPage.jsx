@@ -5,7 +5,8 @@ import {
     Trash2,
     Plus,
     Calendar,
-    Globe
+    Globe,
+    ChevronDown
 } from "lucide-react";
 import { SiAmazon } from "react-icons/si";
 import { FaApple } from "react-icons/fa";
@@ -86,17 +87,18 @@ const BooksPage = () => {
 
     /* ---------------- FETCH GENRES ---------------- */
     useEffect(() => {
-        const fetchGenres = async () => {
+        const loadGenres = async () => {
             try {
                 const data = await getGenres();
-                setGenres(data || []);
-            } catch (err) {
-                console.error("Failed to fetch genres:", err);
+                console.log("GENRES API:", data); // 👈 ADD THIS
+                setGenres(data);
+            } catch (error) {
+                toast.error("Failed to load genres");
             }
         };
-        fetchGenres();
-    }, []);
 
+        loadGenres();
+    }, []);
     /* ---------------- FETCH STATS ---------------- */
     useEffect(() => {
         const fetchStats = async () => {
@@ -195,11 +197,12 @@ const BooksPage = () => {
             setDeleteLoading(false);
         }
     };
-
     const handleEditClick = (book) => {
         setSelectedBook(book);
         setShowEditModal(true);
     };
+
+
 
     const MegaPhone = () => (
         <img src={Megaphone} alt="" className="w-[21px] h-[19px]" />
@@ -208,6 +211,51 @@ const BooksPage = () => {
     const UpGraph = () => (
         <img src={UpGraphImg} alt="" className="w-[21px] h-[19px]" />
     );
+
+    const FilterDropdown = ({ label, options, value, onChange }) => {
+        const [open, setOpen] = useState(false);
+        const ref = React.useRef(null);
+
+        useEffect(() => {
+            const handler = (e) => {
+                if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+            };
+            document.addEventListener("mousedown", handler);
+            return () => document.removeEventListener("mousedown", handler);
+        }, []);
+
+        const selectedOption = options.find(opt => opt.value === value);
+        const displayLabel = selectedOption ? selectedOption.label : label;
+
+        return (
+            <div ref={ref} className="relative">
+                <button
+                    onClick={() => setOpen(!open)}
+                    className="flex items-center justify-between gap-3 px-4 py-2 border border-[#B5B5B5] rounded-[10px] bg-white text-[14px] text-black font-medium transition-all hover:border-[#2F6F6D] min-w-[120px]"
+                >
+                    <span className="whitespace-nowrap">{displayLabel}</span>
+                    <ChevronDown size={18} className={`text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+                </button>
+
+                {open && (
+                    <div className="absolute top-[calc(100%+6px)] right-0 min-w-[180px] bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[100] overflow-y-auto max-h-[280px] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent animate-in fade-in slide-in-from-top-1">
+                        {options.map((opt) => (
+                            <div
+                                key={opt.value}
+                                className={`px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors ${value === opt.value ? "text-[#2F6F6D] font-bold bg-[#2F6F6D0D]" : ""}`}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setOpen(false);
+                                }}
+                            >
+                                {opt.label}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen">
@@ -229,7 +277,22 @@ const BooksPage = () => {
                     Add New Book
                 </button>
 
-                {isOpen && <AddBooks onClose={() => setIsOpen(false)} />}
+                {isOpen && (
+                    <AddBooks
+                        onClose={() => setIsOpen(false)}
+                        onBookAdded={(newBook) => {
+                            const formattedBook = {
+                                ...newBook,
+                                book_cover: newBook.book_cover?.startsWith("http")
+                                    ? newBook.book_cover
+                                    : `${import.meta.env.VITE_BACKEND_URL}${newBook.book_cover}`,
+                                rating: Number(newBook.rating) || 0,
+                            };
+
+                            setBooks((prev) => [formattedBook, ...prev]);
+                        }}
+                    />
+                )}
             </div>
 
             {/* STATS */}
@@ -241,64 +304,60 @@ const BooksPage = () => {
             </div>
 
             {/* FILTERS */}
-            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-8">
-
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                    My Books
-                </h2>
-
-                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
+                <div className="flex items-center gap-4 w-full lg:w-auto">
+                    <h2 className="text-xl font-bold text-gray-900 whitespace-nowrap shrink-0">
+                        My Books
+                    </h2>
 
                     {/* Search */}
-                    <div className="relative w-full sm:w-64 lg:w-72 xl:w-80">
+                    <div className="relative w-full max-w-[240px]">
                         <Search
-                            size={18}
-                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         />
                         <input
                             type="text"
-                            placeholder="Search books by title..."
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-[#2F6F6D]"
+                            placeholder="Search books..."
+                            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none truncate"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
+                </div>
 
-                    {/* Status */}
-                    <select
+                <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:ml-auto">
+                    {/* Filters Group */}
+                    <FilterDropdown
+                        label="All Books"
                         value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="min-w-[140px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">All Books</option>
-                        <option value="primary">Primary Promo</option>
-                    </select>
+                        onChange={setStatus}
+                        options={[
+                            { label: "All Books", value: "all" },
+                            { label: "Primary", value: "primary" }
+                        ]}
+                    />
 
-                    {/* Genre */}
-                    <select
+                    <FilterDropdown
+                        label="All Genres"
                         value={genre}
-                        onChange={(e) => setGenre(e.target.value)}
-                        className="min-w-[160px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">All Genres</option>
-                        {genres.map((g) => (
-                            <option key={g.value} value={g.value}>
-                                {g.label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={setGenre}
+                        options={[
+                            { label: "All Genres", value: "all" },
+                            ...genres
+                        ]}
+                    />
 
-                    {/* Availability */}
-                    <select
+                    <FilterDropdown
+                        label="Availability"
                         value={availability}
-                        onChange={(e) => setAvailability(e.target.value)}
-                        className="min-w-[170px] px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                    >
-                        <option value="all">Availability</option>
-                        <option value="wide">Wide</option>
-                        <option value="kindle">Kindle Unlimited</option>
-                    </select>
-
+                        onChange={setAvailability}
+                        options={[
+                            { label: "Availability", value: "all" },
+                            { label: "Wide", value: "wide" },
+                            { label: "Kindle", value: "kindle" }
+                        ]}
+                    />
                 </div>
             </div>
 
@@ -411,8 +470,8 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
             <div className="p-4 flex flex-col flex-1 gap-3">
 
                 <div className="flex justify-between items-start gap-3">
-                    <div>
-                        <h3 className="font-medium text-[16px]">
+                    <div className="min-w-0">
+                        <h3 className="font-medium text-[16px] break-words">
                             {book.title}
                         </h3>
 
@@ -425,7 +484,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 shrink-0">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();

@@ -1,84 +1,146 @@
 import React, { useEffect, useState } from "react";
+import { getGenres, getSubGenres } from "../../../apis/genre";
+import toast from "react-hot-toast";
 
 const EditBooks = ({ bookData, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState(() => bookData || {});
+  const [genres, setGenres] = useState([]);
+  const [allSubGenres, setAllSubGenres] = useState({});
+  const [subGenres, setSubGenres] = useState([]);
+  const [formData, setFormData] = useState({
+    id: "",
+    title: "",
+    genre: "",
+    subgenre: "",
+    price: "",
+    availability: "",
+    publishDate: "",
+    description: "",
+    amazonUrl: "",
+    appleUrl: "",
+    koboUrl: "",
+    barnesUrl: "",
+    coverImage: null,
+    preview: null,
+    isPrimary: false,
+    ratings: "",
+  });
 
+  // Load initial data
   useEffect(() => {
-    setFormData(bookData);
+    if (bookData) {
+      setFormData({
+        id: bookData.id || "",
+        title: bookData.title || "",
+        genre: bookData.primary_genre || "",
+        subgenre: Array.isArray(bookData.subgenres)
+          ? bookData.subgenres[0]
+          : (bookData.subgenres || bookData.sub_genre || ""),
+        price: bookData.price_tier || "",
+        availability: bookData.availability || "",
+        publishDate: bookData.publish_date || "",
+        description: bookData.description || "",
+        amazonUrl: bookData.amazon_url || "",
+        appleUrl: bookData.apple_url || "",
+        koboUrl: bookData.kobo_url || "",
+        barnesUrl: bookData.barnes_noble_url || "",
+        coverImage: bookData.book_cover || null,
+        preview: bookData.book_cover || null,
+        isPrimary: bookData.is_primary_promo || false,
+        ratings: bookData.rating || "",
+      });
+    }
   }, [bookData]);
+
+  // Load Genres and Subgenres
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [genresData, subGenresData] = await Promise.all([
+          getGenres(),
+          getSubGenres()
+        ]);
+        setGenres(genresData);
+        setAllSubGenres(subGenresData);
+      } catch (error) {
+        toast.error("Failed to load genres data");
+      }
+    };
+    loadData();
+  }, []);
+
+  // Filter Subgenres based on selected Genre
+  useEffect(() => {
+    if (!formData.genre || !allSubGenres[formData.genre]) {
+      setSubGenres([]);
+      return;
+    }
+    setSubGenres(allSubGenres[formData.genre] || []);
+  }, [formData.genre, allSubGenres]);
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
     if (type === "file") {
-      setFormData({ ...formData, coverImage: files[0] });
+      const file = files[0];
+      if (file) {
+        setFormData((prev) => ({
+          ...prev,
+          coverImage: file,
+          preview: URL.createObjectURL(file)
+        }));
+      }
     } else if (type === "checkbox") {
-      setFormData({ ...formData, [name]: checked });
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => {
+        let newValue = value;
+        if (name === "ratings") {
+          const val = parseFloat(value);
+          if (val > 5) newValue = 5;
+          else if (val < 0) newValue = 0;
+        }
+        return {
+          ...prev,
+          [name]: newValue,
+          // Reset subgenre if genre changes
+          ...(name === "genre" ? { subgenre: "" } : {})
+        };
+      });
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("SUBMIT CLICKED", formData);  // 👈 ADD THIS
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    await onSave(formData);
-    onClose();
-  } catch (error) {
-    console.error("Update failed:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-useEffect(() => {
-  if (bookData) {
-    setFormData({
-      ...bookData,
-      publishDate: bookData.publish_date || "",
-      genre: bookData.primary_genre || "",
-      isPrimary: bookData.is_primary_promo || false,
-      amazonUrl: bookData.amazon_url || "",
-      appleUrl: bookData.apple_url || "",
-      koboUrl: bookData.kobo_url || "",
-      barnesUrl: bookData.barnes_url || "",
-      coverImage: bookData.book_cover || null,
-    });
-  }
-}, [bookData]);
-
-  if (!formData) return null;
-
-  useEffect(() => {
-    let previewUrl;
-
-    if (formData?.coverImage instanceof File) {
-      previewUrl = URL.createObjectURL(formData.coverImage);
-      setFormData((prev) => ({ ...prev, preview: previewUrl }));
+    try {
+      await onSave(formData);
+      onClose();
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error(error?.response?.data?.message || "Failed to update book");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [formData?.coverImage]);
+  if (!bookData) return null;
+
+  
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
-                Edit "{formData.title}" Book
+                Edit "{formData.title}"
               </h2>
               <p className="text-[13px] text-gray-500 mt-0.5">
-                Edit details about your book.
+                Update your book details.
               </p>
             </div>
             <button
@@ -90,10 +152,8 @@ useEffect(() => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-
             {/* Book Info Grid */}
             <div className="grid grid-cols-2 gap-6">
-
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Book Title
@@ -104,6 +164,7 @@ useEffect(() => {
                   value={formData.title}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
+                  required
                 />
               </div>
 
@@ -116,10 +177,12 @@ useEffect(() => {
                   value={formData.genre}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
+                  required
                 >
-                  <option>Fantasy</option>
-                  <option>Romance</option>
-                  <option>Thriller</option>
+                  <option value="">Select Genre</option>
+                  {genres.map((g) => (
+                    <option key={g.value} value={g.value}>{g.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -127,13 +190,18 @@ useEffect(() => {
                 <label className="text-[13px] font-medium text-gray-600">
                   Subgenre
                 </label>
-                <input
-                  type="text"
+                <select
                   name="subgenre"
                   value={formData.subgenre}
                   onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                  disabled={!formData.genre}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                >
+                  <option value="">Select Subgenre</option>
+                  {subGenres.map((sub) => (
+                    <option key={sub.value} value={sub.value}>{sub.label}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -146,10 +214,11 @@ useEffect(() => {
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 >
-                  <option>Standard Price</option>
-                  <option>$0.99</option>
-                  <option>$2.99</option>
-                  <option>$4.99</option>
+                  <option value="">Select Price</option>
+                  <option value="free">Free</option>
+                  <option value="discount">Discount</option>
+                  <option value="0.99">$0.99</option>
+                  <option value="standard">Standard</option>
                 </select>
               </div>
             </div>
@@ -168,10 +237,9 @@ useEffect(() => {
                   className="hidden"
                 />
 
-                {/* Preview */}
-                {formData.coverImage ? (
+                {formData.preview ? (
                   <img
-                    src={formData.preview || formData.coverImage}
+                    src={formData.preview}
                     alt="preview"
                     className="h-full object-contain"
                   />
@@ -181,16 +249,15 @@ useEffect(() => {
                       Drop Files Here Or Click To Browse
                     </p>
                     <p className="text-[11px] text-gray-400 mt-1">
-                      Supports JPG, PNG (Max 5MB)
+                      Maximum file size 5MB
                     </p>
                   </div>
                 )}
               </label>
             </div>
 
-
-            {/* Availability + Publish Date */}
-            <div className="grid grid-cols-2 gap-6">
+            {/* Availability + Ratings + Date */}
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Availability
@@ -201,9 +268,26 @@ useEffect(() => {
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 >
-                  <option>Available</option>
-                  <option>Coming Soon</option>
+                  <option value="">Select</option>
+                  <option value="wide">Wide</option>
+                  <option value="kindle_unlimited">Kindle Unlimited</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-[13px] font-medium text-gray-600">
+                  Ratings
+                </label>
+                <input
+                  type="number"
+                  name="ratings"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  value={formData.ratings}
+                  onChange={handleChange}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                />
               </div>
 
               <div>
@@ -239,12 +323,11 @@ useEffect(() => {
               <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
                 Retailer Links
               </h3>
-
               <div className="grid grid-cols-2 gap-4">
-                <input type="url" name="amazonUrl" value={formData.amazonUrl || ""} onChange={handleChange} placeholder="Amazon URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
-                <input type="url" name="appleUrl" value={formData.appleUrl || ""} onChange={handleChange} placeholder="Apple Books URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
-                <input type="url" name="koboUrl" value={formData.koboUrl || ""} onChange={handleChange} placeholder="Kobo URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
-                <input type="url" name="barnesUrl" value={formData.barnesUrl || ""} onChange={handleChange} placeholder="Barnes & Noble URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
+                <input type="url" name="amazonUrl" value={formData.amazonUrl} onChange={handleChange} placeholder="Amazon URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
+                <input type="url" name="appleUrl" value={formData.appleUrl} onChange={handleChange} placeholder="Apple Books URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
+                <input type="url" name="koboUrl" value={formData.koboUrl} onChange={handleChange} placeholder="Kobo URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
+                <input type="url" name="barnesUrl" value={formData.barnesUrl} onChange={handleChange} placeholder="Barnes & Noble URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
               </div>
             </div>
 
@@ -253,7 +336,7 @@ useEffect(() => {
               <input
                 type="checkbox"
                 name="isPrimary"
-                checked={formData.isPrimary || false}
+                checked={formData.isPrimary}
                 onChange={handleChange}
                 className="h-4 w-4 rounded border-[#B5B5B5] text-[#2F6F6D] focus:ring-[#2F6F6D]"
               />
@@ -277,7 +360,7 @@ useEffect(() => {
                 disabled={loading}
                 className="px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 transition shadow-sm"
               >
-                {loading ? "Saving..." : "Save Book"}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>

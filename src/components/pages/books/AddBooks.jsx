@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useEffect } from "react";
 import { getGenres, getSubGenres } from "../../../apis/genre"; // adjust path
 
-const AddBooks = ({ onClose }) => {
+const AddBooks = ({ onClose, onBookAdded }) => {
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
@@ -106,6 +106,12 @@ const AddBooks = ({ onClose }) => {
         };
       }
 
+      if (name === "ratings") {
+        const val = parseFloat(value);
+        if (val > 5) return { ...prev, [name]: 5 };
+        if (val < 0) return { ...prev, [name]: 0 };
+      }
+
       return { ...prev, [name]: value };
     });
   };
@@ -135,7 +141,12 @@ const AddBooks = ({ onClose }) => {
         data.append("book_cover", formData.coverImage);
       }
 
-      await createBook(data);
+      const response = await createBook(data);
+      const savedBook = response?.data;
+
+      if (onBookAdded && savedBook) {
+        onBookAdded(savedBook);
+      }
 
       toast.success("Book added successfully!");
       onClose();
@@ -150,7 +161,7 @@ const AddBooks = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
           {/* Header */}
@@ -315,13 +326,16 @@ const AddBooks = ({ onClose }) => {
                 </select>
               </div>
 
-                <div>
+              <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Ratings
                 </label>
                 <input
                   type="number"
                   name="ratings"
+                  step="0.1"
+                  min="0"
+                  max="5"
                   value={formData.ratings}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"

@@ -6,6 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../apis/auth";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +38,7 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      alert(error?.response?.data?.message || error.message || "Login failed");
+      toast(error?.response?.data?.message || error.message || "Login failed");
     }
   };
 
@@ -114,8 +115,8 @@ const Login = () => {
                     {...register("password", {
                       required: "Password is required",
                       minLength: {
-                        value: 6,
-                        message: "Minimum 6 characters required",
+                        value: 8,
+                        message: "Minimum 8 characters required",
                       },
                     })}
                     className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12

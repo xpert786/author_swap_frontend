@@ -1,38 +1,99 @@
-import React, { useState } from "react";
-import { FiX, FiChevronDown } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiX, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { CheckBadgeIcon } from "../../icons";
+import { updateSwapRequest, sendSwapRequest } from "../../../apis/swapPartner";
+import { getBooks } from "../../../apis/bookManegment";
+import { toast } from "react-hot-toast";
 
-const books = [
-    {
-        id: 1,
-        title: "The Midnight Garden",
-        genre: "Mystery",
-        cover: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=200",
-    },
-    {
-        id: 2,
-        title: "Lost In Boston",
-        genre: "Fantasy",
-        cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200",
-    },
-    {
-        id: 3,
-        title: "The Midnight Garden",
-        genre: "Romantic",
-        cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=200",
-    },
-];
 
-const SwapRequest = ({ isOpen, onClose }) => {
-    const [selectedBook, setSelectedBook] = useState(1);
+
+const SwapRequest = ({ isOpen, onClose, id }) => {
+    const [selectedBook, setSelectedBook] = useState(null);
+    const [bookList, setBookList] = useState([]);
     const [placement, setPlacement] = useState("Top");
     const [message, setMessage] = useState("");
+    const [maxPartners, setMaxPartners] = useState("5 Partners");
+    const [retailerLinks, setRetailerLinks] = useState({
+        amazonUrl: "",
+        appleUrl: "",
+        koboUrl: "",
+        barnesNobleUrl: ""
+    });
+    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            if (isOpen) {
+                try {
+                    setLoading(true);
+
+                    // Fetch both details and books in parallel
+                    const [requestRes, booksRes] = await Promise.allSettled([
+                        id ? updateSwapRequest(id) : Promise.resolve(null),
+                        getBooks()
+                    ]);
+
+                    // Handle books response
+                    if (booksRes.status === 'fulfilled') {
+                        const fetchedBooks = booksRes.value.data?.results || booksRes.value.data || [];
+                        setBookList(fetchedBooks);
+                        if (fetchedBooks.length > 0 && !selectedBook) {
+                            setSelectedBook(fetchedBooks[0].id);
+                        }
+                    }
+
+                    // Handle request details response
+                    if (requestRes.status === 'fulfilled' && requestRes.value) {
+                        const data = requestRes.value.data;
+                        if (data) {
+                            setMessage(data.message || "");
+                            setPlacement(data.placement || "Top");
+                            setMaxPartners(data.max_partners ? `${data.max_partners} Partners` : "5 Partners");
+                            setRetailerLinks({
+                                amazonUrl: data.amazon_url || "",
+                                appleUrl: data.appleUrl || "",
+                                koboUrl: data.koboUrl || "",
+                                barnesNobleUrl: data.barnes_noble_url || ""
+                            });
+                            if (data.book_id) setSelectedBook(data.book_id);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch initial data:", error);
+                    toast.error("Failed to load initial data");
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+        fetchInitialData();
+    }, [isOpen, id]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle swap request submission here
-        console.log("Submitting swap request:", { selectedBook, placement, message });
-        onClose();
+        try {
+            setSubmitting(true);
+            const payload = {
+                slot_id: id,
+                book_id: selectedBook,
+                placement,
+                message,
+                max_partners: parseInt(maxPartners),
+                amazon_url: retailerLinks.amazonUrl,
+                apple_url: retailerLinks.appleUrl,
+                kobo_url: retailerLinks.koboUrl,
+                barnes_noble_url: retailerLinks.barnesNobleUrl
+            };
+            await sendSwapRequest(payload);
+            toast.success("Swap request sent successfully!");
+            onClose();
+        } catch (error) {
+            console.error("Failed to send swap request:", error);
+            toast.error(error.response?.data?.message || "Failed to send swap request");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -40,7 +101,12 @@ const SwapRequest = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4">
             <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
-                <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+                    {loading && (
+                        <div className="absolute inset-0 bg-white/70 z-50 flex items-center justify-center">
+                            <FiRefreshCw className="animate-spin text-[#2F6F6D]" size={30} />
+                        </div>
+                    )}
                     {/* Header */}
                     <div className="flex justify-between items-start mb-6">
                         <div>
@@ -66,31 +132,37 @@ const SwapRequest = ({ isOpen, onClose }) => {
                             <h3 className="text-sm font-medium text-[#111827] mb-4">
                                 Choose a Book to Promote
                             </h3>
-                            <div className="flex gap-4">
-                                {books.map((book) => (
-                                    <div
-                                        key={book.id}
-                                        onClick={() => setSelectedBook(book.id)}
-                                        className={`flex-1 min-w-0 p-2 rounded-[10px] border-2 
-    transition-all duration-200 ease-in-out cursor-pointer
-    ${selectedBook === book.id
-                                                ? "border-[#E07A5F] bg-[#E07A5F1A]"
-                                                : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
-                                            }`}
-                                    >
-                                        <img
-                                            src={book.cover}
-                                            alt={book.title}
-                                            className="w-full h-20 object-cover rounded-lg mb-2 shadow-sm"
-                                        />
-                                        <h4 className="text-[11px] font-medium text-black text-center truncate">
-                                            {book.title}
-                                        </h4>
-                                        <p className="text-[10px] text-[#374151] text-center">
-                                            {book.genre}
-                                        </p>
+                            <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+                                {bookList.length > 0 ? (
+                                    bookList.map((book) => (
+                                        <div
+                                            key={book.id}
+                                            onClick={() => setSelectedBook(book.id)}
+                                            className={`flex-none w-32 p-2 rounded-[10px] border-2 
+                                                transition-all duration-200 ease-in-out cursor-pointer
+                                                ${selectedBook === book.id
+                                                    ? "border-[#E07A5F] bg-[#E07A5F1A]"
+                                                    : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            <img
+                                                src={book.book_cover || book.cover}
+                                                alt={book.title}
+                                                className="w-full h-20 object-cover rounded-lg mb-2 shadow-sm"
+                                            />
+                                            <h4 className="text-[11px] font-medium text-black text-center truncate">
+                                                {book.title}
+                                            </h4>
+                                            <p className="text-[10px] text-[#374151] text-center">
+                                                {book.primary_genre || book.genre}
+                                            </p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="w-full text-center py-4 text-gray-400 text-xs italic">
+                                        No books found. Please add a book first.
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
 
@@ -175,9 +247,13 @@ const SwapRequest = ({ isOpen, onClose }) => {
                                     Max Partners Allowed
                                 </label>
                                 <div className="relative">
-                                    <select className="w-full appearance-none bg-white border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none pr-10">
-                                        <option>5 Partners</option>
-                                        <option>10 Partners</option>
+                                    <select
+                                        value={maxPartners}
+                                        onChange={(e) => setMaxPartners(e.target.value)}
+                                        className="w-full appearance-none bg-white border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none pr-10"
+                                    >
+                                        <option value="5 Partners">5 Partners</option>
+                                        <option value="10 Partners">10 Partners</option>
                                     </select>
                                     <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 </div>
@@ -194,6 +270,8 @@ const SwapRequest = ({ isOpen, onClose }) => {
                                         </label>
                                         <input
                                             type="url"
+                                            value={retailerLinks.amazonUrl}
+                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, amazonUrl: e.target.value })}
                                             placeholder="Amazon URL"
                                             className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                                         />
@@ -204,6 +282,8 @@ const SwapRequest = ({ isOpen, onClose }) => {
                                         </label>
                                         <input
                                             type="url"
+                                            value={retailerLinks.appleUrl}
+                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, appleUrl: e.target.value })}
                                             placeholder="Apple Books URL"
                                             className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                                         />
@@ -214,6 +294,8 @@ const SwapRequest = ({ isOpen, onClose }) => {
                                         </label>
                                         <input
                                             type="url"
+                                            value={retailerLinks.koboUrl}
+                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, koboUrl: e.target.value })}
                                             placeholder="Kobo URL"
                                             className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                                         />
@@ -224,6 +306,8 @@ const SwapRequest = ({ isOpen, onClose }) => {
                                         </label>
                                         <input
                                             type="url"
+                                            value={retailerLinks.barnesNobleUrl}
+                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, barnesNobleUrl: e.target.value })}
                                             placeholder="Barnes & Noble URL"
                                             className="w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                                         />
@@ -260,9 +344,11 @@ const SwapRequest = ({ isOpen, onClose }) => {
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-1.5 bg-[#2F6F6D] rounded-[8px] text-sm font-medium text-white"
+                                disabled={submitting}
+                                className="px-4 py-1.5 bg-[#2F6F6D] rounded-[8px] text-sm font-medium text-white disabled:opacity-50 flex items-center gap-2"
                             >
-                                Send Swap Request
+                                {submitting && <FiRefreshCw className="animate-spin" />}
+                                {submitting ? "Sending..." : "Send Swap Request"}
                             </button>
                         </div>
                     </form>

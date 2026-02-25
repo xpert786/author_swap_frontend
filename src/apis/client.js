@@ -49,9 +49,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
 
-      window.location.replace(
-        `${import.meta.env.VITE_API_BASE_URL}login`
-      );
+      window.location.replace("/authorswap-frontend/login");
     }
 
     return Promise.reject(error);

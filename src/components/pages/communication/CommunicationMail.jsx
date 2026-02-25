@@ -11,8 +11,8 @@ import {
 const CommunicationMail = ({ mail, onBack }) => {
     return (
         <div className="bg-white rounded-2xl border border-[#B5B5B5] shadow-sm overflow-hidden">
-            {/* Back Button (Optional, but kept for navigation) */}
-            <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+            {/* Back Button */}
+            <div className="p-3 md:p-4 border-b border-gray-100 flex items-center gap-2">
                 <button
                     onClick={onBack}
                     className="text-sm text-[#2F6F6D] hover:underline flex items-center gap-1"
@@ -21,34 +21,31 @@ const CommunicationMail = ({ mail, onBack }) => {
                 </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 md:p-6">
                 {/* Header Section */}
-                <div className="flex items-start justify-between mb-8">
-                    <div className="flex items-start gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 md:mb-8">
+                    <div className="flex items-start gap-3 md:gap-4">
                         <img
                             src={mail.avatar || "https://i.pravatar.cc/40?img=1"}
                             alt={mail.name}
-                            className="w-12 h-12 rounded-full object-cover shadow-sm"
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-sm"
                         />
-                        <div>
-                            <div className="flex items-baseline gap-2">
-                                <h2 className="text-lg font-bold text-gray-900">{mail.name}</h2>
-                                <span className="text-gray-400 text-sm">
-                                    &lt; {mail.email} &gt;
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-baseline gap-x-2">
+                                <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">{mail.name}</h2>
+                                <span className="text-gray-400 text-xs md:text-sm truncate">
+                                    &lt;{mail.email}&gt;
                                 </span>
-                                <button className="text-xs text-blue-500 hover:underline ml-1">
-                                    Unsubscribe
-                                </button>
                             </div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                            <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mt-1">
                                 <span>To me , john Deo</span>
                                 <ChevronDown size={14} className="cursor-pointer" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-gray-400">
-                        <span className="text-xs font-medium">9:14 AM (8 hours ago)</span>
+                    <div className="flex items-center justify-between sm:justify-end gap-4 text-gray-400">
+                        <span className="text-[10px] md:text-xs font-medium">9:14 AM (8 hours ago)</span>
                         <div className="flex items-center gap-3">
                             <Star size={18} className="cursor-pointer hover:text-yellow-400" />
                             <Reply size={18} className="cursor-pointer hover:text-gray-600" />
@@ -61,7 +58,7 @@ const CommunicationMail = ({ mail, onBack }) => {
                 </div>
 
                 {/* Message Content */}
-                <div className="text-sm text-[#2D2F33] leading-relaxed mb-10 max-w-4xl">
+                <div className="text-sm text-[#2D2F33] leading-relaxed mb-8 md:mb-10 max-w-4xl">
                     <p>
                         Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. qui
                         esse pariatur duis deserunt mollit dolore cillum minim tempor enim.
@@ -72,25 +69,25 @@ const CommunicationMail = ({ mail, onBack }) => {
 
                 {/* Quick Action Buttons */}
                 <div className="space-y-4 pt-4 border-t border-gray-100">
-                    <div className="flex gap-3">
-                        <button className="px-4 py-2 border border-[#B5B5B5] rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                        <button className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             Thanks for the request
                         </button>
-                        <button className="px-4 py-2 border border-[#B5B5B5] rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             Accepted - Here's my promo info
                         </button>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button className="flex items-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             <Reply size={16} />
                             Reply
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             Forward
                             <CornerUpRight size={16} />
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             Reply All
                             <ReplyAll size={16} />
                         </button>

@@ -90,13 +90,9 @@ export default function BookDetails() {
 
             </div>
 
-            {/* Main Card */}
-            {/* ===== Main Card ===== */}
             <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
-                <div className="flex gap-12 items-stretch">
-                    {/* LEFT SIDE – COVER */}
-                    {/* LEFT SIDE – COVER */}
-                    <div className="w-75 shrink-0">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-stretch">
+                   <div className="w-full lg:w-80 xl:w-96">
                         <div className="h-full rounded-[10px] overflow-hidden shadow-md">
                             <img
                                 src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600"
@@ -130,7 +126,7 @@ export default function BookDetails() {
                                 Book Metadata
                             </h2>
 
-                            <div className="grid grid-cols-3 gap-6">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <MetaCard label="Page Count" value="320" />
                                 <MetaCard label="Language" value="English" />
                                 <MetaCard label="ISBN" value="978-1234567890" />
