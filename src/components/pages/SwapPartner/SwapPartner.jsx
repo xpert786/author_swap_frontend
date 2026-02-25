@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
+import { getExploreSlots } from "../../../apis/swapPartner";
 import "./SwapPartner.css";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -202,6 +203,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         e.stopPropagation();
                         navigate("/swap-details", {
                             state: {
+                                id: partner.id,
                                 name: partner.name,
                                 photo: partner.photo,
                                 swaps: partner.swaps,
@@ -285,12 +287,40 @@ const FilterDropdown = ({ label, options }) => {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const SwapPartner = () => {
+    const [slots, setSlots] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [selectedId, setSelectedId] = useState(1); // Default highlight first card
+    const [selectedId, setSelectedId] = useState(null);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
 
-    const filtered = partners.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase())
+    const fetchSlots = async () => {
+        try {
+            setLoading(true);
+            const response = await getExploreSlots();
+            // Handle common DRF structures or direct arrays
+            let data = response.data?.results || response.data || [];
+            // Fallback to static data if API returns empty list
+            if (data.length === 0) {
+                console.log("No dynamic partners found, showing static fallback data.");
+                data = partners;
+            }
+            setSlots(data);
+            if (data.length > 0) setSelectedId(data[0].id);
+        } catch (error) {
+            console.error("Failed to fetch explore slots:", error);
+            // toast.error("Failed to load swap partners");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchSlots();
+    }, []);
+
+    const filtered = (Array.isArray(slots) ? slots : []).filter((p) =>
+        (p.author_name || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.genre || "").toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -336,29 +366,50 @@ const SwapPartner = () => {
                 </div>
             </div>
 
-            {/* Grid Content */}
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filtered.map((partner) => (
-                    <PartnerCard
-                        key={partner.id}
-                        partner={partner}
-                        isSelected={selectedId === partner.id}
-                        onClick={() => setSelectedId(partner.id)}
-                        onSendRequest={() => setIsRequestOpen(true)}
-                    />
-                ))}
-            </div>
+            {/* Content Section */}
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                    <FiRefreshCw className="animate-spin text-[#2F6F6D] mb-4" size={40} />
+                    <p className="text-gray-500 font-medium tracking-tight">Loading swap partners...</p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filtered.map((partner) => (
+                            <PartnerCard
+                                key={partner.id}
+                                partner={{
+                                    ...partner,
+                                    // Map API fields if they are different from UI requirements
+                                    name: partner.author_name || partner.name || "Anonymous",
+                                    photo: partner.author_photo || partner.photo || `https://ui-avatars.com/api/?name=${partner.author_name || "A"}&background=random`,
+                                    swaps: partner.completed_swaps || partner.swaps || 0,
+                                    date: partner.date || "N/A",
+                                    time: partner.time || "N/A",
+                                    audience: partner.audience_size || partner.audience || "0",
+                                    partners: `${partner.current_partners || 0}/${partner.max_partners || 3} Partners`,
+                                    visibility: partner.visibility || "Public",
+                                    genre: partner.genre || "N/A",
+                                }}
+                                isSelected={selectedId === partner.id}
+                                onClick={() => setSelectedId(partner.id)}
+                                onSendRequest={() => setIsRequestOpen(true)}
+                            />
+                        ))}
+                    </div>
+
+                    {filtered.length === 0 && (
+                        <div className="text-center py-16 text-gray-400 text-sm italic">
+                            No partners found matching "{search}"
+                        </div>
+                    )}
+                </>
+            )}
 
             <SwapRequest
                 isOpen={isRequestOpen}
                 onClose={() => setIsRequestOpen(false)}
             />
-
-            {filtered.length === 0 && (
-                <div className="text-center py-16 text-gray-400 text-sm italic">
-                    No partners found matching "{search}"
-                </div>
-            )}
         </div>
     );
 };

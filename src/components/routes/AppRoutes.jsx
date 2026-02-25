@@ -60,7 +60,7 @@ const AppRoutes = () => {
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/newsletter" element={<Newsletter />} />
           <Route path="/swap-management" element={<SwapManagement />} />
-          <Route path="/swap-history" element={<SwapHistory />} />
+          <Route path="/swap-history/:id" element={<SwapHistory />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
           <Route path="/notifications" element={<Notification />} />

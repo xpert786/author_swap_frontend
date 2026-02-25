@@ -5,8 +5,11 @@ import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5"
 import AddBooks from "../pages/books/AddBooks";
 import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useMemo } from "react";
+dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
+import { useNotifications } from "../../context/NotificationContext";
 
 
 const OpenBook = () => {
@@ -16,6 +19,7 @@ const OpenBook = () => {
 }
 
 const Dashboard = () => {
+  const { notifications } = useNotifications();
   const mockData = {
     stats: [
       { label: "Book", value: "3", icon: OpenBook, color: "bg-[#2F6F6D33]" },
@@ -214,7 +218,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
-            {mockData.recentActivity.map((activity) => (
+            {(notifications && notifications.length > 0 ? notifications.slice(0, 6) : mockData.recentActivity).map((activity) => (
               <div
                 key={activity.id}
                 className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
@@ -223,14 +227,17 @@ const Dashboard = () => {
 
                 <div className="w-full">
                   <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug">
-                    {activity.title}
+                    {activity.title || activity.message || "Notification Received"}
                   </p>
                   <p className="text-[11px] font-medium text-[#374151] mt-0.5">
-                    {activity.time}
+                    {activity.created_at ? dayjs(activity.created_at).fromNow() : (activity.time || "Just now")}
                   </p>
                 </div>
               </div>
             ))}
+            {(!notifications || notifications.length === 0) && mockData.recentActivity.length === 0 && (
+              <p className="text-xs text-center text-gray-400 italic py-4">No recent activity</p>
+            )}
           </div>
         </div>
       </div>
