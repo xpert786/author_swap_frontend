@@ -1,3 +1,5 @@
+import { IoChevronBack } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
@@ -74,6 +76,7 @@ const tiers = [
 ];
 
 export default function SubscriptionPage() {
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState("subscription");
     const [verification, setVerification] = useState(null);
@@ -139,6 +142,15 @@ export default function SubscriptionPage() {
             <div className="mx-auto">
                 {/* Header */}
                 <div className="mb-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-gray-500 hover:text-[#2F6F6D] transition-all mb-4 group cursor-pointer"
+                    >
+                        <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#2F6F6D] group-hover:bg-[#2F6F6D0D] transition-all">
+                            <IoChevronBack className="text-lg transition-transform group-hover:-translate-x-0.5" />
+                        </div>
+                        <span className="text-sm font-medium">Back</span>
+                    </button>
                     <h1 className="text-2xl font-semibold text-gray-900">
                         Subscriber Verification & Analytics
                     </h1>

@@ -8,8 +8,6 @@ import { useState } from "react";
 const SlotDetails = ({ isOpen, onClose, onEdit }) => {
     const [swapOpen, setSwapOpen] = useState(false);
     if (!isOpen) return null;
-
-    // Dummy Data (replace later with API)
     const slot = {
         date: "Wednesday, May 15 at 10:00 AM EST",
         audienceSize: "12,450 subscribers",

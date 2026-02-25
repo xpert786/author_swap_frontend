@@ -17,10 +17,32 @@ import { LuRefreshCw } from "react-icons/lu";
 import { ShieldMinus, Check, UsersRound, HeartPulse } from "lucide-react";
 import openRate from "../../../assets/avgOpenRate.png";
 import { RxCursorArrow } from "react-icons/rx";
+import { IoChevronBack } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getSubscriberAnalytics } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+
+const useResizeObserver = (ref) => {
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    useEffect(() => {
+        const observeTarget = ref.current;
+        const resizeObserver = new ResizeObserver((entries) => {
+            entries.forEach((entry) => {
+                setDimensions({
+                    width: entry.contentRect.width,
+                    height: entry.contentRect.height,
+                });
+            });
+        });
+        if (observeTarget) resizeObserver.observe(observeTarget);
+        return () => {
+            if (observeTarget) resizeObserver.unobserve(observeTarget);
+        };
+    }, [ref]);
+    return dimensions;
+};
 
 
 /* -------------------- DATA -------------------- */
@@ -68,10 +90,17 @@ const AnalyticsPage = () => {
         );
     };
 
+    const navigate = useNavigate();
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("Recent");
     const [activeGraphTab, setActiveGraphTab] = useState("Open Rate");
+    const [isMounted, setIsMounted] = useState(false);
+
+    const growthRef = React.useRef(null);
+    const trendRef = React.useRef(null);
+    const growthDim = useResizeObserver(growthRef);
+    const trendDim = useResizeObserver(trendRef);
 
     const fetchData = async () => {
         try {
@@ -80,7 +109,7 @@ const AnalyticsPage = () => {
             setAnalytics(analyticsRes.data);
         } catch (error) {
             console.error("Failed to fetch analytics data", error);
-            toast.error("Failed to load subscriber analytics");
+            // toast.error("Failed to load subscriber analytics");
         } finally {
             setLoading(false);
         }
@@ -88,6 +117,7 @@ const AnalyticsPage = () => {
 
     useEffect(() => {
         fetchData();
+        setIsMounted(true);
     }, []);
 
     if (loading) {
@@ -111,8 +141,8 @@ const AnalyticsPage = () => {
 
     const campaigns = analytics?.campaign_analytics || [];
     const linkAnalysis = analytics?.link_level_ctr || [];
-    const subGrowth = analytics?.growth_chart || [];
-    const histTrend = analytics?.growth_chart || []; // Defaulting to growth chart if specific trend isn't provided
+    const subGrowth = Array.isArray(analytics?.growth_chart) ? analytics.growth_chart : [];
+    const histTrend = Array.isArray(analytics?.historical_trends) ? analytics.historical_trends : subGrowth;
 
     const filteredCampaigns = campaigns.filter(camp => {
         if (!camp) return false;
@@ -134,14 +164,25 @@ const AnalyticsPage = () => {
             <div className="mx-auto space-y-8 pb-10">
 
                 {/* ================= HEADER ================= */}
-                <div className="mb-6 flex justify-between items-end">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-gray-900">
-                            Subscriber Analytics
-                        </h1>
-                        <p className="text-sm text-gray-500 mt-1">
-                            Track your newsletter growth, engagement, and campaign performance
-                        </p>
+                <div className="mb-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-gray-500 hover:text-[#2F6F6D] transition-all mb-4 group cursor-pointer"
+                    >
+                        <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#2F6F6D] group-hover:bg-[#2F6F6D0D] transition-all">
+                            <IoChevronBack className="text-lg transition-transform group-hover:-translate-x-0.5" />
+                        </div>
+                        <span className="text-sm font-medium">Back</span>
+                    </button>
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900">
+                                Subscriber Analytics
+                            </h1>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Track your newsletter growth, engagement, and campaign performance
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -192,9 +233,9 @@ const AnalyticsPage = () => {
                     {/* ================= GROWTH CHART ================= */}
                     <div className="bg-white rounded-xl">
                         <h3 className="text-lg font-semibold mb-4">Subscriber Growth</h3>
-                        <div className="h-[320px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={subGrowth}>
+                        <div className="h-[320px]" ref={growthRef}>
+                            {isMounted && growthDim.width > 0 ? (
+                                <LineChart width={growthDim.width} height={320} data={subGrowth} key={`growth-${subGrowth.length}`}>
                                     <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" />
                                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                                     <YAxis tick={{ fontSize: 12 }} />
@@ -207,7 +248,9 @@ const AnalyticsPage = () => {
                                         dot={{ r: 4 }}
                                     />
                                 </LineChart>
-                            </ResponsiveContainer>
+                            ) : (
+                                <div className="w-full h-full bg-gray-50 animate-pulse rounded-lg" />
+                            )}
                         </div>
                     </div>
 
@@ -346,9 +389,9 @@ const AnalyticsPage = () => {
                             </div>
                         </div>
 
-                        <div className="h-[300px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={histTrend}>
+                        <div className="h-[300px]" ref={trendRef}>
+                            {isMounted && trendDim.width > 0 ? (
+                                <AreaChart width={trendDim.width} height={300} data={histTrend} key={`trend-${activeGraphTab}`}>
                                     <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" />
                                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                                     <YAxis tick={{ fontSize: 12 }} />
@@ -361,7 +404,9 @@ const AnalyticsPage = () => {
                                         strokeWidth={3}
                                     />
                                 </AreaChart>
-                            </ResponsiveContainer>
+                            ) : (
+                                <div className="w-full h-full bg-gray-50 animate-pulse rounded-lg" />
+                            )}
                         </div>
                     </div>
                 </div>
