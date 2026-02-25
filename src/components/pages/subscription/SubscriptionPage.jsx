@@ -1,8 +1,8 @@
-import React from "react";
-import { useState } from "react";
-import { Check } from "lucide-react";
-import { Rocket, Crown, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
+import { getSubscriberVerification, connectMailerlite } from "../../../apis/subscription";
+import toast from "react-hot-toast";
 
 
 
@@ -76,10 +76,62 @@ const tiers = [
 export default function SubscriptionPage() {
 
     const [activeTab, setActiveTab] = useState("subscription");
+    const [verification, setVerification] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [showConnect, setShowConnect] = useState(false);
+    const [apiKey, setApiKey] = useState("");
+    const [connecting, setConnecting] = useState(false);
+
+    const fetchVerification = async () => {
+        try {
+            setLoading(true);
+            const res = await getSubscriberVerification();
+            setVerification(res.data);
+        } catch (error) {
+            console.error("Failed to fetch verification status", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleConnect = async () => {
+        if (!apiKey) {
+            toast.error("Please enter an API key");
+            return;
+        }
+        try {
+            setConnecting(true);
+            await connectMailerlite({ api_key: apiKey });
+            toast.success("Connected to MailerLite successfully");
+            setShowConnect(false);
+            fetchVerification();
+        } catch (error) {
+            console.error("Connection failed", error);
+            toast.error("Failed to connect to MailerLite");
+        } finally {
+            setConnecting(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchVerification();
+    }, []);
 
     if (activeTab === "analytics") {
         return <AnalyticsPage />;
     }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
+            </div>
+        );
+    }
+
+    const verifDetails = verification?.verification || {};
+    const isConnected = verifDetails.is_connected_mailerlite || false;
+    const lastSynced = verifDetails.last_verified_at || "Never";
 
 
     return (
@@ -94,13 +146,88 @@ export default function SubscriptionPage() {
                         <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
                             Request, manage, and track newsletter partnerships
                         </p>
-                        <span className="inline-flex items-center gap-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                            <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                            Connected to MailerLite
-                        </span>
-
+                        {isConnected ? (
+                            <span className="inline-flex items-center gap-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                                Connected to MailerLite
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-2 text-xs bg-red-100 text-red-700 px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-red-600 rounded-full"></span>
+                                Disconnected
+                            </span>
+                        )}
                     </div>
                 </div>
+
+                {/* MailerLite Connection Section */}
+                {!isConnected ? (
+                    <div className="mb-8 p-6 bg-white border border-[#B5B5B5] rounded-xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 className="text-lg font-semibold text-[#111827]">Connect MailerLite</h3>
+                                <p className="text-sm text-[#374151]">Your newsletter must be connected to verify swaps and view analytics.</p>
+                            </div>
+                            {!showConnect && (
+                                <button
+                                    onClick={() => setShowConnect(true)}
+                                    className="bg-[#2F6F6D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all"
+                                >
+                                    Connect Now
+                                </button>
+                            )}
+                        </div>
+
+                        {showConnect && (
+                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">MailerLite API Key</label>
+                                <div className="flex gap-3">
+                                    <input
+                                        type="password"
+                                        value={apiKey}
+                                        onChange={(e) => setApiKey(e.target.value)}
+                                        placeholder="Paste your API Key here"
+                                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
+                                    />
+                                    <button
+                                        onClick={handleConnect}
+                                        disabled={connecting}
+                                        className="bg-[#2F6F6D] text-white px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                                    >
+                                        {connecting ? "Connecting..." : "Confirm"}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowConnect(false)}
+                                        className="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                                <p className="mt-2 text-[11px] text-gray-500">
+                                    Last synced: {lastSynced}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                                <Check size={18} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-emerald-900">Successfully connected to MailerLite</p>
+                                <p className="text-xs text-emerald-700">Last verified: {lastSynced}</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={fetchVerification}
+                            className="text-[#2F6F6D] text-sm font-medium hover:underline flex items-center gap-1"
+                        >
+                            Refresh Status
+                        </button>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div>

@@ -13,17 +13,18 @@ export const updateBook = async (id, data) => {
 
     formData.append("title", data.title);
     formData.append("primary_genre", data.genre);
-    formData.append("subgenre", data.subgenre);
-    formData.append("price", data.price);
+    formData.append("subgenres", data.subgenre);
+    formData.append("price_tier", data.price);
     formData.append("availability", data.availability);
     formData.append("publish_date", data.publishDate);
     formData.append("description", data.description);
     formData.append("is_primary_promo", data.isPrimary);
+    formData.append("rating", data.ratings || 0);
 
     formData.append("amazon_url", data.amazonUrl || "");
     formData.append("apple_url", data.appleUrl || "");
     formData.append("kobo_url", data.koboUrl || "");
-    formData.append("barnes_url", data.barnesUrl || "");
+    formData.append("barnes_noble_url", data.barnesUrl || "");
 
     if (data.coverImage instanceof File) {
         formData.append("book_cover", data.coverImage);

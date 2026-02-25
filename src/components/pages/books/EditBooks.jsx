@@ -114,27 +114,7 @@ const EditBooks = ({ bookData, onClose, onSave }) => {
     setLoading(true);
 
     try {
-      const data = new FormData();
-      data.append("id", formData.id);
-      data.append("title", formData.title);
-      data.append("primary_genre", formData.genre);
-      data.append("subgenres", formData.subgenre);
-      data.append("price_tier", formData.price);
-      data.append("availability", formData.availability);
-      data.append("publish_date", formData.publishDate);
-      data.append("description", formData.description);
-      data.append("amazon_url", formData.amazonUrl);
-      data.append("apple_url", formData.appleUrl);
-      data.append("kobo_url", formData.koboUrl);
-      data.append("barnes_noble_url", formData.barnesUrl);
-      data.append("is_primary_promo", formData.isPrimary);
-      data.append("rating", formData.ratings);
-
-      if (formData.coverImage instanceof File) {
-        data.append("book_cover", formData.coverImage);
-      }
-
-      await onSave(data);
+      await onSave(formData);
       onClose();
     } catch (error) {
       console.error("Update failed:", error);
