@@ -7,6 +7,7 @@ import { LayoutDashboard, BookOpen, Mail, Users, BarChart3, Award } from "lucide
 import { getProfile } from "../apis/profile";
 
 import { useNotifications } from "../context/NotificationContext";
+import { useProfile } from "../context/ProfileContext";
 
 const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -28,7 +29,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const dropdownRef = useRef(null);
     const searchRef = useRef(null);
-    const [profile, setProfile] = useState(null);
+    const { profile } = useProfile();
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -42,19 +43,6 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const { data } = await getProfile();
-                setProfile(data);
-            } catch (error) {
-                console.error("Failed to load profile", error);
-            }
-        };
-
-        fetchProfile();
     }, []);
 
     const handleSearchChange = (e) => {
