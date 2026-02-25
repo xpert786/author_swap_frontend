@@ -153,7 +153,6 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         </span>
                     ))}
                 </div>
-
             </div>
 
             {/* ── Tags Row ── */}
