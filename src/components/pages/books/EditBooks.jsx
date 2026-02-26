@@ -42,16 +42,11 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
           // Handle malformed subgenres array like ["['bad_boy_romance']"]
           let parsedSubgenre = "";
           if (Array.isArray(bookData.subgenres) && bookData.subgenres.length > 0) {
-            const firstItem = bookData.subgenres[0];
-            // Check if it's a string representation of array like "['bad_boy_romance']"
-            if (typeof firstItem === 'string' && firstItem.includes('[')) {
-              try {
-                // Extract value between quotes
-                const match = firstItem.match(/'([^']+)'/);
-                parsedSubgenre = match ? match[1] : firstItem;
-              } catch {
-                parsedSubgenre = firstItem;
-              }
+            let firstItem = bookData.subgenres[0];
+            if (typeof firstItem === 'string') {
+              // Aggressively clean the string if it contains list notation or quotes
+              // Example: "['bad_boy_romance']" -> bad_boy_romance
+              parsedSubgenre = firstItem.replace(/[\[\]'"]/g, "");
             } else {
               parsedSubgenre = firstItem;
             }
@@ -71,7 +66,11 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
             koboUrl: bookData.kobo_url || "",
             barnesUrl: bookData.barnes_noble_url || "",
             coverImage: bookData.book_cover || null,
-            preview: bookData.book_cover || null,
+            preview: bookData.book_cover
+              ? (bookData.book_cover.startsWith("http")
+                ? bookData.book_cover
+                : `${import.meta.env.VITE_BACKEND_URL}${bookData.book_cover}`)
+              : null,
             isPrimary: bookData.is_primary_promo || false,
             ratings: bookData.rating || "",
           });
@@ -106,11 +105,17 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
 
   // Filter Subgenres based on selected Genre
   useEffect(() => {
-    if (!formData.genre || !allSubGenres[formData.genre]) {
+    if (!formData.genre || !allSubGenres) {
       setSubGenres([]);
       return;
     }
-    setSubGenres(allSubGenres[formData.genre] || []);
+
+    // Attempt to find matching subgenre list (case-insensitive key check)
+    const genreKey = Object.keys(allSubGenres).find(
+      key => key.toLowerCase() === formData.genre.toLowerCase()
+    );
+
+    setSubGenres(allSubGenres[genreKey] || allSubGenres[formData.genre] || []);
   }, [formData.genre, allSubGenres]);
 
   const handleRemoveImage = (e) => {

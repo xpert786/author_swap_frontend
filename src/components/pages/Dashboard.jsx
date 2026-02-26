@@ -6,10 +6,11 @@ import AddBooks from "../pages/books/AddBooks";
 import AddNewsSlot from "../pages/newsletters/AddNewsSlot";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
 import { useNotifications } from "../../context/NotificationContext";
+import { getDashboardData } from "../../apis/dashboard";
 
 
 const OpenBook = () => {
@@ -20,28 +21,69 @@ const OpenBook = () => {
 
 const Dashboard = () => {
   const { notifications } = useNotifications();
-  const mockData = {
+  const [dashboardData, setDashboardData] = useState({
+    welcome: {
+      greeting: "Welcome back!",
+      subtitle: "Here's what's happening with your swaps and books."
+    },
     stats: [
-      { label: "Book", value: "3", icon: OpenBook, color: "bg-[#2F6F6D33]" },
-      { label: "Newsletter Slots", value: "5", icon: OpenBook, color: "bg-[#E07A5F80]" },
-      { label: "Completed Swaps", value: "3", icon: OpenBook, color: "bg-[#16A34A33]" },
-      { label: "Reliability", value: "3", icon: OpenBook, color: "bg-[#DC262633]" },
+      { label: "Book", value: "0", icon: OpenBook, color: "bg-[#2F6F6D33]" },
+      { label: "Newsletter Slots", value: "0", icon: OpenBook, color: "bg-[#E07A5F80]" },
+      { label: "Completed Swaps", value: "0", icon: OpenBook, color: "bg-[#16A34A33]" },
+      { label: "Reliability", value: "0", icon: OpenBook, color: "bg-[#DC262633]" },
     ],
-    recentActivity: [
-      { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
-      { id: 2, title: "Initiated project review with Mark Lee", time: "1 day ago" },
-      { id: 3, title: "Submitted design revisions to Sarah Brown", time: "3 days ago" },
-      { id: 4, title: "Conducted user testing session for app prototype", time: "4 days ago" },
-      { id: 5, title: "Finalized budget proposal for Q4", time: "5 days ago" },
-      { id: 6, title: "Reviewed feedback from marketing team", time: "6 days ago" },
-    ],
+    recentActivity: [],
     analytics: [
-      { label: "View Details", value: "43.3%" },
-      { label: "Click Rate", value: "8.7%" },
-      { label: "View Details", value: "43.3%" },
-      { label: "Click Rate", value: "8.7%" },
-    ]
-  };
+      { label: "AVG OPEN RATE", value: "0.0%" },
+      { label: "AVG CLICK RATE", value: "0.0%" },
+      { label: "OPEN RATE", value: "0.0%" },
+      { label: "CLICK RATE", value: "0.0%" },
+    ],
+    improvementLabel: "0.0% change",
+    calendarDaysData: [],
+    quickActions: []
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await getDashboardData();
+        const data = response.data;
+
+        setDashboardData({
+          welcome: data.welcome || {
+            greeting: "Welcome back!",
+            subtitle: "Here's what's happening with your swaps and books."
+          },
+          stats: [
+            { label: "Book", value: String(data.stats_cards?.book || 0), icon: OpenBook, color: "bg-[#2F6F6D33]" },
+            { label: "Newsletter Slots", value: String(data.stats_cards?.newsletter_slots || 0), icon: OpenBook, color: "bg-[#E07A5F80]" },
+            { label: "Completed Swaps", value: String(data.stats_cards?.completed_swaps || 0), icon: OpenBook, color: "bg-[#16A34A33]" },
+            { label: "Reliability", value: String(data.stats_cards?.reliability || 0), icon: OpenBook, color: "bg-[#DC262633]" },
+          ],
+          recentActivity: data.recent_activity || [],
+          analytics: [
+            { label: "AVG OPEN RATE", value: `${(data.campaign_analytics?.avg_open_rate || 0).toFixed(1)}%` },
+            { label: "AVG CLICK RATE", value: `${(data.campaign_analytics?.avg_click_rate || 0).toFixed(1)}%` },
+            { label: "OPEN RATE", value: `${(data.campaign_analytics?.current_period?.open_rate || 0).toFixed(1)}%` },
+            { label: "CLICK RATE", value: `${(data.campaign_analytics?.current_period?.click_rate || 0).toFixed(1)}%` },
+          ],
+          improvementLabel: data.campaign_analytics?.improvement_label || "0.0% change",
+          calendarDaysData: data.calendar?.days || [],
+          quickActions: data.quick_actions || []
+        });
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
@@ -92,16 +134,16 @@ const Dashboard = () => {
       {/* HEADER */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">
-          Welcome back , Author!
+          {dashboardData.welcome.greeting}
         </h1>
         <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
-          Here's what's happening with your swaps and books.
+          {dashboardData.welcome.subtitle}
         </p>
       </div>
 
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        {mockData.stats.map((stat, index) => (
+        {dashboardData.stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
@@ -208,6 +250,16 @@ const Dashboard = () => {
                       Today
                     </span>
                   )}
+
+                  {/* API Activity Dots */}
+                  <div className="absolute bottom-1 left-1.5 flex gap-0.5">
+                    {dashboardData.calendarDaysData.find(d => dayjs(d.date).isSame(date, "day"))?.has_slots && (
+                      <div className="w-1 h-1 rounded-full bg-[#2F6F6D]" title="Slots available" />
+                    )}
+                    {dashboardData.calendarDaysData.find(d => dayjs(d.date).isSame(date, "day"))?.has_scheduled && (
+                      <div className="w-1 h-1 rounded-full bg-[#E07A5F]" title="Scheduled" />
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -218,7 +270,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
-            {(notifications && notifications.length > 0 ? notifications.slice(0, 6) : mockData.recentActivity).map((activity) => (
+            {(notifications && notifications.length > 0 ? notifications.slice(0, 6) : dashboardData.recentActivity).map((activity) => (
               <div
                 key={activity.id}
                 className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
@@ -226,16 +278,23 @@ const Dashboard = () => {
                 <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
 
                 <div className="w-full">
-                  <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug">
-                    {activity.title || activity.message || "Notification Received"}
-                  </p>
+                  <div className="flex justify-between items-start w-full">
+                    <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug pr-2">
+                      {activity.title || activity.message || "Notification Received"}
+                    </p>
+                    {activity.badge && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 shrink-0">
+                        {activity.badge}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] font-medium text-[#374151] mt-0.5">
-                    {activity.created_at ? dayjs(activity.created_at).fromNow() : (activity.time || "Just now")}
+                    {activity.time_ago || (activity.created_at ? dayjs(activity.created_at).fromNow() : (activity.time || "Just now"))}
                   </p>
                 </div>
               </div>
             ))}
-            {(!notifications || notifications.length === 0) && mockData.recentActivity.length === 0 && (
+            {(!notifications || notifications.length === 0) && dashboardData.recentActivity.length === 0 && (
               <p className="text-xs text-center text-gray-400 italic py-4">No recent activity</p>
             )}
           </div>
@@ -248,7 +307,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 bg-white rounded-[12px] border border-[#B5B5B5] p-6 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-black mb-6 tracking-tight">Campaign Analytics</h3>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 mb-6">
-            {mockData.analytics.map((item, idx) => (
+            {dashboardData.analytics.map((item, idx) => (
               <div key={idx} className="bg-[#FFF9F7] py-6 px-4 rounded-xl text-center">
                 <h4 className="text-[20px] md:text-[24px] font-medium text-black leading-none">{item.value}</h4>
                 <p className="text-[10px] md:text-[11px] font-medium text-[#374151] mt-1.5 tracking-tight uppercase">{item.label}</p>
@@ -257,7 +316,7 @@ const Dashboard = () => {
           </div>
           <div className="text-[12px] font-medium">
             <span className="text-[#374151]">Last 30 days performance.</span>
-            <span className="text-[#16A34A] font-medium ml-1">+3.2% improvement</span>
+            <span className="text-[#16A34A] font-medium ml-1">{dashboardData.improvementLabel} improvement</span>
             <span className="text-[#374151] ml-1 font-medium">vs previous period.</span>
           </div>
         </div>
@@ -266,29 +325,23 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-bold text-gray-900 mb-6 tracking-tight">Quick Actions</h3>
           <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setShowAddBook(true)}
-              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
-            >
-              <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80] text-[#EA580C]">
-                <LuPlus size={18} className="text-black" />
-              </div>
-              <span className="text-[13px] font-medium text-black">
-                Add New Book
-              </span>
-            </button>
-
-            <button
-              onClick={() => setShowAddSlot(true)}
-              className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
-            >
-              <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80]">
-                <LuPlus size={18} className="text-black" />
-              </div>
-              <span className="text-[13px] font-medium text-black">
-                Add Newsletter Slot
-              </span>
-            </button>
+            {(dashboardData.quickActions.length > 0 ? dashboardData.quickActions : [
+              { label: "Add New Book", icon: "book", action: () => setShowAddBook(true) },
+              { label: "Add Newsletter Slot", icon: "calendar", action: () => setShowAddSlot(true) }
+            ]).map((action, idx) => (
+              <button
+                key={idx}
+                onClick={action.action || (() => { })}
+                className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
+              >
+                <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80] text-[#EA580C]">
+                  {action.icon === "calendar" ? <LuPlus size={18} className="text-black" /> : <LuPlus size={18} className="text-black" />}
+                </div>
+                <span className="text-[13px] font-medium text-black">
+                  {action.label}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </div>

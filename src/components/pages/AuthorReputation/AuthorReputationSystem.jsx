@@ -117,7 +117,15 @@ const AuthorReputationSystem = () => {
 
     const getBreakdown = () => {
         const breakdownData = data?.reputation_score_breakdown;
-        if (!breakdownData) return [];
+        
+        // If no dynamic breakdown, return mock items with their icons
+        if (!breakdownData || Object.keys(breakdownData).length === 0) {
+            return mockData.breakdown.map(item => ({
+                ...item,
+                icon: breakdownIcons[item.title] || <CommunicationIcon size={32} />,
+                // Convert percentage string/number if needed, but mockData has it as number
+            }));
+        }
 
         const mapping = {
             confirmed_sends: { title: "Confirmed Sends", color: "bg-green-600" },

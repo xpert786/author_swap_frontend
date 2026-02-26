@@ -215,18 +215,59 @@ const SwapDetails = () => {
             <p className="text-lg font-medium text-black pb-3 mb-3.5 border-b border-gray-200">
                 Reputation Score Breakdown
             </p>
-            <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-5 mb-4">
-                <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-black">
-                        <ConfirmedSendsIcon size={32} /> Confirmed Sends
-                    </span>
-                    <span className="text-[13px] font-medium text-black">{data.confirmedSendsScore || "45/50"}</span>
-                </div>
-                <ProgressBar percent={90} color="#22c55e" />
-                <div className="flex justify-between text-[11px] text-black">
-                    <span>90% success rate</span>
-                    <span>+45 points</span>
-                </div>
+            <div className="flex flex-col gap-4 mb-4">
+                {[
+                    {
+                        title: "Confirmed Sends",
+                        score: data.author?.confirmedSendsScore || "45/50",
+                        percent: 90,
+                        subtext: "90% success rate",
+                        points: "+45 points",
+                        icon: <ConfirmedSendsIcon size={32} />,
+                        color: "#16A34A"
+                    },
+                    {
+                        title: "Timeliness",
+                        score: data.author?.timelinessScore || "28/30",
+                        percent: 94,
+                        subtext: "94% success rate",
+                        points: "+28 points",
+                        icon: <TimelinessIcon size={32} />,
+                        color: "#F59E0B"
+                    },
+                    {
+                        title: "Missed Sends",
+                        score: data.author?.missedSendsScore || "10/30",
+                        percent: 33,
+                        subtext: "5 missed sends",
+                        points: "-8 points",
+                        icon: <MissedSendsIcon size={32} />,
+                        color: "#DC2626"
+                    },
+                    {
+                        title: "Communication",
+                        score: data.author?.communicationScore || "10/30",
+                        percent: 85,
+                        subtext: "4.2h avg response",
+                        points: "+28 points",
+                        icon: <CommunicationIcon size={32} />,
+                        color: "#2F6F6D"
+                    }
+                ].map((item, idx) => (
+                    <div key={idx} className="bg-white border border-[#B5B5B5] rounded-xl p-5">
+                        <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-2 text-sm font-semibold text-black">
+                                {item.icon} {item.title}
+                            </span>
+                            <span className="text-[13px] font-medium text-black">{item.score}</span>
+                        </div>
+                        <ProgressBar percent={item.percent} color={item.color} />
+                        <div className="flex justify-between text-[11px] text-black font-medium">
+                            <span className="text-gray-500">{item.subtext}</span>
+                            <span>{item.points}</span>
+                        </div>
+                    </div>
+                ))}
             </div>
             {/* ... Other reputation sections can be mapped similarly or left as refined mock if data is missing ... */}
 
@@ -243,7 +284,11 @@ const SwapDetails = () => {
                 {/* ── Recent Swap History ── */}
                 <p className="text-base font-bold text-black mt-5 mb-3">Recent Swap History</p>
                 <div className="sd-history-grid grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                    {(data.recentHistory || []).map((h, i) => (
+                    {(data.recentHistory && data.recentHistory.length > 0 ? data.recentHistory : [
+                        { name: "Jane Doe", status: "Completed", stars: 5, date: "25 Jan 2026" },
+                        { name: "John Smith", status: "Completed", stars: 4, date: "15 Feb 2026" },
+                        { name: "Alice Johnson", status: "Pending", stars: 0, date: "12 Mar 2026" }
+                    ]).map((h, i) => (
                         <div key={i} className="border border-gray-200 rounded-xl p-3.5 flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-semibold text-black">{h.name}</span>
@@ -255,9 +300,6 @@ const SwapDetails = () => {
                             </span>
                         </div>
                     ))}
-                    {(!data.recentHistory || data.recentHistory.length === 0) && (
-                        <p className="text-xs text-gray-400 italic">No recent history available</p>
-                    )}
                 </div>
             </div>
         </div>

@@ -20,9 +20,9 @@ import Megaphone from "../../../assets/megaphone.png";
 import UpGraphImg from "../../../assets/upgraph.png";
 import edit from "../../../assets/edit.png";
 import Swap from "../../../assets/swap.png";
-import { getBooks, bookCardData, deleteBook } from "../../../apis/bookManegment";
-import { updateBook } from "../../../apis/bookManegment";
+import { getBooks, bookCardData, deleteBook, updateBook } from "../../../apis/bookManegment";
 import { getGenres } from "../../../apis/genre";
+import toast from "react-hot-toast";
 
 const BooksPage = () => {
     const [books, setBooks] = useState([]);
@@ -181,18 +181,28 @@ const BooksPage = () => {
             }
 
             const response = await updateBook(updatedData.id, formData);
-
-            console.log("RESPONSE:", response); // 👈 ADD THIS
-
             const savedBook = response.data;
+            
+            // ✅ Format the saved book before updating state
+            const formattedBook = {
+                ...savedBook,
+                book_cover: savedBook.book_cover?.startsWith("http")
+                    ? savedBook.book_cover
+                    : `${import.meta.env.VITE_BACKEND_URL}${savedBook.book_cover}`,
+                publish_date: savedBook.publish_date || null,
+                rating: Number(savedBook.rating) || 0,
+            };
 
             setBooks((prev) =>
                 prev.map((b) =>
-                    b.id === savedBook.id ? savedBook : b
+                    b.id === formattedBook.id ? formattedBook : b
                 )
             );
+            
+            toast.success("Book updated successfully!");
         } catch (err) {
             console.error("Update failed", err);
+            toast.error("Failed to update book");
             throw err;
         }
     };

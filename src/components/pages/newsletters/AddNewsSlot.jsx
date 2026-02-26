@@ -126,14 +126,13 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
 
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
-                  Send Time
+                  Send Time(Optional)
                 </label>
                 <input
                   type="time"
                   name="send_time"
                   value={formData.send_time}
                   onChange={handleChange}
-                  required
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
                 />
               </div>
@@ -198,6 +197,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm"
                 >
+                  <option value="Public">Public</option>
                   <option value="friend_only">Friend Only</option>
                   <option value="single_use_private_link">Single-use private link</option>
                   <option value="hidden">Hidden</option>

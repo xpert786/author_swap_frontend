@@ -421,13 +421,12 @@ const SwapPartner = () => {
                         options={["0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
                     />
                     <FilterDropdown
-                        label="Available Slots"
-                        options={["Available", "Booked", "Pending"]}
-                        align="right"
+                        label="Date"
+                        options={["Today", "This Week", "Next Week", "This Month"]}
                     />
                     <FilterDropdown
-                        label="Free"
-                        options={["Free", "Paid", "Genre-Specific"]}
+                        label="Free / Paid"
+                        options={["All", "Free", "Paid", "Genre-Specific"]}
                         align="right"
                     />
 
@@ -451,11 +450,10 @@ const SwapPartner = () => {
                                     // Map API fields if they are different from UI requirements
                                     name: partner.author?.name || "Anonymous",
                                     photo: partner.author?.profilePicture || `https://ui-avatars.com/api/?name=${partner.author?.name || "A"}&background=random`,
-                                    swaps: partner.author?.swapsCompleted || 0,
                                     date: partner.sendDate || "N/A",
                                     time: partner.sendTime || "N/A",
                                     audience: partner.audienceSize || "0",
-                                    partners: `${partner.currentPartnersCount || 0}/${partner.maxPartners || 0} Partners`,
+                                    partners: `${(partner.maxPartners || 0) - (partner.currentPartnersCount || 0)} Slot${((partner.maxPartners || 0) - (partner.currentPartnersCount || 0)) !== 1 ? 's' : ''} Available`,
                                     visibility: formatLabel(partner.visibility),
                                     genre: formatLabel(partner.preferredGenre),
                                     paid: partner.price && partner.price !== "0.00",
