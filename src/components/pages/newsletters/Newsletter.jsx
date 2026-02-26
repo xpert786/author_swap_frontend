@@ -231,8 +231,8 @@ const Newsletter = () => {
                     </div>
                 ))}
             </div>
-            <div className="relative flex flex-col gap-4 mb-8 xl:flex-row xl:items-center xl:justify-between">
-                <h2 className="text-lg font-medium text-gray-800">
+            <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
                     All Slots for{" "}
                     {new Date().toLocaleDateString("en-US", {
                         month: "long",
@@ -289,46 +289,45 @@ const Newsletter = () => {
                         </div>
 
                         {/* Export Dropdown */}
-<div className="relative">
-    <button
-        onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-        className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]"
-    >
-        <Download size={16} />
-        Export With
-        <ChevronDown
-            size={14}
-            className={`text-gray-400 transition-transform ${
-                exportDropdownOpen ? "rotate-180" : ""
-            }`}
-        />
-    </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                                className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]"
+                            >
+                                <Download size={16} />
+                                Export With
+                                <ChevronDown
+                                    size={14}
+                                    className={`text-gray-400 transition-transform ${exportDropdownOpen ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
 
-    {exportDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-            <button
-                onClick={handleExportGoogle}
-                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-            >
-                Google Calendar
-            </button>
+                            {exportDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+                                    <button
+                                        onClick={handleExportGoogle}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                    >
+                                        Google Calendar
+                                    </button>
 
-            <button
-                onClick={handleExportOutlook}
-                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-            >
-                Outlook
-            </button>
+                                    <button
+                                        onClick={handleExportOutlook}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                    >
+                                        Outlook
+                                    </button>
 
-            <button
-                onClick={handleExportICS}
-                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-            >
-                Download ICS File
-            </button>
-        </div>
-    )}
-</div>
+                                    <button
+                                        onClick={handleExportICS}
+                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                    >
+                                        Download ICS File
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">

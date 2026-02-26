@@ -10,6 +10,8 @@ import { useMemo } from "react";
 dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
 import { useNotifications } from "../../context/NotificationContext";
+import { getDashboardStats } from "../../apis/dashboard";
+import { formatCamelCaseName } from "../../utils/formatName";
 
 
 const OpenBook = () => {
@@ -20,34 +22,43 @@ const OpenBook = () => {
 
 const Dashboard = () => {
   const { notifications } = useNotifications();
-  const mockData = {
-    stats: [
-      { label: "Book", value: "3", icon: OpenBook, color: "bg-[#2F6F6D33]" },
-      { label: "Newsletter Slots", value: "5", icon: OpenBook, color: "bg-[#E07A5F80]" },
-      { label: "Completed Swaps", value: "3", icon: OpenBook, color: "bg-[#16A34A33]" },
-      { label: "Reliability", value: "3", icon: OpenBook, color: "bg-[#DC262633]" },
-    ],
-    recentActivity: [
-      { id: 1, title: "Completed swap with Jane Author", time: "2 days ago" },
-      { id: 2, title: "Initiated project review with Mark Lee", time: "1 day ago" },
-      { id: 3, title: "Submitted design revisions to Sarah Brown", time: "3 days ago" },
-      { id: 4, title: "Conducted user testing session for app prototype", time: "4 days ago" },
-      { id: 5, title: "Finalized budget proposal for Q4", time: "5 days ago" },
-      { id: 6, title: "Reviewed feedback from marketing team", time: "6 days ago" },
-    ],
-    analytics: [
-      { label: "View Details", value: "43.3%" },
-      { label: "Click Rate", value: "8.7%" },
-      { label: "View Details", value: "43.3%" },
-      { label: "Click Rate", value: "8.7%" },
-    ]
-  };
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const stats = [
+    { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]" },
+    { label: "Newsletter Slots", value: dashboardData?.stats_cards?.newsletter_slots || "0", icon: OpenBook, color: "bg-[#E07A5F80]" },
+    { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]" },
+    { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]" },
+  ];
+
+  const analytics = [
+    { label: "View Details", value: `${dashboardData?.campaign_analytics?.avg_open_rate || 0}%` },
+    { label: "Click Rate", value: `${dashboardData?.campaign_analytics?.avg_click_rate || 0}%` },
+    { label: "View Details", value: `${dashboardData?.campaign_analytics?.current_period?.open_rate || 0}%` },
+    { label: "Click Rate", value: `${dashboardData?.campaign_analytics?.current_period?.click_rate || 0}%` },
+  ];
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [showGenreDropdown, setShowGenreDropdown] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState("Genre");
+
+  React.useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await getDashboardStats();
+        setDashboardData(data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
 
   const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
 
@@ -92,16 +103,18 @@ const Dashboard = () => {
       {/* HEADER */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">
-          Welcome back , Author!
+          {dashboardData?.welcome?.name
+            ? `Welcome back, ${formatCamelCaseName(dashboardData.welcome.name)}!`
+            : (dashboardData?.welcome?.greeting || "Welcome back, Author!")}
         </h1>
         <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
-          Here's what's happening with your swaps and books.
+          {dashboardData?.welcome?.subtitle || "Here's what's happening with your swaps and books."}
         </p>
       </div>
 
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        {mockData.stats.map((stat, index) => (
+        {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
@@ -208,6 +221,10 @@ const Dashboard = () => {
                       Today
                     </span>
                   )}
+
+                  {dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"))?.has_slots && (
+                    <div className="absolute bottom-1 left-1.5 h-1.5 w-1.5 rounded-full bg-[#2F6F6D]" />
+                  )}
                 </div>
               );
             })}
@@ -218,7 +235,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
-            {(notifications && notifications.length > 0 ? notifications.slice(0, 6) : mockData.recentActivity).map((activity) => (
+            {(dashboardData?.recent_activity || notifications || []).slice(0, 6).map((activity) => (
               <div
                 key={activity.id}
                 className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
@@ -230,12 +247,12 @@ const Dashboard = () => {
                     {activity.title || activity.message || "Notification Received"}
                   </p>
                   <p className="text-[11px] font-medium text-[#374151] mt-0.5">
-                    {activity.created_at ? dayjs(activity.created_at).fromNow() : (activity.time || "Just now")}
+                    {activity.time_ago || (activity.created_at ? dayjs(activity.created_at).fromNow() : "Just now")}
                   </p>
                 </div>
               </div>
             ))}
-            {(!notifications || notifications.length === 0) && mockData.recentActivity.length === 0 && (
+            {(!dashboardData?.recent_activity || dashboardData.recent_activity.length === 0) && (!notifications || notifications.length === 0) && (
               <p className="text-xs text-center text-gray-400 italic py-4">No recent activity</p>
             )}
           </div>
@@ -248,7 +265,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 bg-white rounded-[12px] border border-[#B5B5B5] p-6 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-black mb-6 tracking-tight">Campaign Analytics</h3>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 mb-6">
-            {mockData.analytics.map((item, idx) => (
+            {analytics.map((item, idx) => (
               <div key={idx} className="bg-[#FFF9F7] py-6 px-4 rounded-xl text-center">
                 <h4 className="text-[20px] md:text-[24px] font-medium text-black leading-none">{item.value}</h4>
                 <p className="text-[10px] md:text-[11px] font-medium text-[#374151] mt-1.5 tracking-tight uppercase">{item.label}</p>
@@ -257,7 +274,9 @@ const Dashboard = () => {
           </div>
           <div className="text-[12px] font-medium">
             <span className="text-[#374151]">Last 30 days performance.</span>
-            <span className="text-[#16A34A] font-medium ml-1">+3.2% improvement</span>
+            <span className="text-[#16A34A] font-medium ml-1">
+              {dashboardData?.campaign_analytics?.improvement_label || "0% change"}
+            </span>
             <span className="text-[#374151] ml-1 font-medium">vs previous period.</span>
           </div>
         </div>

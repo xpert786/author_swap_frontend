@@ -1,0 +1,12 @@
+export const formatCamelCaseName = (name) => {
+    if (!name) return "";
+    return name
+        .split(",")[0]
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9 ]/g, "")
+        .split(" ")
+        .map((word) =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        )
+        .join("");
+};

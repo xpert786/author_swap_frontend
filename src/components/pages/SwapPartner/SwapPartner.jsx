@@ -5,6 +5,7 @@ import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import { getExploreSlots } from "../../../apis/swapPartner";
 import { getGenres } from "../../../apis/genre";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 import "./SwapPartner.css";
 import dayjs from "dayjs";
@@ -138,7 +139,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         {/* Name + Swaps forced into one line */}
                         <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
                             <p className="text-[14px] font-bold text-black leading-tight">
-                                {partner.name}
+                                {formatCamelCaseName(partner.name)}
                             </p>
                             <p className="text-[10px] text-[#374151] font-medium">
                                 {partner.swaps} swaps completed

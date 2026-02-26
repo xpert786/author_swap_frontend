@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getGenres } from "../../../apis/genre";
+import { getGenres, audienceSize } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
 const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
@@ -17,16 +17,24 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
 
   // Fetch Genres
   useEffect(() => {
-    const fetchGenres = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getGenres();
-        setGenres(response);
+        const [genresRes, audienceRes] = await Promise.all([
+          getGenres(),
+          audienceSize()
+        ]);
+        setGenres(genresRes);
+        // If we don't have audience_size in formData yet, pre-fill from API
+        setFormData(prev => ({
+          ...prev,
+          audience_size: prev.audience_size ?? audienceRes.audience_size ?? ""
+        }));
       } catch (error) {
-        console.error("Failed to fetch genres:", error);
+        console.error("Failed to fetch data:", error);
       }
     };
     if (isOpen) {
-      fetchGenres();
+      fetchData();
     }
   }, [isOpen]);
 
@@ -39,7 +47,7 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
       setFormData({
         send_date: data.send_date || "",
         send_time: data.send_time || "",
-        audience_size: data.audience_size || "",
+        audience_size: data.audience_size ?? "",
         preferred_genre: data.preferred_genre || "",
         max_partners: data.max_partners || "",
         visibility: data.visibility || "Public",
@@ -121,7 +129,6 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
                   name="send_time"
                   value={formData.send_time}
                   onChange={handleChange}
-                  required
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>

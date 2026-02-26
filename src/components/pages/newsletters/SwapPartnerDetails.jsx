@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Send, Repeat, MessageCircle } from "lucide-react";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 const SwapPartnerDetails = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
@@ -47,7 +48,7 @@ const SwapPartnerDetails = ({ isOpen, onClose }) => {
 
                             <div className="flex flex-col leading-tight">
                                 <p className="text-sm font-bold text-gray-900">
-                                    {partner.name}
+                                    {formatCamelCaseName(partner.name)}
                                 </p>
                                 <p className="text-[12px] text-gray-500">
                                     {partner.role} • {partner.swaps}
@@ -99,7 +100,7 @@ const SwapPartnerDetails = ({ isOpen, onClose }) => {
                                     Friday, May 17
                                 </p>
                                 <p className="text-[11px] text-gray-500 mt-1">
-                                    Jane sends to her audience
+                                    {formatCamelCaseName(partner.name)} sends to her audience
                                 </p>
                                 <p className="text-[12px] font-semibold text-red-500 mt-0.5">
                                     “Mystery of the Old House”
@@ -129,7 +130,7 @@ const SwapPartnerDetails = ({ isOpen, onClose }) => {
 
                         <button className="flex items-center gap-2 rounded-lg bg-[#2F6F6D] px-6 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 transition shadow-sm">
                             <MessageCircle size={16} />
-                            Message Jane
+                            Message {formatCamelCaseName(partner.name)}
                         </button>
                     </div>
                 </div>

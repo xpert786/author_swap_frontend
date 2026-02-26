@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createNewsSlot } from "../../../apis/newsletter";
-import { getGenres } from "../../../apis/genre";
+import { getGenres, audienceSize } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
 const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
@@ -18,19 +18,27 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
   const [genres, setGenres] = useState([]);
 
   useEffect(() => {
-    const fetchGenres = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getGenres();
+        const [genresRes, audienceRes] = await Promise.all([
+          getGenres(),
+          audienceSize()
+        ]);
 
-        console.log("GENRES RESPONSE:", response);
+        console.log("GENRES RESPONSE:", genresRes);
+        console.log("AUDIENCE SIZE RESPONSE:", audienceRes);
 
-        setGenres(response);
+        setGenres(genresRes);
+        setFormData(prev => ({
+          ...prev,
+          audience_size: audienceRes.audience_size ?? ""
+        }));
       } catch (error) {
-        console.error("Failed to fetch genres:", error);
+        console.error("Failed to fetch data:", error);
       }
     };
 
-    fetchGenres();
+    fetchData();
   }, []);
 
   if (!isOpen) return null;
@@ -133,7 +141,6 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   name="send_time"
                   value={formData.send_time}
                   onChange={handleChange}
-                  required
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
                 />
               </div>
