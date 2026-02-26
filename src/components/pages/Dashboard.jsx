@@ -10,7 +10,7 @@ import { useMemo, useEffect } from "react";
 dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
 import { useNotifications } from "../../context/NotificationContext";
-import { getDashboardData } from "../../apis/dashboard";
+import { getDashboardStats } from "../../apis/dashboard";
 import { formatCamelCaseName } from "../../utils/formatName";
 
 
@@ -25,19 +25,19 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const stats = useMemo(() => [
-    { label: "Book", value: String(dashboardData?.stats_cards?.book || 0), icon: OpenBook, color: "bg-[#2F6F6D33]" },
-    { label: "Newsletter Slots", value: String(dashboardData?.stats_cards?.newsletter_slots || 0), icon: OpenBook, color: "bg-[#E07A5F80]" },
-    { label: "Completed Swaps", value: String(dashboardData?.stats_cards?.completed_swaps || 0), icon: OpenBook, color: "bg-[#16A34A33]" },
-    { label: "Reliability", value: String(dashboardData?.stats_cards?.reliability || 0), icon: OpenBook, color: "bg-[#DC262633]" },
-  ], [dashboardData]);
+  const stats = [
+    { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]" },
+    { label: "Newsletter Slots", value: dashboardData?.stats_cards?.newsletter_slots || "0", icon: OpenBook, color: "bg-[#E07A5F80]" },
+    { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]" },
+    { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]" },
+  ];
 
-  const analytics = useMemo(() => [
-    { label: "AVG OPEN RATE", value: `${(dashboardData?.campaign_analytics?.avg_open_rate || 0).toFixed(1)}%` },
-    { label: "AVG CLICK RATE", value: `${(dashboardData?.campaign_analytics?.avg_click_rate || 0).toFixed(1)}%` },
-    { label: "OPEN RATE", value: `${(dashboardData?.campaign_analytics?.current_period?.open_rate || 0).toFixed(1)}%` },
-    { label: "CLICK RATE", value: `${(dashboardData?.campaign_analytics?.current_period?.click_rate || 0).toFixed(1)}%` },
-  ], [dashboardData]);
+  const analytics = [
+    { label: "AVG OPEN RATE", value: `${dashboardData?.campaign_analytics?.avg_open_rate || 0}%` },
+    { label: "AVG CLICK RATE", value: `${dashboardData?.campaign_analytics?.avg_click_rate || 0}%` },
+    { label: "OPEN RATE", value: `${dashboardData?.campaign_analytics?.current_period?.open_rate || 0}%` },
+    { label: "CLICK RATE", value: `${dashboardData?.campaign_analytics?.current_period?.click_rate || 0}%` },
+  ];
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
@@ -45,25 +45,24 @@ const Dashboard = () => {
   const [showGenreDropdown, setShowGenreDropdown] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState("Genre");
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await getDashboardData();
-        setDashboardData(response.data);
+        const data = await getDashboardStats();
+        setDashboardData(data);
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
+        console.error("Failed to fetch dashboard stats:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchDashboardData();
   }, []);
 
   const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
 
-  // Calendar logic
+  // Calendar logic for May 2024
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const generateCalendar = () => {
@@ -73,15 +72,15 @@ const Dashboard = () => {
     const startDate = startOfMonth.startOf("week");
     const endDate = endOfMonth.endOf("week");
 
-    let date = startDate.clone();
-    const daysArr = [];
+    let date = startDate.clone();   // must be let
+    const days = [];
 
     while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-      daysArr.push(date.clone());
+      days.push(date.clone());
       date = date.add(1, "day");
     }
 
-    return daysArr;
+    return days;
   };
 
   const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
@@ -90,17 +89,6 @@ const Dashboard = () => {
   const handleCreateSlot = () => {
     setShowAddSlot(false);
   };
-
-  if (loading && !dashboardData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F6F6D]"></div>
-          <p className="text-gray-500 text-sm">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -203,7 +191,6 @@ const Dashboard = () => {
             {calendarDays.map((date, idx) => {
               const isCurrentMonth = date.isSame(currentMonth, "month");
               const isToday = date.isSame(today, "day");
-              const dayData = dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"));
 
               return (
                 <div
@@ -229,11 +216,11 @@ const Dashboard = () => {
 
                   {/* API Activity Dots */}
                   <div className="absolute bottom-1 left-1.5 flex gap-0.5">
-                    {dayData?.has_slots && (
-                      <div className="w-1 h-1 rounded-full bg-[#2F6F6D]" title="Slots available" />
+                    {dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"))?.has_slots && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#2F6F6D]" title="Slots available" />
                     )}
-                    {dayData?.has_scheduled && (
-                      <div className="w-1 h-1 rounded-full bg-[#E07A5F]" title="Scheduled" />
+                    {dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"))?.has_scheduled && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#E07A5F]" title="Scheduled" />
                     )}
                   </div>
                 </div>
@@ -265,7 +252,7 @@ const Dashboard = () => {
                     )}
                   </div>
                   <p className="text-[11px] font-medium text-[#374151] mt-0.5">
-                    {activity.time_ago || (activity.created_at ? dayjs(activity.created_at).fromNow() : (activity.time || "Just now"))}
+                    {activity.time_ago || (activity.created_at ? dayjs(activity.created_at).fromNow() : "Just now")}
                   </p>
                 </div>
               </div>
@@ -293,7 +280,7 @@ const Dashboard = () => {
           <div className="text-[12px] font-medium">
             <span className="text-[#374151]">Last 30 days performance.</span>
             <span className="text-[#16A34A] font-medium ml-1">
-              {dashboardData?.campaign_analytics?.improvement_label || "0.0% change"} improvement
+              {dashboardData?.campaign_analytics?.improvement_label || "0% change"}
             </span>
             <span className="text-[#374151] ml-1 font-medium">vs previous period.</span>
           </div>
@@ -303,17 +290,17 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-bold text-gray-900 mb-6 tracking-tight">Quick Actions</h3>
           <div className="flex flex-col gap-3">
-            {(dashboardData?.quick_actions?.length > 0 ? dashboardData.quick_actions : [
+            {[
               { label: "Add New Book", icon: "book", action: () => setShowAddBook(true) },
               { label: "Add Newsletter Slot", icon: "calendar", action: () => setShowAddSlot(true) }
-            ]).map((action, idx) => (
+            ].map((action, idx) => (
               <button
                 key={idx}
                 onClick={action.action || (() => { })}
                 className="flex items-center gap-3 bg-white border border-[#B5B5B5] rounded-[8px] p-3.5 hover:border-[#E07A5F] hover:bg-[#E07A5F0D] transition-all group"
               >
                 <div className="w-9 h-9 flex items-center justify-center rounded-[8px] bg-[#E07A5F80] text-[#EA580C]">
-                  {action.icon === "calendar" ? <LuPlus size={18} className="text-black" /> : <LuPlus size={18} className="text-black" />}
+                  <LuPlus size={18} className="text-black" />
                 </div>
                 <span className="text-[13px] font-medium text-black">
                   {action.label}
