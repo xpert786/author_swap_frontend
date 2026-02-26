@@ -20,3 +20,10 @@ export const getProfile = async () => {
   const response = await apiClient.get("profile/review/");
   return response.data;
 };
+
+export const editPenName = async (penName) => {
+  const response = await apiClient.patch("edit-pen-name/", {
+    pen_name: penName,
+  });
+  return response.data;
+};

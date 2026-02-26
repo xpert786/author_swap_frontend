@@ -50,6 +50,23 @@ const Newsletter = () => {
         confirmed_swaps: 0,
         verified_sent: 0
     });
+    const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+
+    const handleExportGoogle = () => {
+        // You can generate a Google Calendar URL dynamically here
+        console.log("Exporting to Google Calendar");
+        setExportDropdownOpen(false);
+    };
+
+    const handleExportOutlook = () => {
+        console.log("Exporting to Outlook");
+        setExportDropdownOpen(false);
+    };
+
+    const handleExportICS = () => {
+        console.log("Downloading ICS file");
+        setExportDropdownOpen(false);
+    };
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -188,19 +205,41 @@ const Newsletter = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
+                    <div
+                        key={index}
+                        className="
+                bg-white rounded-[10px] 
+                border border-[#B5B5B5] 
+                p-4 flex flex-col gap-4 justify-between 
+                shadow-sm min-h-[110px]
+                transition-all duration-300
+                hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+                hover:-translate-y-1
+            "
+                    >
                         <div className="flex justify-between items-start gap-2">
                             <div className="w-10 h-10 rounded-lg">
                                 <stat.icon size={24} />
                             </div>
-                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">{stat.label}</span>
+                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">
+                                {stat.label}
+                            </span>
                         </div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
+                            {stat.value}
+                        </div>
                     </div>
                 ))}
             </div>
             <div className="relative flex flex-col gap-4 mb-8 xl:flex-row xl:items-center xl:justify-between">
-                <h2 className="text-lg font-medium text-gray-800">All Slots</h2>
+                <h2 className="text-lg font-medium text-gray-800">
+                    All Slots for{" "}
+                    {new Date().toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                    })}
+                </h2>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                         {/* Genre Filter */}
@@ -248,6 +287,48 @@ const Newsletter = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Export Dropdown */}
+<div className="relative">
+    <button
+        onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+        className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]"
+    >
+        <Download size={16} />
+        Export With
+        <ChevronDown
+            size={14}
+            className={`text-gray-400 transition-transform ${
+                exportDropdownOpen ? "rotate-180" : ""
+            }`}
+        />
+    </button>
+
+    {exportDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+            <button
+                onClick={handleExportGoogle}
+                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+            >
+                Google Calendar
+            </button>
+
+            <button
+                onClick={handleExportOutlook}
+                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+            >
+                Outlook
+            </button>
+
+            <button
+                onClick={handleExportICS}
+                className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+            >
+                Download ICS File
+            </button>
+        </div>
+    )}
+</div>
                     </div>
 
                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">
@@ -326,15 +407,15 @@ const Newsletter = () => {
                                                 <div className="flex gap-2">
                                                     {slot.status === "Available" ? (
                                                         <>
-                                                            <button onClick={() => handleEditClick(slot)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                                            <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <img src={Edit} alt="Edit" className="w-5 h-5" />
                                                             </button>
-                                                            <button onClick={() => handleDeleteClick(slot)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                                            <button onClick={() => handleDeleteClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <Trash2 size={14} />
                                                             </button>
                                                         </>
                                                     ) : (
-                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                             <Eye size={14} className="text-gray-600" />
                                                         </button>
                                                     )}

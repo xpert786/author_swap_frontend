@@ -80,95 +80,61 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Website */}
           <div>
-            <label className="block text-sm mb-2">Website URL *</label>
+            <label className="block text-sm mb-2">Website URL</label>
             <input
-              {...register("website", {
-                required: "Website URL is required",
-                pattern: urlPattern,
-              })}
+              {...register("website")}
               placeholder="Enter Website URL"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
-            {errors.website && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.website.message}
-              </p>
-            )}
           </div>
+
 
           {/* Instagram */}
           <div>
-            <label className="block text-sm mb-2">Instagram *</label>
+            <label className="block text-sm mb-2">Instagram</label>
             <input
-              {...register("instagram", {
-                required: "Instagram link is required",
-                pattern: urlPattern,
-              })}
+              {...register("instagram")}
               placeholder="Enter Instagram link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
-            {errors.instagram && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.instagram.message}
-              </p>
-            )}
           </div>
+
 
           {/* TikTok */}
           <div>
-            <label className="block text-sm mb-2">TikTok *</label>
+            <label className="block text-sm mb-2">TikTok</label>
             <input
-              {...register("tiktok", {
-                required: "TikTok link is required",
-                pattern: urlPattern,
-              })}
+              {...register("tiktok")}
               placeholder="Enter TikTok link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
-            {errors.tiktok && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.tiktok.message}
-              </p>
-            )}
           </div>
+
 
           {/* Facebook */}
           <div>
-            <label className="block text-sm mb-2">Facebook *</label>
+            <label className="block text-sm mb-2">Facebook</label>
             <input
-              {...register("facebook", {
-                required: "Facebook link is required",
-                pattern: urlPattern,
-              })}
+              {...register("facebook")}
               placeholder="Enter Facebook link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
-            {errors.facebook && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.facebook.message}
-              </p>
-            )}
           </div>
+
 
           {/* Collaboration Status */}
           <div>
-            <label className="block text-sm mb-2">Collaboration Status *</label>
+            <label className="block text-sm mb-2">Collaboration Status</label>
             <select
-              {...register("collaborationStatus", {
-                required: "Please select a collaboration status",
-              })}
+              {...register("collaborationStatus")}
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             >
               <option value="">Select an option</option>
               <option value="open to swap">Open to swaps</option>
               <option value="invite only">Invite only</option>
             </select>
-            {errors.collaborationStatus && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.collaborationStatus.message}
-              </p>
-            )}
           </div>
+
         </div>
 
         <div className="flex justify-between mt-6">
