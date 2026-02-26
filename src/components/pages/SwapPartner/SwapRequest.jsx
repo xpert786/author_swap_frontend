@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiX, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { CheckBadgeIcon } from "../../icons";
-import { updateSwapRequest, sendSwapRequest } from "../../../apis/swapPartner";
-import { getBooks } from "../../../apis/bookManegment";
+import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { toast } from "react-hot-toast";
 
 
@@ -24,40 +23,17 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
     useEffect(() => {
         const fetchInitialData = async () => {
-            if (isOpen) {
+            if (isOpen && id) {
                 try {
                     setLoading(true);
 
-                    // Fetch both details and books in parallel
-                    const [requestRes, booksRes] = await Promise.allSettled([
-                        id ? updateSwapRequest(id) : Promise.resolve(null),
-                        getBooks()
-                    ]);
-
-                    // Handle books response
-                    if (booksRes.status === 'fulfilled') {
-                        const fetchedBooks = booksRes.value.data?.results || booksRes.value.data || [];
-                        setBookList(fetchedBooks);
-                        if (fetchedBooks.length > 0 && !selectedBook) {
-                            setSelectedBook(fetchedBooks[0].id);
-                        }
-                    }
-
-                    // Handle request details response
-                    if (requestRes.status === 'fulfilled' && requestRes.value) {
-                        const data = requestRes.value.data;
-                        if (data) {
-                            setMessage(data.message || "");
-                            setPlacement(data.placement || "Top");
-                            setMaxPartners(data.max_partners ? `${data.max_partners} Partners` : "5 Partners");
-                            setRetailerLinks({
-                                amazonUrl: data.amazon_url || "",
-                                appleUrl: data.appleUrl || "",
-                                koboUrl: data.koboUrl || "",
-                                barnesNobleUrl: data.barnes_noble_url || ""
-                            });
-                            if (data.book_id) setSelectedBook(data.book_id);
-                        }
+                    // Fetch data from slots/{id}/request/
+                    const response = await getSlotRequestData(id);
+                    const data = response.data;
+                    const fetchedBooks = data?.books || data?.results || [];
+                    setBookList(fetchedBooks);
+                    if (fetchedBooks.length > 0 && !selectedBook) {
+                        setSelectedBook(fetchedBooks[0].id);
                     }
                 } catch (error) {
                     console.error("Failed to fetch initial data:", error);
@@ -75,7 +51,6 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
         try {
             setSubmitting(true);
             const payload = {
-                slot_id: id,
                 book_id: selectedBook,
                 placement,
                 message,
@@ -85,7 +60,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                 kobo_url: retailerLinks.koboUrl,
                 barnes_noble_url: retailerLinks.barnesNobleUrl
             };
-            await sendSwapRequest(payload);
+            await sendSwapRequest(id, payload);
             toast.success("Swap request sent successfully!");
             onClose();
         } catch (error) {

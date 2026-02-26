@@ -8,10 +8,10 @@ export const getSlotDetails = (id) => {
     return apiClient.get(`slots/${id}/details/`);
 };
 
-export const sendSwapRequest = (data) => {
-    return apiClient.post("swap-requests/", data);
+export const sendSwapRequest = (slotId, data) => {
+    return apiClient.post(`slots/${slotId}/request/`, data);
 };
 
-export const updateSwapRequest = (id) => {
-    return apiClient.get(`swap-requests/${id}/`);
+export const getSlotRequestData = (slotId) => {
+    return apiClient.get(`slots/${slotId}/request/`);
 };

@@ -12,11 +12,8 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
     max_partners: "",
     visibility: "Public",
   });
-
   const [loading, setLoading] = useState(false);
-
   const [genres, setGenres] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,10 +111,8 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
               ✕
             </button>
           </div>
-
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
-
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Send Date

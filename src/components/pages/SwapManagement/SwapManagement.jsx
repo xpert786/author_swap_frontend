@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { getSwaps } from '../../../apis/swap';
+import { getSwaps, acceptSwap, declineSwap, restoreSwap, trackSwap, getSwapHistory } from '../../../apis/swap';
 import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
+import toast from 'react-hot-toast';
 
 const tabs = [
     { label: "All Swaps", key: "all" },
@@ -82,16 +83,61 @@ const staticSwaps = [
     }
 ];
 
-const SwapCard = ({ data }) => {
+const SwapCard = ({ data, onRefresh }) => {
     const navigate = useNavigate();
+    const [actionLoading, setActionLoading] = useState(null);
     const isCompleted = data.status === "completed";
     const isRejected = data.status === "rejected" || data.status === "reject";
+    const isPending = data.status === "pending" || data.status === "incoming";
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
     const authorImage = data.profile_picture || data.author_image || data.image || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
 
+    const handleAccept = async (e) => {
+        e.stopPropagation();
+        try {
+            setActionLoading("accept");
+            await acceptSwap(data.id);
+            toast.success("Swap accepted!");
+            onRefresh?.();
+        } catch (error) {
+            console.error("Failed to accept swap:", error);
+            toast.error(error?.response?.data?.message || "Failed to accept swap");
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
+    const handleDecline = async (e) => {
+        e.stopPropagation();
+        try {
+            setActionLoading("decline");
+            await declineSwap(data.id);
+            toast.success("Swap declined.");
+            onRefresh?.();
+        } catch (error) {
+            console.error("Failed to decline swap:", error);
+            toast.error(error?.response?.data?.message || "Failed to decline swap");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleRestore = async (e) => {
+        e.stopPropagation();
+        try {
+            setActionLoading("restore");
+            await restoreSwap(data.id);
+            toast.success("Swap restored!");
+            onRefresh?.();
+        } catch (error) {
+            console.error("Failed to restore swap:", error);
+            toast.error(error?.response?.data?.message || "Failed to restore swap");
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
     return (
         <div
@@ -152,18 +198,7 @@ const SwapCard = ({ data }) => {
             </div>
 
             {/* Actions / Status Specifics */}
-            <div className="mt-auto pt-2 space-y-4">
-                {data.status === "incoming" && (
-                    <div className="flex gap-2">
-                        <button className="px-5 py-1.5 border border-[#DC2626] text-[#DC2626] rounded-[6px] text-[12px] font-medium hover:bg-red-50">
-                            Decline
-                        </button>
-                        <button className="px-5 py-1.5 bg-[#16A34A] text-white rounded-[6px] text-[12px] font-medium">
-                            Accept
-                        </button>
-                    </div>
-                )}
-
+            <div className="mt-auto pt-2 space-y-3">
                 {(data.status_note || data.statusNote) && (
                     <div
                         className={`text-[9px] font-medium px-3 py-1 rounded-full w-fit bg-[#F59E0B33]`}
@@ -172,16 +207,27 @@ const SwapCard = ({ data }) => {
                     </div>
                 )}
 
-                {(data.status === "active" || data.status === "scheduled" || isCompleted) && (
-                    <button
-                        onClick={() => navigate(`/swap-history/${data.id}`, { state: { data } })}
-                        className="bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2 rounded-[6px] w-fit"
-                    >
-                        Track My Swap
-                    </button>
-
+                {/* Pending: Accept + Decline only */}
+                {isPending && (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleDecline}
+                            disabled={actionLoading === "decline"}
+                            className="flex-1 px-4 py-[8px] border border-[#DC2626] text-[#DC2626] rounded-[6px] text-[12px] font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                        >
+                            {actionLoading === "decline" ? "..." : "Decline"}
+                        </button>
+                        <button
+                            onClick={handleAccept}
+                            disabled={actionLoading === "accept"}
+                            className="flex-1 px-4 py-[8px] bg-[#16A34A] text-white rounded-[6px] text-[12px] font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                            {actionLoading === "accept" ? "..." : "Accept"}
+                        </button>
+                    </div>
                 )}
 
+                {/* Rejected: Restore + View Details */}
                 {isRejected && (
                     <div className="space-y-3">
                         <div className="bg-[#FEF2F2] p-3 rounded-[8px] border border-[#FEE2E2]">
@@ -191,8 +237,47 @@ const SwapCard = ({ data }) => {
                                 {data.rejection_date || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
-                        <button className="inline-block border border-[#B5B5B5] px-5 py-1.5 text-[12px] font-bold rounded-[6px] hover:bg-gray-50 text-black">
-                            Restore
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleRestore}
+                                disabled={actionLoading === "restore"}
+                                className="px-5 py-[8px] border border-[#B5B5B5] text-black rounded-[6px] text-[12px] font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                {actionLoading === "restore" ? "Restoring..." : "Restore"}
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/swap-history/${data.id}`, { state: { data } });
+                                }}
+                                className="px-5 py-[8px] border border-[#B5B5B5] text-black rounded-[6px] text-[12px] font-medium hover:bg-gray-50 transition-colors"
+                            >
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Accepted / Confirmed / Active / Scheduled / Completed: Track My Swap + View Details */}
+                {(data.status === "accepted" || data.status === "confirmed" || data.status === "active" || data.status === "scheduled" || isCompleted || data.status === "sending") && (
+                    <div className="flex gap-2">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/track-swap/${data.id}`, { state: { data } });
+                            }}
+                            className="bg-[#2F6F6D] text-white text-[12px] font-medium px-5 py-[8px] rounded-[6px] hover:opacity-90 transition-opacity"
+                        >
+                            Track My Swap
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/swap-history/${data.id}`, { state: { data } });
+                            }}
+                            className="border border-[#B5B5B5] text-black text-[12px] font-medium px-5 py-[8px] rounded-[6px] hover:bg-gray-50 transition-colors"
+                        >
+                            View Details
                         </button>
                     </div>
                 )}
@@ -311,7 +396,7 @@ const SwapManagement = () => {
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filtered.map((swap) => (
-                                <SwapCard key={swap.id} data={swap} />
+                            <SwapCard key={swap.id} data={swap} onRefresh={() => fetchSwaps(activeTab.key)} />
                             ))}
                         </div>
                         {filtered.length === 0 && (

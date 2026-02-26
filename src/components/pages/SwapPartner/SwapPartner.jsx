@@ -104,17 +104,36 @@ const partners = [
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const navigate = useNavigate();
 
-    // Status badges logic based on image
+    // Derive display values from API response (camelCased via toCamel)
+    const authorName = partner.author?.name || partner.name || "Unknown Author";
+    const authorPhoto = partner.author?.profilePicture
+        ? (partner.author.profilePicture.startsWith("http")
+            ? partner.author.profilePicture
+            : `http://72.61.251.114${partner.author.profilePicture}`)
+        : partner.photo || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
+    const swapsCompleted = partner.author?.swapsCompleted ?? partner.swaps ?? 0;
+    const genre = partner.preferredGenre || partner.genre || "N/A";
+    const partnersLabel = `${partner.currentPartnersCount ?? 0}/${partner.maxPartners ?? 0} Partners`;
+    const visibility = partner.visibility || "public";
+    const sendDate = partner.sendDate || partner.date || null;
+    const sendTime = partner.sendTime || partner.time || null;
+    const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
+    const price = parseFloat(partner.price || 0);
+    const isPaid = price > 0;
+    const status = partner.status || "available";
+    const promotionType = partner.promotionType || partner.badge || null;
+
+    // Status badges
     const getBadges = () => {
         const badges = [];
-        if (partner.paid) {
-            badges.push({ text: partner.paidAmount, bg: "bg-[#E8E8E8]" });
+        if (isPaid) {
+            badges.push({ text: `$${price.toFixed(2)}`, bg: "bg-[#E8E8E8]" });
             badges.push({ text: "Paid", bg: "bg-[#16A34A33]" });
         }
-        if (partner.badge) {
-            badges.push({ text: partner.badge, bg: "bg-[#E8E8E8]" });
+        if (promotionType) {
+            badges.push({ text: formatLabel(promotionType), bg: "bg-[#E8E8E8]" });
         }
-        badges.push({ text: "Available", bg: "bg-[#16A34A33]" });
+        badges.push({ text: formatLabel(status), bg: "bg-[#16A34A33]" });
         return badges;
     };
 
@@ -130,8 +149,8 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 {/* Left Section - Avatar, Name, Swaps */}
                 <div className="flex items-start gap-3 min-w-0">
                     <img
-                        src={partner.photo}
-                        alt={partner.name}
+                        src={authorPhoto}
+                        alt={authorName}
                         className="w-10 h-10 rounded-full object-cover shrink-0"
                     />
 
@@ -139,10 +158,10 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         {/* Name + Swaps forced into one line */}
                         <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
                             <p className="text-[14px] font-bold text-black leading-tight">
-                                {formatCamelCaseName(partner.name)}
+                                {formatCamelCaseName(authorName)}
                             </p>
                             <p className="text-[10px] text-[#374151] font-medium">
-                                {partner.swaps} swaps completed
+                                {swapsCompleted} swaps completed
                             </p>
                         </div>
                     </div>
@@ -164,13 +183,13 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             {/* ── Tags Row ── */}
             <div className="flex items-center gap-1 flex-wrap">
                 <span className="bg-[#16A34A33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
-                    {partner.genre}
+                    {formatLabel(genre)}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-[#E07A5F33] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
-                    <PartnersIcon size={12} /> {partner.partners}
+                    <PartnersIcon size={12} /> {partnersLabel}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-[#E8E8E8] text-black text-[10px] font-medium px-3 py-0.5 rounded-full">
-                    <PublicIcon size={12} /> {partner.visibility}
+                    <PublicIcon size={12} /> {formatLabel(visibility)}
                 </span>
             </div>
 
@@ -179,21 +198,19 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Date</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {dayjs(partner.date).format("DD MMM YYYY")}
+                        {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
                     </p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Time</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {partner.time}
+                        {sendTime || "N/A"}
                     </p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Audience</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {partner?.audience
-                            ? new Intl.NumberFormat('en-US').format(Number(partner.audience))
-                            : "0"}
+                        {new Intl.NumberFormat('en-US').format(Number(audienceSize))}
                     </p>
                 </div>
             </div>
@@ -210,13 +227,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                         navigate("/swap-details", {
                             state: {
                                 id: partner.id,
-                                author: {
-                                    name: partner.author?.name,
-                                    profile_picture: partner.author?.profilePicture, // Keeping snake_case for the object keys if passed as they are, but better camel here too? 
-                                    // Actually, let's keep consistency. The recipient SwapDetails expects these specific keys in its "passed" object fallback.
-                                    swaps_completed: partner.author?.swapsCompleted,
-                                    reputation_score: partner.author?.reputationScore,
-                                },
+                                author: partner.author,
                                 send_date: partner.sendDate,
                                 send_time: partner.sendTime,
                                 audience_size: partner.audienceSize,
@@ -239,13 +250,13 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                     }}
                     className={`flex-1 px-2 py-[8px] border border-[#B5B5B5] rounded-[8px] 
                 transition-all text-[11px] font-medium
-                ${partner.paid
+                ${isPaid
                             ? "bg-[#2F6F6D] text-white border-[#2F6F6D]"
                             : "bg-white text-black hover:bg-gray-50"
                         }
             `}
                 >
-                    {partner.paid ? "Request Paid Swaps" : "Send Request"}
+                    {isPaid ? `Request Paid Swap` : "Send Request"}
                 </button>
             </div>
         </div >
