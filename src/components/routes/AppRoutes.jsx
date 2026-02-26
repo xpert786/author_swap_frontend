@@ -21,6 +21,7 @@ import AuthorReputationSystem from "../pages/AuthorReputation/AuthorReputationSy
 import Notification from "../pages/Notification";
 import SwapManagement from "../pages/SwapManagement/SwapManagement";
 import SwapHistory from "../pages/SwapManagement/SwapHistory";
+import TrackSwap from "../pages/SwapManagement/TrackSwap";
 import Newsletter from "../pages/newsletters/Newsletter";
 import { Analytics } from "../pages/PlaceholderPages";
 import SubscriptionPage from "../pages/subscription/SubscriptionPage";
@@ -61,6 +62,7 @@ const AppRoutes = () => {
           <Route path="/newsletter" element={<Newsletter />} />
           <Route path="/swap-management" element={<SwapManagement />} />
           <Route path="/swap-history/:id" element={<SwapHistory />} />
+          <Route path="/track-swap/:id" element={<TrackSwap />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
           <Route path="/notifications" element={<Notification />} />
