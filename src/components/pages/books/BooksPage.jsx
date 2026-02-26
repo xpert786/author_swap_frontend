@@ -173,7 +173,7 @@ const BooksPage = () => {
             formData.append("kobo_url", updatedData.koboUrl);
             formData.append("barnes_noble_url", updatedData.barnesUrl);
             formData.append("is_primary_promo", updatedData.isPrimary);
-            formData.append("rating", updatedData.ratings);
+            formData.append("rating", updatedData.ratings || "");
 
             // Only append coverImage if it's a File object (user selected a new one)
             if (updatedData.coverImage instanceof File) {

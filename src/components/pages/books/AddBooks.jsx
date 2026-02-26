@@ -27,6 +27,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
     barnesUrl: "",
     coverImage: null,
     isPrimary: false,
+    ratings: "",
   });
 
   useEffect(() => {
@@ -149,7 +150,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
       payload.append("kobo_url", formData.koboUrl);
       payload.append("barnes_noble_url", formData.barnesUrl);
       payload.append("is_primary_promo", formData.isPrimary);
-      payload.append("rating", formData.ratings);
+      payload.append("rating", formData.ratings || "");
 
       if (!formData.coverImage) {
         toast.error("Please upload a book cover image");

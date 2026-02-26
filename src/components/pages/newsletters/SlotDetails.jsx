@@ -3,6 +3,7 @@ import { X, Mail } from "lucide-react";
 import { AiOutlineEye } from "react-icons/ai";
 import SwapPartnerDetails from "./SwapPartnerDetails";
 import { useState } from "react";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 
 const SlotDetails = ({ isOpen, onClose, onEdit }) => {
@@ -134,7 +135,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit }) => {
                                         />
                                         <div>
                                             <p className="text-sm font-bold text-gray-800">
-                                                {partner.name}
+                                                {formatCamelCaseName(partner.name)}
                                             </p>
                                             <p className="text-[12px] text-gray-500">
                                                 {partner.swaps}

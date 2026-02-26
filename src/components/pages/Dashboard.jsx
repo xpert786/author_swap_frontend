@@ -11,6 +11,7 @@ dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
 import { useNotifications } from "../../context/NotificationContext";
 import { getDashboardData } from "../../apis/dashboard";
+import { formatCamelCaseName } from "../../utils/formatName";
 
 
 const OpenBook = () => {
@@ -21,60 +22,35 @@ const OpenBook = () => {
 
 const Dashboard = () => {
   const { notifications } = useNotifications();
-  const [dashboardData, setDashboardData] = useState({
-    welcome: {
-      greeting: "Welcome back!",
-      subtitle: "Here's what's happening with your swaps and books."
-    },
-    stats: [
-      { label: "Book", value: "0", icon: OpenBook, color: "bg-[#2F6F6D33]" },
-      { label: "Newsletter Slots", value: "0", icon: OpenBook, color: "bg-[#E07A5F80]" },
-      { label: "Completed Swaps", value: "0", icon: OpenBook, color: "bg-[#16A34A33]" },
-      { label: "Reliability", value: "0", icon: OpenBook, color: "bg-[#DC262633]" },
-    ],
-    recentActivity: [],
-    analytics: [
-      { label: "AVG OPEN RATE", value: "0.0%" },
-      { label: "AVG CLICK RATE", value: "0.0%" },
-      { label: "OPEN RATE", value: "0.0%" },
-      { label: "CLICK RATE", value: "0.0%" },
-    ],
-    improvementLabel: "0.0% change",
-    calendarDaysData: [],
-    quickActions: []
-  });
-
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const stats = useMemo(() => [
+    { label: "Book", value: String(dashboardData?.stats_cards?.book || 0), icon: OpenBook, color: "bg-[#2F6F6D33]" },
+    { label: "Newsletter Slots", value: String(dashboardData?.stats_cards?.newsletter_slots || 0), icon: OpenBook, color: "bg-[#E07A5F80]" },
+    { label: "Completed Swaps", value: String(dashboardData?.stats_cards?.completed_swaps || 0), icon: OpenBook, color: "bg-[#16A34A33]" },
+    { label: "Reliability", value: String(dashboardData?.stats_cards?.reliability || 0), icon: OpenBook, color: "bg-[#DC262633]" },
+  ], [dashboardData]);
+
+  const analytics = useMemo(() => [
+    { label: "AVG OPEN RATE", value: `${(dashboardData?.campaign_analytics?.avg_open_rate || 0).toFixed(1)}%` },
+    { label: "AVG CLICK RATE", value: `${(dashboardData?.campaign_analytics?.avg_click_rate || 0).toFixed(1)}%` },
+    { label: "OPEN RATE", value: `${(dashboardData?.campaign_analytics?.current_period?.open_rate || 0).toFixed(1)}%` },
+    { label: "CLICK RATE", value: `${(dashboardData?.campaign_analytics?.current_period?.click_rate || 0).toFixed(1)}%` },
+  ], [dashboardData]);
+
+  const [showAddBook, setShowAddBook] = useState(false);
+  const [showAddSlot, setShowAddSlot] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState("Genre");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
         const response = await getDashboardData();
-        const data = response.data;
-
-        setDashboardData({
-          welcome: data.welcome || {
-            greeting: "Welcome back!",
-            subtitle: "Here's what's happening with your swaps and books."
-          },
-          stats: [
-            { label: "Book", value: String(data.stats_cards?.book || 0), icon: OpenBook, color: "bg-[#2F6F6D33]" },
-            { label: "Newsletter Slots", value: String(data.stats_cards?.newsletter_slots || 0), icon: OpenBook, color: "bg-[#E07A5F80]" },
-            { label: "Completed Swaps", value: String(data.stats_cards?.completed_swaps || 0), icon: OpenBook, color: "bg-[#16A34A33]" },
-            { label: "Reliability", value: String(data.stats_cards?.reliability || 0), icon: OpenBook, color: "bg-[#DC262633]" },
-          ],
-          recentActivity: data.recent_activity || [],
-          analytics: [
-            { label: "AVG OPEN RATE", value: `${(data.campaign_analytics?.avg_open_rate || 0).toFixed(1)}%` },
-            { label: "AVG CLICK RATE", value: `${(data.campaign_analytics?.avg_click_rate || 0).toFixed(1)}%` },
-            { label: "OPEN RATE", value: `${(data.campaign_analytics?.current_period?.open_rate || 0).toFixed(1)}%` },
-            { label: "CLICK RATE", value: `${(data.campaign_analytics?.current_period?.click_rate || 0).toFixed(1)}%` },
-          ],
-          improvementLabel: data.campaign_analytics?.improvement_label || "0.0% change",
-          calendarDaysData: data.calendar?.days || [],
-          quickActions: data.quick_actions || []
-        });
+        setDashboardData(response.data);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -85,24 +61,10 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const [showAddBook, setShowAddBook] = useState(false);
-  const [showAddSlot, setShowAddSlot] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(dayjs());
-  const [showGenreDropdown, setShowGenreDropdown] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState("Genre");
-
   const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
 
-  // Calendar logic for May 2024
+  // Calendar logic
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  // const calendarDays = [
-  //   { day: 28, isPrev: true }, { day: 29, isPrev: true }, { day: 30, isPrev: true },
-  //   { day: 1 }, { day: 2 }, { day: 3 }, { day: 4, isSpecial: true },
-  //   { day: 5 }, { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 },
-  //   { day: 12 }, { day: 13 }, { day: 14 }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18, isToday: true },
-  //   { day: 19 }, { day: 20 }, { day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 },
-  //   { day: 26 }, { day: 27 }, { day: 28 }, { day: 29 }, { day: 30 }, { day: 31 }, { day: 1, isNext: true }
-  // ];
 
   const generateCalendar = () => {
     const startOfMonth = currentMonth.startOf("month");
@@ -111,15 +73,15 @@ const Dashboard = () => {
     const startDate = startOfMonth.startOf("week");
     const endDate = endOfMonth.endOf("week");
 
-    let date = startDate.clone();   // must be let
-    const days = [];
+    let date = startDate.clone();
+    const daysArr = [];
 
     while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-      days.push(date.clone());
+      daysArr.push(date.clone());
       date = date.add(1, "day");
     }
 
-    return days;
+    return daysArr;
   };
 
   const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
@@ -129,21 +91,34 @@ const Dashboard = () => {
     setShowAddSlot(false);
   };
 
+  if (loading && !dashboardData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F6F6D]"></div>
+          <p className="text-gray-500 text-sm">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* HEADER */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">
-          {dashboardData.welcome.greeting}
+          {dashboardData?.welcome?.name
+            ? `Welcome back, ${formatCamelCaseName(dashboardData.welcome.name)}!`
+            : (dashboardData?.welcome?.greeting || "Welcome back, Author!")}
         </h1>
         <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
-          {dashboardData.welcome.subtitle}
+          {dashboardData?.welcome?.subtitle || "Here's what's happening with your swaps and books."}
         </p>
       </div>
 
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        {dashboardData.stats.map((stat, index) => (
+        {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
@@ -228,6 +203,7 @@ const Dashboard = () => {
             {calendarDays.map((date, idx) => {
               const isCurrentMonth = date.isSame(currentMonth, "month");
               const isToday = date.isSame(today, "day");
+              const dayData = dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"));
 
               return (
                 <div
@@ -253,10 +229,10 @@ const Dashboard = () => {
 
                   {/* API Activity Dots */}
                   <div className="absolute bottom-1 left-1.5 flex gap-0.5">
-                    {dashboardData.calendarDaysData.find(d => dayjs(d.date).isSame(date, "day"))?.has_slots && (
+                    {dayData?.has_slots && (
                       <div className="w-1 h-1 rounded-full bg-[#2F6F6D]" title="Slots available" />
                     )}
-                    {dashboardData.calendarDaysData.find(d => dayjs(d.date).isSame(date, "day"))?.has_scheduled && (
+                    {dayData?.has_scheduled && (
                       <div className="w-1 h-1 rounded-full bg-[#E07A5F]" title="Scheduled" />
                     )}
                   </div>
@@ -270,7 +246,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
           <div className="space-y-5">
-            {(notifications && notifications.length > 0 ? notifications.slice(0, 6) : dashboardData.recentActivity).map((activity) => (
+            {(dashboardData?.recent_activity || notifications || []).slice(0, 6).map((activity) => (
               <div
                 key={activity.id}
                 className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
@@ -294,7 +270,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {(!notifications || notifications.length === 0) && dashboardData.recentActivity.length === 0 && (
+            {(!dashboardData?.recent_activity || dashboardData.recent_activity.length === 0) && (!notifications || notifications.length === 0) && (
               <p className="text-xs text-center text-gray-400 italic py-4">No recent activity</p>
             )}
           </div>
@@ -307,7 +283,7 @@ const Dashboard = () => {
         <div className="lg:col-span-8 bg-white rounded-[12px] border border-[#B5B5B5] p-6 shadow-sm">
           <h3 className="text-sm md:text-base font-medium text-black mb-6 tracking-tight">Campaign Analytics</h3>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 mb-6">
-            {dashboardData.analytics.map((item, idx) => (
+            {analytics.map((item, idx) => (
               <div key={idx} className="bg-[#FFF9F7] py-6 px-4 rounded-xl text-center">
                 <h4 className="text-[20px] md:text-[24px] font-medium text-black leading-none">{item.value}</h4>
                 <p className="text-[10px] md:text-[11px] font-medium text-[#374151] mt-1.5 tracking-tight uppercase">{item.label}</p>
@@ -316,7 +292,9 @@ const Dashboard = () => {
           </div>
           <div className="text-[12px] font-medium">
             <span className="text-[#374151]">Last 30 days performance.</span>
-            <span className="text-[#16A34A] font-medium ml-1">{dashboardData.improvementLabel} improvement</span>
+            <span className="text-[#16A34A] font-medium ml-1">
+              {dashboardData?.campaign_analytics?.improvement_label || "0.0% change"} improvement
+            </span>
             <span className="text-[#374151] ml-1 font-medium">vs previous period.</span>
           </div>
         </div>
@@ -325,7 +303,7 @@ const Dashboard = () => {
         <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
           <h3 className="text-sm md:text-base font-bold text-gray-900 mb-6 tracking-tight">Quick Actions</h3>
           <div className="flex flex-col gap-3">
-            {(dashboardData.quickActions.length > 0 ? dashboardData.quickActions : [
+            {(dashboardData?.quick_actions?.length > 0 ? dashboardData.quick_actions : [
               { label: "Add New Book", icon: "book", action: () => setShowAddBook(true) },
               { label: "Add Newsletter Slot", icon: "calendar", action: () => setShowAddSlot(true) }
             ]).map((action, idx) => (

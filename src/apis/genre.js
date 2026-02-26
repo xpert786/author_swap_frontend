@@ -15,3 +15,7 @@ export const audienceTags = async () => {
     return response.data;
 };
 
+export const audienceSize = async () => {
+    const response = await apiClient.get("audience-size/");
+    return response.data;
+};

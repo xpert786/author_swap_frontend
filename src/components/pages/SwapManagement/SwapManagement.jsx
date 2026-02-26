@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getSwaps } from '../../../apis/swap';
 import { FiRefreshCw } from "react-icons/fi";
+import { formatCamelCaseName } from '../../../utils/formatName';
 
 const tabs = [
     { label: "All Swaps", key: "all" },
@@ -103,7 +104,7 @@ const SwapCard = ({ data }) => {
                 <div className="flex gap-2.5">
                     <img src={authorImage} alt={authorName} className="w-10 h-10 rounded-full object-cover shrink-0" />
                     <div>
-                        <h3 className="text-[13px] font-medium text-black leading-tight">{formatLabel(authorName)}</h3>
+                        <h3 className="text-[13px] font-medium text-black leading-tight">{formatCamelCaseName(authorName)}</h3>
 
                         <p className="text-[13px] font-medium text-black">{authorRole}</p>
                     </div>
