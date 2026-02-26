@@ -52,6 +52,7 @@ const Newsletter = () => {
         verified_sent: 0
     });
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+    const [calendarData, setCalendarData] = useState([]);
 
     const handleExportGoogle = () => {
         // You can generate a Google Calendar URL dynamically here
@@ -162,8 +163,19 @@ const Newsletter = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await statsNewsSlot();
-            setNewsletterStats(response.data);
+            const params = {
+                month: currentMonth.format("MM"),
+                year: currentMonth.format("YYYY"),
+                genre: selectedGenreValue || "all",
+                visibility: visibility === "All Visibility" ? "all" : visibility.toLowerCase().replace(/ /g, "_"),
+                status: status === "All Status" ? "all" : status.toLowerCase()
+            };
+            const response = await statsNewsSlot(params);
+            const statsData = response.data?.stats_cards || {};
+            const calData = response.data?.calendar?.days || [];
+
+            setNewsletterStats(statsData);
+            setCalendarData(calData);
         } catch (error) {
             console.error("Failed to fetch newsletter stats", error);
         }
@@ -171,8 +183,11 @@ const Newsletter = () => {
 
     useEffect(() => {
         fetchSlots();
-        fetchStats();
     }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, [genre, visibility, status, currentMonth]);
 
     const handleEditClick = (slot) => {
         setSelectedSlot(slot);
@@ -200,11 +215,11 @@ const Newsletter = () => {
     );
 
     const stats = [
-        { label: "Total", value: String(newsletterStats.total_slots || 0), icon: NewsIcon },
-        { label: "Published Slots", value: String(newsletterStats.published_slots || 0), icon: SwapIcon },
-        { label: "Pending swap requests", value: String(newsletterStats.pending_swap_requests || 0), icon: PendingSwapIcon },
-        { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps || 0), icon: ConfirmedSwapIcon },
-        { label: "Verified sent", value: String(newsletterStats.verified_sent || 0), icon: VerifiedSentIcon },
+        { label: "Total", value: String(newsletterStats.total ?? newsletterStats.total_slots ?? 0), icon: NewsIcon },
+        { label: "Published Slots", value: String(newsletterStats.published_slots ?? 0), icon: SwapIcon },
+        { label: "Pending swap requests", value: String(newsletterStats.pending_swaps ?? newsletterStats.pending_swap_requests ?? 0), icon: PendingSwapIcon },
+        { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps ?? 0), icon: ConfirmedSwapIcon },
+        { label: "Verified sent", value: String(newsletterStats.verified_sent ?? 0), icon: VerifiedSentIcon },
     ];
 
     return (
@@ -391,24 +406,20 @@ const Newsletter = () => {
                             const isCurrentMonth = date.isSame(currentMonth, "month");
                             const isToday = date.isSame(today, "day");
 
-                            // Apply filters to calculate calendar highlights
-                            const daySlots = slots
-                                .filter(s => dayjs(s.raw_data.send_date).isSame(date, "day"))
-                                .filter(s => (genre === "Genre" || s.rawGenre === selectedGenreValue.toLowerCase()))
-                                .filter(s => (visibility === "All Visibility" || s.rawVisibility === visibility.toLowerCase().replace(/ /g, "_")))
-                                .filter(s => (status === "All Status" || s.rawStatus === status.toLowerCase()))
+                            // Get pre-calculated daily highlights from API response
+                            const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
 
                             let bgColor = "bg-white";
                             if (!isCurrentMonth) {
                                 bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
-                            } else {
-                                // Background Priority: Verified > Confirmed > Pending > Published > Available
-                                if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "verified")) bgColor = "bg-[#9FB5B3]";
-                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "confirmed")) bgColor = "bg-[#87D1A1]";
-                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "pending")) bgColor = "bg-[#FDE7C4]";
-                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "published")) bgColor = "bg-[#F1B9AA]";
-                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "available")) bgColor = "bg-[#16A34A33]";
-                                else if (daySlots.length > 0) bgColor = "bg-[#F3F4F6]";
+                            } else if (dayApiData?.has_slots) {
+                                // Background Priority matching YOUR response keys
+                                if (dayApiData.has_verified) bgColor = "bg-[#9FB5B3]";
+                                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
+                                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]";
+                                else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
+                                else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
+                                else bgColor = "bg-[#F3F4F6]";
                             }
 
                             return (
