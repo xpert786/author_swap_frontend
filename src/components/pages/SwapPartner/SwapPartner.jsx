@@ -373,7 +373,7 @@ const SwapPartner = () => {
         } catch (error) {
             console.error("Failed to fetch genres:", error);
             // Optional: fallback if API fails
-            setGenres(["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]);
+            setGenres(["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"]);
         }
     };
 
@@ -414,7 +414,7 @@ const SwapPartner = () => {
                 <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                     <FilterDropdown
                         label="Genre"
-                        options={genres.length > 0 ? genres : ["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]}
+                        options={genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"]}
                     />
 
                     <FilterDropdown

@@ -38,6 +38,7 @@ const Newsletter = () => {
     const [selectedGenre, setSelectedGenre] = useState("Genre");
     const [showGenreDropdown, setShowGenreDropdown] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(dayjs());
     const [slots, setSlots] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedGenreValue, setSelectedGenreValue] = useState("");
@@ -112,7 +113,13 @@ const Newsletter = () => {
 
     const getPeriod = (time) => {
         if (!time) return "Morning";
-        const hour = parseInt(time.split(":")[0], 10);
+        let hour = parseInt(time.split(":")[0], 10);
+        const lowerTime = time.toLowerCase();
+
+        // Handle 12h format with AM/PM
+        if (lowerTime.includes("pm") && hour < 12) hour += 12;
+        if (lowerTime.includes("am") && hour === 12) hour = 0;
+
         if (hour < 12) return "Morning";
         if (hour < 17) return "Afternoon";
         return "Evening";
@@ -129,15 +136,18 @@ const Newsletter = () => {
 
             const formatted = dataArray.map(item => ({
                 id: item.id,
-                time: `${item.formatted_date || ""} ${item.formatted_time || ""}`,
+                time: `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
                 period: getPeriod(item.send_time) || formatLabel(item.time_period),
                 genre: formatLabel(item.preferred_genre),
-                partners: `0/${item.max_partners} Partners`,
+                rawGenre: (item.preferred_genre || "").toLowerCase(),
+                partners: `${item.partner_count || 0}/${item.max_partners} Partners`,
                 visibility: formatLabel(item.visibility),
+                rawVisibility: (item.visibility || "").toLowerCase(),
                 audience: item.audience_size,
                 status: formatLabel(item.status),
+                rawStatus: (item.status || "").toLowerCase(),
                 statusColor:
-                    item.status === "available"
+                    (item.status || "").toLowerCase() === "available"
                         ? "bg-[#16A34A33]"
                         : "bg-[#F59E0B33]",
                 raw_data: item,
@@ -234,11 +244,7 @@ const Newsletter = () => {
             <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
                 <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
                     All Slots for{" "}
-                    {new Date().toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                    })}
+                    {selectedDate.format("MMMM D, YYYY")}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -250,9 +256,9 @@ const Newsletter = () => {
                             </button>
                             {openDropdown === "genre" && (
                                 <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    <button onClick={() => { setGenre("Genre"); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
+                                    <button onClick={() => { setGenre("Genre"); setSelectedGenreValue(""); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
                                     {genres.map((g) => (
-                                        <button key={g.value} onClick={() => { setGenre(g.label); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
+                                        <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
                                     ))}
                                 </div>
                             )}
@@ -266,7 +272,7 @@ const Newsletter = () => {
                             </button>
                             {openDropdown === "visibility" && (
                                 <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    {["All Visibility", "Public", "Friend Only", "Private"].map((item) => (
+                                    {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map((item) => (
                                         <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
                                     ))}
                                 </div>
@@ -281,7 +287,7 @@ const Newsletter = () => {
                             </button>
                             {openDropdown === "status" && (
                                 <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    {["All Status", "Available", "Booked", "Pending"].map((item) => (
+                                    {["All Status", "Available", "Pending", "Confirmed", "Verified", "Published"].map((item) => (
                                         <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
                                     ))}
                                 </div>
@@ -341,30 +347,117 @@ const Newsletter = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
                 {/* CALENDAR */}
-                <div className="xl:col-span-3 bg-white rounded-[10px] border border-[#B5B5B5] p-5 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><IoChevronBack size={18} /></button>
-                            <button onClick={() => setCurrentMonth(currentMonth.add(1, "month"))} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><IoChevronForward size={18} /></button>
-                            <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight ml-1">{currentMonth.format("MMMM YYYY")}</h3>
+                <div className="xl:col-span-3 bg-white rounded-[12px] border border-[#B5B5B5] p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-10">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                            >
+                                <IoChevronBack size={20} />
+                            </button>
+                            <h3 className="text-[17px] font-medium text-[#111827] tracking-tight">
+                                {currentMonth.format("MMMM YYYY")} Calendar
+                            </h3>
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                            >
+                                <IoChevronForward size={20} />
+                            </button>
                         </div>
+                        <button
+                            onClick={() => {
+                                const now = dayjs();
+                                setCurrentMonth(now);
+                                setSelectedDate(now);
+                            }}
+                            className="text-[17px] font-medium text-[#4B5563] hover:text-[#111827] transition-colors"
+                        >
+                            Today
+                        </button>
                     </div>
-                    <div className="grid grid-cols-7 border-l border-t border-gray-50">
+
+                    <div className="grid grid-cols-7 border-l border-t border-gray-200 rounded-tl-xl overflow-hidden">
                         {days.map((day) => (
-                            <div key={day} className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase border-r border-b border-gray-50 bg-gray-50/20">{day}</div>
+                            <div
+                                key={day}
+                                className="py-3 text-center text-[12px] font-medium text-gray-500 border-r border-b border-gray-100 bg-gray-50/10"
+                            >
+                                {day}
+                            </div>
                         ))}
                         {calendarDays.map((date, idx) => {
                             const isCurrentMonth = date.isSame(currentMonth, "month");
                             const isToday = date.isSame(today, "day");
-                            const hasSlot = slots.some(s => dayjs(s.raw_data.send_date).isSame(date, "day"));
+
+                            // Apply filters to calculate calendar highlights
+                            const daySlots = slots
+                                .filter(s => dayjs(s.raw_data.send_date).isSame(date, "day"))
+                                .filter(s => (genre === "Genre" || s.rawGenre === selectedGenreValue.toLowerCase()))
+                                .filter(s => (visibility === "All Visibility" || s.rawVisibility === visibility.toLowerCase().replace(/ /g, "_")))
+                                .filter(s => (status === "All Status" || s.rawStatus === status.toLowerCase()))
+
+                            let bgColor = "bg-white";
+                            if (!isCurrentMonth) {
+                                bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
+                            } else {
+                                // Background Priority: Verified > Confirmed > Pending > Published > Available
+                                if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "verified")) bgColor = "bg-[#9FB5B3]";
+                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "confirmed")) bgColor = "bg-[#87D1A1]";
+                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "pending")) bgColor = "bg-[#FDE7C4]";
+                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "published")) bgColor = "bg-[#F1B9AA]";
+                                else if (daySlots.some(s => (s.raw_data.status || "").toLowerCase() === "available")) bgColor = "bg-[#16A34A33]";
+                                else if (daySlots.length > 0) bgColor = "bg-[#F3F4F6]";
+                            }
+
                             return (
-                                <div key={idx} className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative ${!isCurrentMonth ? "bg-gray-50/30" : "bg-white"}`}>
-                                    <span className={`text-[10px] md:text-[11px] font-bold ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} ${isToday ? "text-[#E07A5F]" : ""}`}>{date.date()}</span>
-                                    {hasSlot && <div className="absolute bottom-1 left-1.5 h-1.5 w-1.5 rounded-full bg-[#2F6F6D]" />}
-                                    {isToday && <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-[#E07A5F] uppercase">Today</span>}
+                                <div
+                                    key={idx}
+                                    onClick={() => setSelectedDate(date)}
+                                    className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80
+                                        ${bgColor} 
+                                        ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""}
+                                        ${date.isSame(selectedDate, "day") ? "ring-2 ring-[#2F6F6D] z-10" : ""}
+                                    `}
+                                >
+                                    <span
+                                        className={`text-[12px] font-medium 
+                                            ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} 
+                                            ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""}
+                                            ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}
+                                        `}
+                                    >
+                                        {date.format("D")}
+                                    </span>
+
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* LEGEND */}
+                    <div className="flex flex-wrap gap-x-8 gap-y-3 mt-8 justify-center">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#16A34A33] shadow-sm border border-teal-100" />
+                            <span className="text-[14px] font-medium text-[#374151]">Available slots</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#F1B9AA] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">Published slots</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#87D1A1] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">Confirmed Slots</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#FDE7C4] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">Pending slots</span>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#9FB5B3] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">verified slots</span>
+                        </div>
                     </div>
                 </div>
 
@@ -374,17 +467,23 @@ const Newsletter = () => {
                         <div key={period}>
                             <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">{period}</h3>
                             <div className="space-y-4">
-                                {slots.filter(s => s.period === period).length === 0 && (
-                                    <div className="text-center py-8 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-2xl">
-                                        No {period.toLowerCase()} slots scheduled
-                                    </div>
-                                )}
-                                {slots
-                                    .filter(s => s.period === period)
-                                    .filter(s => (genre === "Genre" || s.genre === genre))
-                                    .filter(s => (visibility === "All Visibility" || s.visibility === visibility))
-                                    .filter(s => (status === "All Status" || s.status === status))
-                                    .map((slot) => (
+                                {(() => {
+                                    const periodSlots = slots
+                                        .filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"))
+                                        .filter(s => s.period === period)
+                                        .filter(s => (genre === "Genre" || s.rawGenre === selectedGenreValue.toLowerCase()))
+                                        .filter(s => (visibility === "All Visibility" || s.rawVisibility === visibility.toLowerCase().replace(/ /g, "_")))
+                                        .filter(s => (status === "All Status" || s.rawStatus === status.toLowerCase()));
+
+                                    if (periodSlots.length === 0) {
+                                        return (
+                                            <div className="text-center py-10 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
+                                                No {period.toLowerCase()} slots available
+                                            </div>
+                                        );
+                                    }
+
+                                    return periodSlots.map((slot) => (
                                         <div key={slot.id} className="bg-white rounded-2xl border border-[#B5B5B5] p-5 hover:border-[#E07A5F]">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-start justify-between">
@@ -398,7 +497,7 @@ const Newsletter = () => {
                                                 </div>
                                                 <div className="flex items-end justify-between pt-3 border-t border-gray-100">
                                                     <div>
-                                                        <p className="text-[12px] text-gray-500">Audience:</p>
+                                                        <p className="text-[12px] text-gray-500">Audience size:</p>
                                                         <p className="text-[16px] font-semibold text-gray-900">{Number(slot.audience).toLocaleString("en-US")}</p>
                                                     </div>
                                                 </div>
@@ -421,7 +520,8 @@ const Newsletter = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    ));
+                                })()}
                             </div>
                         </div>
                     ))}

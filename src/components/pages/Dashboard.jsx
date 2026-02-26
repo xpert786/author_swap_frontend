@@ -60,7 +60,7 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const genres = ["All Genres", "Fiction", "Non-Fiction", "Mystery", "Sci-Fi", "Romance", "Thriller", "Fantasy"];
+  const genres = ["All Genres", "Fantasy", "Fiction", "Mystery", "Non-Fiction", "Romance", "Sci-Fi", "Thriller"];
 
   // Calendar logic for May 2024
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -107,7 +107,7 @@ const Dashboard = () => {
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px]">
+          <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1">
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
                 <stat.icon />
