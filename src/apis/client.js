@@ -18,7 +18,7 @@ function getCookie(name) {
 
 
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -27,11 +27,20 @@ apiClient.interceptors.request.use(
       delete config.headers.Authorization;
     }
 
-    // Add CSRF token header for unsafe HTTP methods
+    // Add CSRF token header for unsafe HTTP methods. Ensure token exists first.
     const method = (config.method || "get").toLowerCase();
     const unsafeMethods = ["post", "put", "patch", "delete"];
     if (unsafeMethods.includes(method)) {
-      const csrftoken = getCookie('csrftoken');
+      let csrftoken = getCookie('csrftoken');
+      if (!csrftoken) {
+        try {
+          await ensureCsrfToken();
+        } catch (e) {
+          // ignore; we'll re-check the cookie below
+        }
+        csrftoken = getCookie('csrftoken');
+      }
+
       if (csrftoken) {
         config.headers['X-CSRFToken'] = csrftoken;
       }
@@ -57,3 +66,25 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+
+// Try to ensure a CSRF cookie is present. Returns the token string or null.
+export async function ensureCsrfToken() {
+  const existing = getCookie('csrftoken');
+  if (existing) return existing;
+
+  const candidates = ["csrf/", "sanctum/csrf-cookie", ""]; // common endpoints to trigger CSRF cookie
+
+  for (const ep of candidates) {
+    try {
+      // call endpoint which may set CSRF cookie on the response
+      await apiClient.get(ep);
+    } catch (e) {
+      // ignore errors and try next candidate
+    }
+
+    const token = getCookie('csrftoken');
+    if (token) return token;
+  }
+
+  return null;
+}
