@@ -160,19 +160,23 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         <div className="flex items-center gap-2">
                             <div className="hidden md:flex flex-col">
                                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                                    {(profile?.name || profile?.username || "User")
+                                    {((profile?.pen_name || profile?.name || profile?.username || "User")
+                                        .split(",")[0].trim())
                                         .toLowerCase()
                                         .replace(/\b\w/g, char => char.toUpperCase())}
                                 </p>
                                 <p className="text-[11px] text-gray-500">
                                     {profile?.primary_genre
                                         ? `${profile.primary_genre
+                                            .split(",")[0]
+                                            .trim()
                                             .split("_")
                                             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                                             .join(" ")} Author`
                                         : "Author"}
                                 </p>
                             </div>
+
                             {isDropdownOpen ? (
                                 <GoChevronUp className="text-gray-400 text-lg" />
                             ) : (

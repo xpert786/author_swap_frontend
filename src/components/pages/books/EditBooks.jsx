@@ -32,12 +32,12 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
   useEffect(() => {
     const fetchBookData = async () => {
       if (!bookId) return;
-      
+
       try {
         setFetchLoading(true);
         const response = await getBookById(bookId);
         const bookData = response?.data;
-        
+
         if (bookData) {
           // Handle malformed subgenres array like ["['bad_boy_romance']"]
           let parsedSubgenre = "";
@@ -81,7 +81,7 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
         toast.error("Failed to load book details");
       } finally {
         setFetchLoading(false);
-        }
+      }
     };
 
     fetchBookData();
@@ -113,7 +113,21 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
     setSubGenres(allSubGenres[formData.genre] || []);
   }, [formData.genre, allSubGenres]);
 
+  const handleRemoveImage = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setFormData((prev) => ({
+      ...prev,
+      coverImage: null,
+      preview: null
+    }));
+    // Reset the file input value so same file can be selected again
+    const fileInput = document.getElementsByName("coverImage")[0];
+    if (fileInput) fileInput.value = "";
+  };
+
   const handleChange = (e) => {
+
     const { name, value, type, checked, files } = e.target;
 
     if (type === "file") {
@@ -275,7 +289,7 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
                 Book Cover Image
               </label>
 
-              <label className="mt-2 relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-40 cursor-pointer hover:border-[#2F6F6D] transition overflow-hidden bg-gray-50/30">
+              <label className="mt-2 relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-44 cursor-pointer hover:border-[#2F6F6D] transition overflow-hidden bg-gray-50/30">
                 <input
                   type="file"
                   name="coverImage"
@@ -283,13 +297,25 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
                   className="hidden"
                 />
 
+
                 {formData.preview ? (
-                  <img
-                    src={formData.preview}
-                    alt="preview"
-                    className="h-full object-contain"
-                  />
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <img
+                      src={formData.preview}
+                      alt="preview"
+                      className="h-full object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ) : (
+
                   <div className="text-center px-4">
                     <p className="text-gray-500 text-[13px]">
                       Drop Files Here Or Click To Browse

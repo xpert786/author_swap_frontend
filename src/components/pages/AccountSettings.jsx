@@ -155,7 +155,7 @@ const AccountSettings = () => {
                             alt="Edit"
                             className="w-4 h-4 filter brightness-0 invert"
                         />
-                        Edit Profile
+                        Edit
                     </button>
                 )}
             </div>
@@ -198,11 +198,12 @@ const AccountSettings = () => {
                     </div>
                     <div className="space-y-1">
                         <h2 className="text-[20px] font-semibold text-black leading-none">
-                            {formData.name}
+                            {formData.name.split(",")[0].trim()}
                         </h2>
                         <p className="text-[13px] text-gray-500">
-                            {formData.genre} Author
+                            {formData.genre.split(",")[0].trim() || "Author"} Author
                         </p>
+
                     </div>
                 </div>
             </div>

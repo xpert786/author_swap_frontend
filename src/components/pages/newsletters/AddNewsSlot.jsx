@@ -48,7 +48,9 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
     setLoading(true);
 
     try {
-      await createNewsSlot(formData);
+      // Remove audience_size from the payload
+      const { audience_size, ...payload } = formData;
+      await createNewsSlot(payload);
 
       if (onSubmit) {
         await onSubmit();
@@ -146,7 +148,8 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.audience_size}
                   onChange={handleChange}
                   placeholder="1500"
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
+                  readOnly
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed"
                 />
               </div>
 

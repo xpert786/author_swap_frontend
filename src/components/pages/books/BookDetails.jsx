@@ -1,33 +1,119 @@
-import React from "react";
-import { Calendar, Pencil } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Calendar } from "lucide-react";
 import { SiAmazon } from "react-icons/si";
 import { FaApple } from "react-icons/fa";
 import { FiBookOpen } from "react-icons/fi";
+import { getBookById, updateBook } from "../../../apis/bookManegment";
 import EditBooks from "./EditBooks";
-import { useState } from "react";
+import toast from "react-hot-toast";
 import edit from "../../../assets/edit.png";
 import { LuBookOpen } from "react-icons/lu";
 
+
 export default function BookDetails() {
-
+    const { id } = useParams();
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [book, setBook] = useState(null);
 
-    const [book, setBook] = useState({
-        title: "The Midnight Garden",
-        genre: "Fantasy",
-        subgenre: "Epic Fantasy",
-        price: "0.99",
-        availability: "Wide",
-        publishDate: "2025-03-15",
-        description:
-            "When a famous author is found dead in his isolated mansion...",
-        coverImage:
-            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600",
-    });
-
-    const handleSave = (updatedBook) => {
-        setBook(updatedBook);
+    const fetchBookData = async () => {
+        try {
+            setLoading(true);
+            const response = await getBookById(id);
+            const data = response?.data;
+            if (data) {
+                setBook({
+                    id: data.id,
+                    title: data.title || "",
+                    genre: data.primary_genre || "",
+                    subgenre: Array.isArray(data.subgenres) ? data.subgenres[0] : (data.subgenres || ""),
+                    price: data.price_tier || "",
+                    availability: data.availability || "",
+                    publishDate: data.publish_date || "",
+                    description: data.description || "",
+                    coverImage: data.book_cover?.startsWith("http")
+                        ? data.book_cover
+                        : `${import.meta.env.VITE_BACKEND_URL}${data.book_cover}`,
+                    amazonUrl: data.amazon_url || "",
+                    appleUrl: data.apple_url || "",
+                    koboUrl: data.kobo_url || "",
+                    barnesUrl: data.barnes_noble_url || "",
+                    isPrimary: data.is_primary_promo || false,
+                    ratings: data.rating || 0,
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch book:", error);
+            toast.error("Failed to load book details");
+        } finally {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        if (id) {
+            fetchBookData();
+        }
+    }, [id]);
+
+    const handleSave = async (updatedData) => {
+        try {
+            const formData = new FormData();
+            formData.append("title", updatedData.title);
+            formData.append("primary_genre", updatedData.genre);
+            formData.append("subgenres", updatedData.subgenre);
+            formData.append("price_tier", updatedData.price);
+            formData.append("availability", updatedData.availability);
+            formData.append("publish_date", updatedData.publishDate);
+            formData.append("description", updatedData.description);
+            formData.append("amazon_url", updatedData.amazonUrl);
+            formData.append("apple_url", updatedData.appleUrl);
+            formData.append("kobo_url", updatedData.koboUrl);
+            formData.append("barnes_noble_url", updatedData.barnesUrl);
+            formData.append("is_primary_promo", updatedData.isPrimary);
+            formData.append("rating", updatedData.ratings);
+
+            if (updatedData.coverImage instanceof File) {
+                formData.append("book_cover", updatedData.coverImage);
+            }
+
+            await updateBook(id, formData);
+            toast.success("Book updated successfully!");
+            fetchBookData(); // Refresh data
+            setIsEditOpen(false);
+        } catch (error) {
+            console.error("Update failed:", error);
+            toast.error(error?.response?.data?.message || "Failed to update book");
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2F6F6D]"></div>
+                <p className="ml-3 text-gray-600">Loading book details...</p>
+            </div>
+        );
+    }
+
+    if (!book) {
+        return (
+            <div className="text-center py-20">
+                <h2 className="text-2xl font-semibold text-gray-800">Book Not Found</h2>
+                <p className="text-gray-500 mt-2">The book you're looking for doesn't exist or has been removed.</p>
+            </div>
+        );
+    }
+
+    const formattedDate = book.publishDate
+        ? new Date(book.publishDate).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        })
+        : "N/A";
+
 
 
     return (
@@ -40,18 +126,18 @@ export default function BookDetails() {
                     <div className="flex items-center gap-4 flex-wrap">
 
                         <h1 className="text-3xl font-semibold text-gray-900">
-                            The Midnight Garden
+                            {book.title}
                         </h1>
 
                         <div className="flex gap-4">
                             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                                 <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                                Active
+                                {book.genre?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
                             </span>
 
                             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[#2F6F6D33] text-[#2F6F6D]">
                                 <LuBookOpen size={12} />
-                                Kindle Unlimited
+                                {book.availability?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
                             </span>
                         </div>
                     </div>
@@ -60,11 +146,12 @@ export default function BookDetails() {
                     <div className="flex items-center gap-6 mt-3 text-sm text-gray-500">
                         <div className="flex items-center gap-2 text-[#374151]">
                             <Calendar size={16} />
-                            <span>Published 15 Mar 2025</span>
+                            <span>Published {formattedDate}</span>
                         </div>
 
-                        <span className="font-medium text-[#374151]">$ 0.99</span>
+                        <span className="font-medium text-[#374151]">$ {book.price}</span>
                     </div>
+
                 </div>
 
 
@@ -82,23 +169,25 @@ export default function BookDetails() {
 
                 {isEditOpen && (
                     <EditBooks
-                        bookData={book}
+                        bookId={id}
                         onClose={() => setIsEditOpen(false)}
                         onSave={handleSave}
                     />
                 )}
 
+
             </div>
 
             <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-stretch">
-                   <div className="w-full lg:w-80 xl:w-96">
+                    <div className="w-full lg:w-80 xl:w-96">
                         <div className="h-full rounded-[10px] overflow-hidden shadow-md">
                             <img
-                                src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600"
+                                src={book.coverImage || "/placeholder.jpg"}
                                 alt="Book Cover"
                                 className="w-full h-full object-cover"
                             />
+
                         </div>
                     </div>
 
@@ -112,12 +201,9 @@ export default function BookDetails() {
                                 Book Description
                             </h2>
                             <p className="text-[#374151] leading-relaxed text-sm font-normal">
-                                When a famous author is found dead in his isolated mansion,
-                                detective Sarah Chen must unravel a web of secrets, lies,
-                                and forgotten memories. Each clue leads deeper into the town's
-                                dark history and her own past, where nothing is as it seems
-                                and everyone has something to hide.
+                                {book.description || "No description available."}
                             </p>
+
                         </div>
 
                         {/* Metadata */}
@@ -126,11 +212,12 @@ export default function BookDetails() {
                                 Book Metadata
                             </h2>
 
-                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <MetaCard label="Page Count" value="320" />
-                                <MetaCard label="Language" value="English" />
-                                <MetaCard label="ISBN" value="978-1234567890" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <MetaCard label="Primary Genre" value={book.genre?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} />
+                                <MetaCard label="Subgenre" value={book.subgenre?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "N/A"} />
+                                <MetaCard label="Rating" value={`${book.ratings} / 5`} />
                             </div>
+
                         </div>
 
                         {/* Platforms */}
@@ -140,10 +227,11 @@ export default function BookDetails() {
                             </h2>
 
                             <div className="flex gap-6 pb-3">
-                                <PlatformCard name="Amazon" active />
-                                <PlatformCard name="Apple Books" />
-                                <PlatformCard name="Kobo" />
+                                <PlatformCard name="Amazon" active={!!book.amazonUrl} />
+                                <PlatformCard name="Apple Books" active={!!book.appleUrl} />
+                                <PlatformCard name="Kobo" active={!!book.koboUrl} />
                             </div>
+
                         </div>
 
                     </div>

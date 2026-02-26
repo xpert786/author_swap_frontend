@@ -157,10 +157,31 @@ const BooksPage = () => {
 
 
     const handleUpdateBook = async (updatedData) => {
-        console.log("UPDATING:", updatedData); // 👈 ADD THIS
+        console.log("UPDATING:", updatedData);
 
         try {
-            const response = await updateBook(updatedData.id, updatedData);
+            const formData = new FormData();
+            formData.append("title", updatedData.title);
+            formData.append("primary_genre", updatedData.genre);
+            formData.append("subgenres", updatedData.subgenre);
+            formData.append("price_tier", updatedData.price);
+            formData.append("availability", updatedData.availability);
+            formData.append("publish_date", updatedData.publishDate);
+            formData.append("description", updatedData.description);
+            formData.append("amazon_url", updatedData.amazonUrl);
+            formData.append("apple_url", updatedData.appleUrl);
+            formData.append("kobo_url", updatedData.koboUrl);
+            formData.append("barnes_noble_url", updatedData.barnesUrl);
+            formData.append("is_primary_promo", updatedData.isPrimary);
+            formData.append("rating", updatedData.ratings);
+
+            // Only append coverImage if it's a File object (user selected a new one)
+            if (updatedData.coverImage instanceof File) {
+                formData.append("book_cover", updatedData.coverImage);
+            }
+
+            const response = await updateBook(updatedData.id, formData);
+
             console.log("RESPONSE:", response); // 👈 ADD THIS
 
             const savedBook = response.data;

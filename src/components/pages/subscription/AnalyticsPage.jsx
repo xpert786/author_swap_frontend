@@ -77,8 +77,7 @@ const tabs = ["Recent", "Top Performing", "Swap Campaigns"];
 const tabsGraph = ["Open Rate", "Click Rate", "Subscriber Growth"];
 /* -------------------- COMPONENT -------------------- */
 
-const AnalyticsPage = () => {
-
+const AnalyticsPage = ({ isChildView = false }) => {
     const AvgOpenRate = () => {
         return (
             <img src={openRate} alt="Average Open Rate" className="w-5 h-5 object-contain" />
@@ -86,9 +85,10 @@ const AnalyticsPage = () => {
     };
 
     const navigate = useNavigate();
+    const [pageTab, setPageTab] = useState("analytics");
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("Recent");
+    const [activeCampaignTab, setActiveCampaignTab] = useState("Recent");
     const [activeGraphTab, setActiveGraphTab] = useState("Open Rate");
     const [isMounted, setIsMounted] = useState(false);
 
@@ -99,7 +99,6 @@ const AnalyticsPage = () => {
             setAnalytics(analyticsRes.data);
         } catch (error) {
             console.error("Failed to fetch analytics data", error);
-            // toast.error("Failed to load subscriber analytics");
         } finally {
             setLoading(false);
         }
@@ -109,6 +108,13 @@ const AnalyticsPage = () => {
         fetchData();
         setIsMounted(true);
     }, []);
+
+    // If viewed on the direct route /analytics-page, we might want to handle navigation
+    const handleTabChange = (tab) => {
+        if (tab === "subscription") {
+            navigate("/subscription");
+        }
+    };
 
     if (loading) {
         return (
@@ -120,14 +126,6 @@ const AnalyticsPage = () => {
 
     const summaryStats = analytics?.summary_stats || {};
     const listHealth = analytics?.list_health_metrics || {};
-
-    // We keep a dummy verificationData for UI structure or remove connection logic
-    const verificationData = {
-        is_connected: true, // Assuming connected if we are viewing analytics
-        platform: "MailerLite",
-        last_synced: "Recently",
-        status: "Verified"
-    };
 
     const campaigns = analytics?.campaign_analytics || [];
     const linkAnalysis = analytics?.link_level_ctr || [];
@@ -141,9 +139,9 @@ const AnalyticsPage = () => {
     const filteredCampaigns = campaigns.filter(camp => {
         if (!camp) return false;
         const openRateVal = camp.open_rate ? parseFloat(camp.open_rate) : 0;
-        if (activeTab === "Recent") return true;
-        if (activeTab === "Top Performing") return openRateVal > 40;
-        if (activeTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
+        if (activeCampaignTab === "Recent") return true;
+        if (activeCampaignTab === "Top Performing") return openRateVal > 40;
+        if (activeCampaignTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
         return true;
     });
 
@@ -153,10 +151,9 @@ const AnalyticsPage = () => {
         <div className="min-h-screen">
             <div className="mx-auto space-y-8 pb-10">
 
-                <div className="mb-6">
-                  
-                    <div className="flex justify-between items-end">
-                        <div>
+                {!isChildView && (
+                    <>
+                        <div className="mb-6">
                             <h1 className="text-2xl font-semibold text-gray-900">
                                 Subscriber Analytics
                             </h1>
@@ -164,8 +161,26 @@ const AnalyticsPage = () => {
                                 Track your newsletter growth, engagement, and campaign performance
                             </p>
                         </div>
-                    </div>
-                </div>
+
+                        {/* Tabs for standalone view */}
+                        <div className="flex gap-2 mb-6 bg-white border border-[#2F6F6D] p-1 rounded-lg w-fit ">
+                            <button
+                                onClick={() => handleTabChange("subscription")}
+                                className="px-4 py-2 text-sm rounded-md text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                                Subscription
+                            </button>
+
+                            <button
+                                onClick={() => setPageTab("analytics")}
+                                className="px-4 py-2 text-sm rounded-md bg-[#2F6F6D] text-white cursor-pointer"
+                            >
+                                Analytics
+                            </button>
+                        </div>
+                    </>
+                )}
+
 
                 <div className="border border-[#B5B5B5] p-5 rounded-xl space-y-8">
                     {/* ================= MESSAGE CARD ================= */}
@@ -280,9 +295,9 @@ const AnalyticsPage = () => {
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab}
-                                        onClick={() => setActiveTab(tab)}
+                                        onClick={() => setActiveCampaignTab(tab)}
                                         className={`px-4 py-2 text-sm rounded-md transition-all duration-200 cursor-pointer
-                                            ${activeTab === tab
+                                             ${activeCampaignTab === tab
                                                 ? "bg-[#2F6F6D] text-white shadow-sm"
                                                 : "text-gray-700 hover:bg-gray-100"
                                             }`}

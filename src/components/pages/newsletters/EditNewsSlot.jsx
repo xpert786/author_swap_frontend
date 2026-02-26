@@ -61,7 +61,9 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await onSave(formData);
+      // Remove audience_size from the payload
+      const { audience_size, ...payload } = formData;
+      await onSave(payload);
       onClose();
     } catch (err) {
       toast.error("Failed to update slot.");
@@ -134,7 +136,8 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
                   value={formData.audience_size}
                   onChange={handleChange}
                   placeholder="1500"
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                  readOnly
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed outline-none"
                 />
               </div>
 

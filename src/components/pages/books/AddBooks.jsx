@@ -80,7 +80,21 @@ const AddBooks = ({ onClose, onBookAdded }) => {
   }, []);
 
 
+  const handleRemoveImage = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+    setPreview(null);
+    setFormData((prev) => ({ ...prev, coverImage: null }));
+    // Reset the file input value so same file can be selected again
+    const fileInput = document.getElementsByName("coverImage")[0];
+    if (fileInput) fileInput.value = "";
+  };
+
   const handleChange = (e) => {
+
     const { name, value, type, checked, files } = e.target;
 
     setFormData((prev) => {
@@ -121,27 +135,39 @@ const AddBooks = ({ onClose, onBookAdded }) => {
     setLoading(true);
 
     try {
-      const data = new FormData();
+      const payload = new FormData();
 
-      data.append("title", formData.title);
-      data.append("primary_genre", formData.genre);
-      data.append("subgenres", formData.subgenre);
-      data.append("price_tier", formData.price);
-      data.append("availability", formData.availability);
-      data.append("publish_date", formData.publishDate);
-      data.append("description", formData.description);
-      data.append("amazon_url", formData.amazonUrl);
-      data.append("apple_url", formData.appleUrl);
-      data.append("kobo_url", formData.koboUrl);
-      data.append("barnes_noble_url", formData.barnesUrl);
-      data.append("is_primary_promo", formData.isPrimary);
-      data.append("rating", formData.ratings);
+      payload.append("title", formData.title);
+      payload.append("primary_genre", formData.genre);
+      payload.append("subgenres", formData.subgenre);
+      payload.append("price_tier", formData.price);
+      payload.append("availability", formData.availability);
+      payload.append("publish_date", formData.publishDate);
+      payload.append("description", formData.description);
+      payload.append("amazon_url", formData.amazonUrl);
+      payload.append("apple_url", formData.appleUrl);
+      payload.append("kobo_url", formData.koboUrl);
+      payload.append("barnes_noble_url", formData.barnesUrl);
+      payload.append("is_primary_promo", formData.isPrimary);
+      payload.append("rating", formData.ratings);
 
-      if (formData.coverImage) {
-        data.append("book_cover", formData.coverImage);
+      if (!formData.coverImage) {
+        toast.error("Please upload a book cover image");
+        setLoading(false);
+        return;
       }
 
-      const response = await createBook(data);
+      payload.append("book_cover", formData.coverImage);
+
+      // Debugging payload
+      for (let [key, value] of payload.entries()) {
+        console.log(`Payload ${key}:`, value);
+      }
+
+      const response = await createBook(payload);
+
+
+
       const savedBook = response?.data;
 
       if (onBookAdded && savedBook) {
@@ -213,8 +239,10 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                   value={formData.genre}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
+                  required
                 >
                   <option value="">Select Genre</option>
+
 
                   {genres.map((genre) => (
                     <option key={genre.value} value={genre.value}>
@@ -262,8 +290,10 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                   value={formData.price}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                  required
                 >
                   <option value="">Select Price</option>
+
                   <option value="free">Free</option>
                   <option value="discount">Discount</option>
                   <option value="0.99">$0.99</option>
@@ -275,10 +305,11 @@ const AddBooks = ({ onClose, onBookAdded }) => {
             {/* Cover Upload */}
             <div>
               <label className="text-[13px] font-medium text-gray-600">
-                Book Cover Image
+                Book Cover Image *
               </label>
 
-              <label className="mt-2 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-36 cursor-pointer hover:border-[#2F6F6D] transition bg-gray-50/30 overflow-hidden">
+              <label className="mt-2 relative flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-44 cursor-pointer hover:border-[#2F6F6D] transition bg-gray-50/30 overflow-hidden">
+
 
                 <input
                   type="file"
@@ -289,12 +320,23 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                 />
 
                 {preview ? (
-                  <img
-                    src={preview}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={preview}
+                      alt="Cover preview"
+                      className="w-full h-full object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ) : (
+
                   <div className="text-center">
                     <span className="text-gray-500 text-[13px] block">
                       Drop Files Here or Click To Browse
@@ -319,8 +361,10 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                   value={formData.availability}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                  required
                 >
                   <option value="">Select</option>
+
                   <option value="wide">Wide</option>
                   <option value="kindle_unlimited">Kindle Unlimited</option>
                 </select>
@@ -352,7 +396,9 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                   value={formData.publishDate}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                  required
                 />
+
               </div>
             </div>
 
@@ -368,7 +414,9 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                 value={formData.description}
                 onChange={handleChange}
                 className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                required
               />
+
             </div>
 
             {/* Retail Links */}
