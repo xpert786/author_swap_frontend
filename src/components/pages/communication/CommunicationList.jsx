@@ -63,7 +63,7 @@ const CommunicationList = () => {
               <input
                 type="text"
                 placeholder="Search messages..."
-                className="w-full sm:w-[220px] pl-8 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-600"
+                className="w-full sm:w-[220px] pl-8 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-600 border border-[#B5B5B5]"
               />
             </div>
 
@@ -142,7 +142,7 @@ const CommunicationList = () => {
                   <div
                     key={msg.id}
                     onClick={() => setSelectedMail(msg)}
-                    className="flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <img
@@ -151,15 +151,15 @@ const CommunicationList = () => {
                         className="w-10 h-10 rounded-full flex-shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="font-semibold text-sm truncate">{msg.name}</h4>
-                        <p className="text-xs text-gray-500 truncate">
+                        <h4 className="font-medium text-sm truncate">{msg.name}</h4>
+                        <p className="text-xs text-[#374151] font-normal truncate">
                           {msg.message}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex-shrink-0 text-right">
-                      <span className="text-[10px] md:text-xs text-gray-400 whitespace-nowrap">
+                      <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
                         {msg.date}
                       </span>
                     </div>

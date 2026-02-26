@@ -4,6 +4,8 @@ import { FiSearch, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import { getExploreSlots } from "../../../apis/swapPartner";
+import { getGenres } from "../../../apis/genre";
+
 import "./SwapPartner.css";
 import dayjs from "dayjs";
 
@@ -175,9 +177,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             <div className="grid grid-cols-3 gap-1 py-1">
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Date</p>
-                 <p className="text-[12px] font-medium text-[#111827]">
-    {dayjs(partner.date).format("DD MMM YYYY")}
-</p>
+                    <p className="text-[12px] font-medium text-[#111827]">
+                        {dayjs(partner.date).format("DD MMM YYYY")}
+                    </p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Time</p>
@@ -250,7 +252,8 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 };
 
 // ─── Filter Dropdown ──────────────────────────────────────────────────────────
-const FilterDropdown = ({ label, options }) => {
+const FilterDropdown = ({ label, options, align = "left" }) => {
+
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState(null);
     const ref = React.useRef(null);
@@ -280,7 +283,9 @@ const FilterDropdown = ({ label, options }) => {
             </button>
 
             {open && (
-                <div className="absolute top-[calc(100%+6px)] right-0 md:left-0 min-w-[170px] bg-white border border-[#B5B5B5] rounded-lg shadow-xl z-[100] py-2">
+                <div className={`absolute top-[calc(100%+6px)] ${align === "right" ? "right-0" : "left-0"
+                    } min-w-[170px] bg-white border border-[#B5B5B5] rounded-lg shadow-xl z-[100] py-2`}>
+
                     {options.map((opt) => (
                         <div
                             key={opt}
@@ -327,7 +332,9 @@ const SwapPartner = () => {
     const [search, setSearch] = useState("");
     const [selectedId, setSelectedId] = useState(null);
     const [requestingId, setRequestingId] = useState(null);
+    const [genres, setGenres] = useState([]);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
+
 
     const fetchSlots = async () => {
         try {
@@ -354,9 +361,26 @@ const SwapPartner = () => {
         }
     };
 
+    const fetchGenres = async () => {
+        try {
+            const data = await getGenres();
+            // Map to string array if response is objects
+            const list = Array.isArray(data) ? data.map(g =>
+                typeof g === 'string' ? g : (g.name || g.label || g.title)
+            ) : [];
+            setGenres(list);
+        } catch (error) {
+            console.error("Failed to fetch genres:", error);
+            // Optional: fallback if API fails
+            setGenres(["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]);
+        }
+    };
+
     React.useEffect(() => {
         fetchSlots();
+        fetchGenres();
     }, []);
+
 
     const filtered = (Array.isArray(slots) ? slots : []).filter((p) =>
         (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -374,7 +398,7 @@ const SwapPartner = () => {
             {/* Filter Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10">
                 {/* Search Input */}
-                <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white w-full lg:max-w-[200px]">
+                <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white w-full lg:max-w-[250px]">
                     <FiSearch size={14} className="text-gray-400" />
                     <input
                         type="text"
@@ -389,20 +413,24 @@ const SwapPartner = () => {
                 <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                     <FilterDropdown
                         label="Genre"
-                        options={["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]}
+                        options={genres.length > 0 ? genres : ["Fantasy", "Scifi", "Romance", "Mystery", "Thriller", "Nonfiction"]}
                     />
+
                     <FilterDropdown
                         label="Audience Size"
                         options={["0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
                     />
                     <FilterDropdown
                         label="Available Slots"
-                        options={["1 Slot", "2 Slots", "3+ Slots"]}
+                        options={["Available", "Booked", "Pending"]}
+                        align="right"
                     />
                     <FilterDropdown
                         label="Free"
-                        options={["Free", "Paid"]}
+                        options={["Free", "Paid", "Genre-Specific"]}
+                        align="right"
                     />
+
                 </div>
             </div>
 

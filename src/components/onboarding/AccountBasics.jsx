@@ -1,9 +1,11 @@
 import { useForm } from "react-hook-form";
 import { MdOutlineFileDownload } from "react-icons/md";
+import { FiX } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { onboardingStep1, getProfile } from "../../apis/onboarding";
+import { onboardingStep1, getProfile, editPenName } from "../../apis/onboarding";
 import { useState, useEffect } from "react";
 import { getGenres } from "../../apis/genre"; // adjust path
+
 
 const AccountBasics = ({ next }) => {
   const {
@@ -12,6 +14,10 @@ const AccountBasics = ({ next }) => {
     reset,
     formState: { errors },
   } = useForm();
+  const [penNames, setPenNames] = useState([]);
+  const [newPenName, setNewPenName] = useState("");
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -19,10 +25,24 @@ const AccountBasics = ({ next }) => {
         const data = response.data;
 
         reset({
-          penName: data.pen_name || "",
           bio: data.author_bio || "",
-          genre: data.primary_genre || "",
         });
+
+        if (data.pen_name) {
+          const names = Array.isArray(data.pen_name)
+            ? data.pen_name
+            : data.pen_name.split(",").map(n => n.trim()).filter(Boolean);
+          setPenNames(names);
+        }
+
+        if (data.primary_genre) {
+          const genres = Array.isArray(data.primary_genre)
+            ? data.primary_genre
+            : data.primary_genre.split(",").map(g => g.trim()).filter(Boolean);
+          setSelectedGenres(genres);
+        }
+
+
 
         if (data.profile_photo) {
           setPreview(
@@ -41,8 +61,11 @@ const AccountBasics = ({ next }) => {
   }, [reset]);
 
 
+
   const [preview, setPreview] = useState(null);
   const [genres, setGenres] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+
   const [loadingGenres, setLoadingGenres] = useState(true);
 
   useEffect(() => {
@@ -62,10 +85,25 @@ const AccountBasics = ({ next }) => {
 
   const onSubmit = async (data) => {
     try {
+      if (penNames.length === 0) {
+        toast.error("Please add at least one pen name");
+        return;
+      }
+      if (selectedGenres.length === 0) {
+        toast.error("Please select at least one genre");
+        return;
+      }
+
+
       const formData = new FormData();
-      formData.append("pen_name", data.penName);
+      // Join lists with commas as the backend expects a string
+      formData.append("pen_name", penNames.join(", "));
+      formData.append("primary_genre", selectedGenres.join(", "));
+
       formData.append("author_bio", data.bio);
-      formData.append("primary_genre", data.genre);
+
+
+
 
       if (data.profilePhoto && data.profilePhoto[0]) {
         formData.append("profile_photo", data.profilePhoto[0]);
@@ -90,6 +128,55 @@ const AccountBasics = ({ next }) => {
     }
   };
 
+  const handleAddPenName = () => {
+    if (!newPenName.trim()) return;
+
+    if (penNames.includes(newPenName.trim())) {
+      toast.error("Pen name already added");
+      return;
+    }
+
+    setPenNames([...penNames, newPenName.trim()]);
+    setNewPenName("");
+  };
+
+
+  const removePenName = async (nameToRemove) => {
+    try {
+      // Create a copy of current names
+      const updatedNames = penNames.filter((name) => name !== nameToRemove);
+
+      const promise = editPenName(nameToRemove);
+
+      toast.promise(promise, {
+        loading: "Removing pen name...",
+        success: () => {
+          setPenNames(updatedNames);
+          return "Pen name removed!";
+        },
+        error: "Failed to remove pen name",
+      });
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleGenreSelect = (e) => {
+    const val = e.target.value;
+    if (val && !selectedGenres.includes(val)) {
+      setSelectedGenres([...selectedGenres, val]);
+    }
+    // Reset select value to default
+    e.target.value = "";
+  };
+
+  const removeGenre = (genreToRemove) => {
+    setSelectedGenres(selectedGenres.filter(g => g !== genreToRemove));
+  };
+
+
+
+
   return (
     <div className="bg-white w-full max-w-[600px] p-6 md:p-8">
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -102,18 +189,44 @@ const AccountBasics = ({ next }) => {
           <div className="mb-4">
             <label className="block text-sm mb-2">Pen Name *</label>
             <input
-              {...register("penName", {
-                required: "Pen name is required",
-              })}
+              type="text"
+              value={newPenName}
+              onChange={(e) => setNewPenName(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddPenName();
+                }
+              }}
               placeholder="Enter Pen Name"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none mb-2"
             />
-            {errors.penName && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.penName.message}
-              </p>
+
+
+            {/* Added Pen Names List */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {penNames.map((name, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1.5 bg-[#E07A5F1A] text-black px-3 py-1.5 rounded-full border border-[#E07A5F33] text-sm"
+                >
+                  <span>{name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removePenName(name)}
+                    className="text-gray-500 hover:text-red-500 transition-colors"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {penNames.length === 0 && (
+              <p className="text-gray-400 text-xs mt-1">Add at least one pen name to continue</p>
             )}
           </div>
+
 
           {/* Bio */}
           <div className="mb-4">
@@ -199,29 +312,50 @@ const AccountBasics = ({ next }) => {
             <label className="block text-sm mb-2">Genre Preferences *</label>
 
             <select
-              {...register("genre", {
-                required: "Please select a genre",
-              })}
+              onChange={handleGenreSelect}
               disabled={loadingGenres}
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
+              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none mb-3"
             >
               <option value="">
-                {loadingGenres ? "Loading genres..." : "Select a genre"}
+                {loadingGenres ? "Loading genres..." : "Select genres..."}
               </option>
 
               {genres.map((genre) => (
-                <option key={genre.value} value={genre.value}>
-                  {genre.label}
+                <option key={genre.value || genre.id || genre} value={genre.value || genre.id || genre}>
+                  {genre.label || genre.name || genre}
                 </option>
               ))}
             </select>
 
-            {errors.genre && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.genre.message}
-              </p>
+            {/* Selected Genres Chips */}
+            <div className="flex flex-wrap gap-2">
+              {selectedGenres.map((genreVal, index) => {
+                const genreObj = genres.find(g => (g.value || g.id || g) === genreVal);
+                const displayLabel = genreObj ? (genreObj.label || genreObj.name || genreObj) : genreVal;
+
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center gap-1.5 bg-[#2F6F6D1A] text-black px-3 py-1.5 rounded-full border border-[#2F6F6D33] text-sm"
+                  >
+                    <span>{displayLabel}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeGenre(genreVal)}
+                      className="text-gray-500 hover:text-red-500 transition-colors"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {selectedGenres.length === 0 && (
+              <p className="text-gray-400 text-xs mt-1">Select at least one genre to continue</p>
             )}
           </div>
+
         </div>
 
         <div className="flex justify-end mt-5">

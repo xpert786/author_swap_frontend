@@ -214,23 +214,24 @@ export default function SubscriptionPage() {
                         )}
                     </div>
                 ) : (
-                    <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
-                                <Check size={18} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-emerald-900">Successfully connected to MailerLite</p>
-                                <p className="text-xs text-emerald-700">Last verified: {lastSynced}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={fetchVerification}
-                            className="text-[#2F6F6D] text-sm font-medium hover:underline flex items-center gap-1"
-                        >
-                            Refresh Status
-                        </button>
-                    </div>
+                    <div></div>
+                    // <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                    //     <div className="flex items-center gap-3">
+                    //         <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                    //             <Check size={18} />
+                    //         </div>
+                    //         <div>
+                    //             <p className="text-sm font-medium text-emerald-900">Successfully connected to MailerLite</p>
+                    //             <p className="text-xs text-emerald-700">Last verified: {lastSynced}</p>
+                    //         </div>
+                    //     </div>
+                    //     <button
+                    //         onClick={fetchVerification}
+                    //         className="text-[#2F6F6D] text-sm font-medium hover:underline flex items-center gap-1"
+                    //     >
+                    //         Refresh Status
+                    //     </button>
+                    // </div>
                 )}
 
                 {/* Tabs */}
@@ -257,16 +258,16 @@ export default function SubscriptionPage() {
                 <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-6">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-lg font-semibold text-[#111827]">Your Current Plan</p>
-                            <p className="text-xs text-[#374151] mt-1">
+                            <p className="text-md font-medium text-[#111827]">Your Current Plan</p>
+                            <p className="text-sm text-[#374151] mt-1">
                                 Active until {currentPlan.activeUntil}
                             </p>
-                            <p className="text-lg font-semibold mt-3">
+                            <p className="text-md font-medium mt-3">
                                 ${currentPlan.price} / month
                             </p>
-                            <p className="text-xs text-[#374151]">
+                            <p className="text-sm text-[#374151]">
                                 Renews on {currentPlan.renewalDate}
-                            </p>
+                            </p>    
                         </div>
                         <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full">
                             {currentPlan.name}
@@ -276,7 +277,7 @@ export default function SubscriptionPage() {
 
                 {/* Info Box */}
                 <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-8">
-                    <p className="text-lg font-semibold text-[#111827] mb-2">
+                    <p className="text-md font-medium text-[#111827] mb-2">
                         What’s a paid placement?
                     </p>
                     <p className="text-sm text-[#374151]">
@@ -392,8 +393,8 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="bg-white border border-gray-300 rounded-lg p-6 mt-12 text-xs text-gray-600 space-y-1">
-                    <h3 className="text-lg font-semibold text-[#111827] mb-2">What You Get With Every Plan</h3>
+                <div className="bg-white border border-gray-300 rounded-lg p-4 mt-12 text-xs text-gray-600 space-y-1">
+                    <h3 className="text-md font-medium text-[#111827] mb-2">What You Get With Every Plan</h3>
                     <p>• Newsletter swaps are always unlimited.</p>
                     <p>• Paid placements reset monthly.</p>
                     <p>• Add-on placements do not roll over.</p>

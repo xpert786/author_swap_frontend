@@ -5,15 +5,26 @@ import { getSwaps } from '../../../apis/swap';
 import { FiRefreshCw } from "react-icons/fi";
 
 const tabs = [
-    "All Swaps",
-    "Pending Swaps",
-    "Sending Swaps",
-    "Reject Swaps",
-    "Scheduled Swaps",
-    "Completed Swaps"
+    { label: "All Swaps", key: "all" },
+    { label: "Pending Swaps", key: "pending" },
+    { label: "Sending Swaps", key: "sending" },
+    { label: "Reject Swaps", key: "rejected" },
+    { label: "Scheduled Swaps", key: "scheduled" },
+    { label: "Completed Swaps", key: "completed" }
 ];
 
+
+const formatLabel = (str) => {
+    if (!str) return "";
+    return str
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
 const staticSwaps = [
+
     {
         id: 101,
         author_name: "Sophia Patel",
@@ -76,8 +87,10 @@ const SwapCard = ({ data }) => {
     const isRejected = data.status === "rejected" || data.status === "reject";
 
     const authorName = data.author_name || data.author || "Unknown Author";
-    const authorRole = data.author_role || data.role || "Author";
-    const authorImage = data.author_image || data.image || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
+    const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
+    const authorImage = data.profile_picture || data.author_image || data.image || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
+
+
 
     return (
         <div
@@ -90,18 +103,20 @@ const SwapCard = ({ data }) => {
                 <div className="flex gap-2.5">
                     <img src={authorImage} alt={authorName} className="w-10 h-10 rounded-full object-cover shrink-0" />
                     <div>
-                        <h3 className="text-[13px] font-medium text-black leading-tight">{authorName}</h3>
+                        <h3 className="text-[13px] font-medium text-black leading-tight">{formatLabel(authorName)}</h3>
+
                         <p className="text-[13px] font-medium text-black">{authorRole}</p>
                     </div>
                 </div>
                 {(data.badge || data.status) && (
                     <span
-                        className={`text-[9px] font-normal px-2.5 py-0.5 rounded-full border border-gray-200 uppercase
+                        className={`text-[9px] font-normal px-2.5 py-0.5 rounded-full border border-gray-200 
                         ${isCompleted ? "bg-[#16A34A33] text-black border-[#16A34A33]" : "bg-[#F3F4F6] text-[#374151]"}
                         `}
                     >
-                        {data.badge || data.status}
+                        {formatLabel(data.badge || data.status)}
                     </span>
+
                 )}
             </div>
 
@@ -117,14 +132,22 @@ const SwapCard = ({ data }) => {
                 </div>
                 <div>
                     <p className="text-[10px] text-[#374151] font-normal mb-1">Requesting Book</p>
-                    <p className="text-[13px] font-medium text-black truncate">{data.requesting_book || data.requestingBook || "N/A"}</p>
+                    <p className="text-[13px] font-medium text-black truncate">
+                        {typeof data.requesting_book === "object"
+                            ? data.requesting_book?.title
+                            : data.requesting_book ||
+                            (typeof data.requestingBook === "object"
+                                ? data.requestingBook?.title
+                                : data.requestingBook) ||
+                            "N/A"}
+                    </p>
                 </div>
             </div>
 
             {/* Message */}
             <div className="space-y-1">
                 <p className="text-[10px] text-[#374151] font-normal">Message</p>
-                <p className="text-[12px] text-black font-semibold leading-tight italic">"{data.message || "No message provided"}"</p>
+                <p className="text-[12px] text-black font-semibold leading-tight">"{data.message || "No message provided"}"</p>
             </div>
 
             {/* Actions / Status Specifics */}
@@ -151,10 +174,11 @@ const SwapCard = ({ data }) => {
                 {(data.status === "active" || data.status === "scheduled" || isCompleted) && (
                     <button
                         onClick={() => navigate(`/swap-history/${data.id}`, { state: { data } })}
-                        className="bg-[#2F6F6D] text-white text-[12px] font-medium px-4 py-2 rounded-[6px] w-full"
+                        className="bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2 rounded-[6px] w-fit"
                     >
                         Track My Swap
                     </button>
+
                 )}
 
                 {isRejected && (
@@ -178,39 +202,62 @@ const SwapCard = ({ data }) => {
 
 const SwapManagement = () => {
     const [swaps, setSwaps] = useState([]);
+    const [tabCounts, setTabCounts] = useState({});
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("All Swaps");
+    const [activeTab, setActiveTab] = useState(tabs[0]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    useEffect(() => {
-        const fetchSwaps = async () => {
-            try {
-                setLoading(true);
-                const response = await getSwaps();
-                let data = response.data?.results || response.data || [];
-                // Fallback to static data if API returns empty list
-                if (data.length === 0) {
-                    console.log("No dynamic swaps found, showing static fallback data.");
-                    data = staticSwaps;
-                }
-                setSwaps(data);
-            } catch (error) {
-                console.error("Failed to fetch swaps, showing static fallback data:", error);
-                setSwaps(staticSwaps);
-            } finally {
-                setLoading(false);
+    const fetchSwaps = async (tabKey = "all") => {
+        try {
+            setLoading(true);
+            const response = await getSwaps(tabKey);
+            const responseData = response.data;
+            let data = responseData.results || responseData || [];
+
+            if (responseData.tab_counts) {
+                setTabCounts(responseData.tab_counts);
             }
-        };
-        fetchSwaps();
-    }, []);
+
+            // Fallback to static data if API returns empty list
+            if (data.length === 0 && tabKey === "all") {
+                console.log("No dynamic swaps found, showing static fallback data.");
+                data = staticSwaps;
+            }
+            setSwaps(data);
+        } catch (error) {
+            console.error("Failed to fetch swaps, showing static fallback data:", error);
+            if (activeTab.key === "all") {
+                setSwaps(staticSwaps);
+            } else {
+                setSwaps([]);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSwaps(activeTab.key);
+    }, [activeTab]);
 
     const filtered = (Array.isArray(swaps) ? swaps : []).filter((s) => {
-        const isTabMatch = activeTab === "All Swaps" || (s.category || s.status || "").toLowerCase().includes(activeTab.split(" ")[0].toLowerCase());
+        // Since we fetch per tab, isTabMatch is usually true, but we keep it for robustness
+        const isTabMatch = activeTab.key === "all" ||
+            (s.status || "").toLowerCase() === activeTab.key.toLowerCase() ||
+            (s.category || "").toLowerCase() === activeTab.key.toLowerCase();
+
         const authorName = (s.author_name || s.author || "").toLowerCase();
-        const bookName = (s.requesting_book || s.requestingBook || "").toLowerCase();
+        const rawBook = s.requesting_book || s.requestingBook;
+        const bookName =
+            typeof rawBook === "string"
+                ? rawBook.toLowerCase()
+                : typeof rawBook === "object" && rawBook !== null
+                    ? (rawBook.title || rawBook.name || "").toLowerCase()
+                    : "";
         const isSearchMatch = authorName.includes(searchTerm.toLowerCase()) || bookName.includes(searchTerm.toLowerCase());
         return isTabMatch && isSearchMatch;
     });
+
 
     return (
         <div className="min-h-screen bg-white pb-10">
@@ -221,23 +268,25 @@ const SwapManagement = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex flex-wrap gap-1 bg-white p-1 rounded-[8px] border border-[#2F6F6D] w-fit mb-6">
+            <div className="flex flex-wrap gap-1 bg-white p-1.5 rounded-[8px] border border-[#2F6F6D] w-fit mb-6">
                 {tabs.map((tab) => (
                     <button
-                        key={tab}
+                        key={tab.key}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-1.5 text-[12px] font-medium rounded-[6px] transition-all
-                        ${activeTab === tab ? "bg-[#2F6F6D] text-white" : "text-[#374151] hover:bg-gray-50"}
+                        ${activeTab.key === tab.key ? "bg-[#2F6F6D] text-white" : "text-[#374151] hover:bg-gray-50"}
                         `}
                     >
-                        {tab}
+                        {tab.label} {tabCounts[tab.key] !== undefined ? `(${tabCounts[tab.key]})` : ""}
                     </button>
                 ))}
+
             </div>
 
             {/* Content Header */}
             <div className="flex items-center justify-between gap-4 mb-6">
-                <h2 className="text-xl md:text-[24px] font-medium text-black">{activeTab}</h2>
+                <h2 className="text-xl md:text-[24px] font-medium text-black">{activeTab.label}</h2>
+
                 <div className="relative w-full max-w-[320px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input

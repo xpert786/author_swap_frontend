@@ -90,7 +90,7 @@ const SignUp = () => {
                   })}
                   className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all
                   ${errors.email
-                      ? "border-red-500 focus:ring-red-400"
+                      ? "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                       : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                     }`}
                 />
@@ -119,7 +119,7 @@ const SignUp = () => {
                     })}
                     className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
                     ${errors.password
-                        ? "border-red-500 focus:ring-red-400"
+                        ? "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                         : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                       }`}
                   />
@@ -154,7 +154,7 @@ const SignUp = () => {
                     })}
                     className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
                     ${errors.confirmPassword
-                        ? "border-red-500 focus:ring-red-400"
+                        ? "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                         : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
                       }`}
                   />

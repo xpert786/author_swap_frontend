@@ -127,7 +127,7 @@ const SwapDetails = () => {
             {/* ── Profile Card ── */}
             <div className="bg-white border border-[#B5B5B5] rounded-xl p-4 mb-7">
                 {/* Avatar + Name */}
-                <div className="flex items-center gap-3.5 mb-4">
+                <div className="flex items-center gap-3.5 mb-2">
                     <img
                         src={data.author?.profilePicture || data.photo || `https://ui-avatars.com/api/?name=${data.author?.name || "A"}&background=random`}
                         alt={data.name}
@@ -150,35 +150,37 @@ const SwapDetails = () => {
                 </div>
 
                 {/* Meta Row */}
-                <div className="sd-meta-row flex items-start justify-between flex-wrap gap-5 border-t border-gray-100 pt-4">
+                <div className="sd-meta-row flex items-start justify-between flex-wrap gap-5 border-t border-[#2F6F6D33] pt-4">
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Date &amp; time</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Date &amp; time</p>
                         <p className="text-[13px] font-medium text-black">{data.sendDate || "N/A"} at {data.sendTime || "N/A"}</p>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Status</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Status</p>
                         <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
                             {formatLabel(data.status)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Visibility</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Visibility</p>
                         <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(232,232,232,1)] text-black w-fit">
                             <PublicIcon size={12} /> {formatLabel(data.visibility)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Audience Size</p>
-                        <p className="text-[13px] font-medium text-black">{data.audienceSize || "0"} subscribers</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Audience Size</p>
+                        <p className="text-[13px] font-medium text-black">
+                            {new Intl.NumberFormat('en-US').format(Number(data.audienceSize || 0))} subscribers
+                        </p>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Genre</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Genre</p>
                         <span className="text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[#16A34A33] text-black w-fit">
                             {formatLabel(data.preferredGenre)}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-[100px]">
-                        <p className="text-[11px] text-black mb-1">Current Partners</p>
+                        <p className="text-[11px] text-[#374151] mb-1">Current Partners</p>
                         <span className="inline-flex items-center gap-1 text-[11px] font-normal px-2.5 py-0.5 rounded-full bg-[rgba(224,122,95,0.2)] text-black w-fit">
                             <PartnersIcon size={12} /> {data.currentPartnersCount || 0}/{data.maxPartners || 0} Partners
                         </span>
