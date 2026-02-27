@@ -43,3 +43,17 @@ export const emailAction = async (id, action) => {
     const response = await apiClient.post(`emails/${id}/action/`, { action });
     return response.data;
 };
+export const getEmailDetails = async (id) => {
+    const response = await apiClient.get(`emails/${id}/`);
+    return response.data;
+};
+
+export const updateEmail = async (id, data) => {
+    const response = await apiClient.patch(`emails/${id}/`, data);
+    return response.data;
+};
+
+export const deleteEmail = async (id) => {
+    const response = await apiClient.delete(`emails/${id}/`);
+    return response.data;
+};
