@@ -9,7 +9,7 @@ import {
     Loader2,
     Trash2,
 } from "lucide-react";
-import { getEmailDetail, emailAction } from "../../../apis/email";
+import { getEmailDetails, updateEmail, deleteEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
 
 const CommunicationMail = ({ mail, onBack }) => {
@@ -20,7 +20,7 @@ const CommunicationMail = ({ mail, onBack }) => {
         const fetchDetails = async () => {
             try {
                 setLoading(true);
-                const data = await getEmailDetail(mail.id);
+                const data = await getEmailDetails(mail.id);
                 setFullMail(data);
             } catch (error) {
                 console.error("Failed to fetch mail details:", error);
@@ -38,9 +38,7 @@ const CommunicationMail = ({ mail, onBack }) => {
     const handleStar = async () => {
         try {
             const newStarredStatus = !fullMail.is_starred;
-            // updateEmail was from a separate file, using emailAction instead if available or sticking to a general update
-            // For now sticking to the logic that matches the backend action if possible
-            await emailAction(fullMail.id, 'star');
+            await updateEmail(fullMail.id, { is_starred: newStarredStatus });
             setFullMail({ ...fullMail, is_starred: newStarredStatus });
             toast.success(newStarredStatus ? "Email starred" : "Email unstarred");
         } catch (error) {
@@ -51,7 +49,7 @@ const CommunicationMail = ({ mail, onBack }) => {
     const handleDelete = async () => {
         if (!window.confirm("Move this email to trash?")) return;
         try {
-            await emailAction(fullMail.id, 'trash');
+            await deleteEmail(fullMail.id);
             toast.success("Email moved to trash");
             onBack();
         } catch (error) {
@@ -91,14 +89,14 @@ const CommunicationMail = ({ mail, onBack }) => {
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-baseline gap-x-2">
                                 <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">
-                                    {fullMail.sender_name || fullMail.sender_username || fullMail.name || 'Unknown'}
+                                    {fullMail.sender_name || fullMail.name || 'Unknown'}
                                 </h2>
                                 <span className="text-gray-400 text-xs md:text-sm truncate">
                                     &lt;{fullMail.sender_email || fullMail.sender_username || fullMail.email}&gt;
                                 </span>
                             </div>
                             <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mt-1">
-                                <span>To me</span>
+                                <span>Subject: {fullMail.subject}</span>
                             </div>
                         </div>
                     </div>
@@ -130,7 +128,7 @@ const CommunicationMail = ({ mail, onBack }) => {
                 {/* Message Content */}
                 <div className="text-sm text-[#2D2F33] leading-relaxed mb-8 md:mb-10 max-w-4xl whitespace-pre-wrap">
                     <h3 className="font-semibold text-lg mb-2">{fullMail.subject}</h3>
-                    <p>{fullMail.body || fullMail.message}</p>
+                    <div className="email-body" dangerouslySetInnerHTML={{ __html: fullMail.body || fullMail.message }} />
 
                     {fullMail.attachment && (
                         <div className="mt-4 p-3 border border-gray-200 rounded-md inline-block bg-gray-50">
@@ -172,6 +170,5 @@ const CommunicationMail = ({ mail, onBack }) => {
         </div>
     );
 };
-
 
 export default CommunicationMail;
