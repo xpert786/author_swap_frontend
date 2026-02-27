@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Minus,
   Maximize2,
@@ -12,18 +12,20 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import { composeEmail } from "../../../apis/emails";
+import { composeEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
 
-const SendEmail = ({ onClose, onSuccess }) => {
-  const [recipient, setRecipient] = useState("");
+const SendEmail = ({ onClose, onSuccess, defaultRecipient = "" }) => {
+  const [recipient, setRecipient] = useState(defaultRecipient);
   const [cc, setCc] = useState("");
   const [bcc, setBcc] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleSend = async () => {
     if (!recipient || !subject || !body) {
@@ -35,19 +37,33 @@ const SendEmail = ({ onClose, onSuccess }) => {
       setLoading(true);
       await composeEmail({
         recipient_username: recipient,
-        cc_usernames: cc, // Assuming backend might support these
+        cc_usernames: cc,
         bcc_usernames: bcc,
         subject,
         body,
+        attachment: selectedFile
       });
       toast.success("Email sent successfully!");
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       console.error("Failed to send email:", error);
-      toast.error(error?.response?.data?.message || "Failed to send email");
+      toast.error(error?.response?.data?.message || error?.response?.data?.error || "Failed to send email");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -190,14 +206,28 @@ const SendEmail = ({ onClose, onSuccess }) => {
           <button
             onClick={handleSend}
             disabled={loading}
-            className="bg-[#326C6A] text-white px-7 py-2 rounded-lg text-[14px] font-medium hover:bg-[#2a5957] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+            className={`text-white px-7 py-2 rounded-lg text-[14px] font-medium transition-colors shadow-sm flex items-center gap-2 ${loading ? 'bg-gray-400' : 'bg-[#326C6A] hover:bg-[#2a5957]'}`}
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
             {loading ? "Sending..." : "Send"}
           </button>
 
           <div className="flex items-center gap-3 text-gray-500 ml-auto sm:ml-4">
-            <Paperclip size={18} className="cursor-pointer hover:text-gray-800" />
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            <button onClick={() => fileInputRef.current?.click()} className={`${selectedFile ? 'text-[#1F4F4D]' : 'hover:text-gray-800'}`}>
+              <Paperclip size={18} className="cursor-pointer" />
+            </button>
+            {selectedFile && (
+              <span className="text-xs text-[#1F4F4D] bg-[#1F4F4D]/10 px-2 py-1 rounded truncate max-w-[100px]" title={selectedFile.name}>
+                {selectedFile.name}
+                <button onClick={clearFile} className="ml-1 text-red-500 font-bold">&times;</button>
+              </span>
+            )}
             <Link size={18} className="cursor-pointer hover:text-gray-800" />
             <Image size={18} className="cursor-pointer hover:text-gray-800" />
             <div className="hidden md:flex items-center gap-3">

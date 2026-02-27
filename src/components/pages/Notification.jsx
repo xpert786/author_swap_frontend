@@ -168,14 +168,14 @@ const Notification = () => {
                         <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                     </div>
 
-                    <button
+                    {/* <button
                         onClick={handleTestNotification}
                         disabled={testLoading}
                         className="flex items-center gap-2 px-4 py-2 bg-[#1F4F4D] text-white rounded-xl text-sm font-medium hover:bg-[#163a39] transition-all disabled:opacity-50 whitespace-nowrap shadow-sm"
                     >
                         {testLoading ? <RefreshCw className="animate-spin" size={16} /> : <Send size={16} />}
                         Test API
-                    </button>
+                    </button> */}
                 </div>
             </div>
 

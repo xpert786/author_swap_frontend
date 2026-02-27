@@ -7,3 +7,7 @@ export const getNotifications = () => {
 export const testNotification = (data) => {
     return apiClient.post("test-notification/", data);
 };
+
+export const getUnreadCount = () => {
+    return apiClient.get("notifications/unread-count/");
+};

@@ -135,8 +135,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                 >
                     <TbBell className="text-lg md:text-2xl text-[#1F4F4D]" />
                     {unreadCount > 0 && (
-                        <span className="flex absolute -top-1 -right-1 bg-[#FF0000] text-white text-[9px] font-bold rounded-full w-4 h-4 items-center justify-center border-2 border-white">
-                            {unreadCount}
+                        <span className="absolute top-[6px] right-[6px] bg-red-500 rounded-full w-2 h-2 border border-white">
                         </span>
                     )}
                 </div>
@@ -150,10 +149,11 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         <img
                             src={
                                 profile?.profile_picture ||
-                                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100"
+                                "https://ui-avatars.com/api/?name=" + (profile?.name || profile?.username || "User")
                             }
                             alt="profile"
                             className="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-[#E07A5F33] transition-all shrink-0"
+                            onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + (profile?.name || profile?.username || "User"); }}
                         />
 
                         {/* Text + Arrow wrapper */}

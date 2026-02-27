@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
-import { getEmails } from "../../../apis/emails";
+import { getEmails } from "../../../apis/email";
 import toast from "react-hot-toast";
 
 const CommunicationList = () => {
@@ -32,13 +32,13 @@ const CommunicationList = () => {
   const fetchEmails = async () => {
     try {
       setLoading(true);
-      const response = await getEmails(currentFolder, searchQuery);
-      const data = response.data;
+      const data = await getEmails(currentFolder);
 
-      // Expected backend response: { results: [], folder_counts: { inbox: x, ... } }
-      setEmails(data.results || []);
-      if (data.folder_counts) {
-        setFolderCounts(data.folder_counts);
+      // Handle both possible structures from different branches
+      setEmails(data.results || data.emails || []);
+      const counts = data.folder_counts || data.counts;
+      if (counts) {
+        setFolderCounts(counts);
       }
     } catch (error) {
       console.error("Failed to fetch emails:", error);
@@ -50,10 +50,11 @@ const CommunicationList = () => {
 
   useEffect(() => {
     fetchEmails();
-  }, [currentFolder]);
+  }, [currentFolder, isComposeOpen]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
+      // If there's a search API, use it, otherwise local filter or re-fetch
       fetchEmails();
     }
   };
@@ -169,44 +170,43 @@ const CommunicationList = () => {
                 mail={selectedMail}
                 onBack={() => {
                   setSelectedMail(null);
-                  fetchEmails(); // Refresh list to update read status if needed
+                  fetchEmails();
                 }}
               />
             ) : (
               <div className="space-y-3">
-                {emails.length > 0 ? (
+                {emails.length === 0 && !loading ? (
+                  <div className="text-center py-20 text-gray-500">
+                    No emails found in this folder.
+                  </div>
+                ) : (
                   emails.map((msg) => (
                     <div
                       key={msg.id}
                       onClick={() => setSelectedMail(msg)}
-                      className={`flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors ${!msg.is_read ? "bg-gray-50 border-gray-400 font-semibold" : ""
-                        }`}
+                      className={`flex flex-row items-center justify-between gap-4 p-3 border rounded-lg cursor-pointer transition-colors ${!msg.is_read && currentFolder === 'inbox' ? 'bg-blue-50/40 border-blue-200 font-semibold' : 'border-[#B5B5B5] hover:bg-[#E07A5F0D]'}`}
                     >
                       <div className="flex items-center gap-4 min-w-0">
                         <img
-                          src={msg.sender_avatar || msg.avatar || `https://ui-avatars.com/api/?name=${msg.sender_name || msg.name}&background=random`}
+                          src={msg.sender_profile_picture || msg.sender_avatar || msg.avatar || `https://ui-avatars.com/api/?name=${msg.sender_name || msg.name}&background=random`}
                           alt={msg.sender_name || msg.name}
                           className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                         />
                         <div className="min-w-0">
                           <h4 className="text-sm truncate">{msg.sender_name || msg.name}</h4>
-                          <p className="text-xs text-[#374151] font-normal truncate">
-                            {msg.subject || msg.message}
+                          <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
+                            {msg.subject || msg.message} {msg.snippet && <span className="text-gray-400 font-normal">- {msg.snippet}</span>}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex-shrink-0 text-right">
                         <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                          {msg.created_at || msg.date || msg.time}
+                          {msg.formatted_date || msg.created_at || msg.date || msg.time}
                         </span>
                       </div>
                     </div>
                   ))
-                ) : (
-                  <div className="text-center py-20 text-gray-500">
-                    No emails found in this folder.
-                  </div>
                 )}
               </div>
             )}
