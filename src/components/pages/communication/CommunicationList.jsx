@@ -8,6 +8,7 @@ import {
   FileText,
   Trash2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
@@ -31,8 +32,8 @@ const CommunicationList = () => {
     try {
       setLoading(true);
       const data = await getEmails(folder);
-      setEmails(data.emails || []);
-      setCounts(data.counts || {});
+      setEmails(data.results || data.emails || []);
+      setCounts(data.folder_counts || data.counts || {});
     } catch (err) {
       console.error("Failed to load emails:", err);
     } finally {
@@ -70,6 +71,14 @@ const CommunicationList = () => {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => fetchEmails(currentFolder)}
+                className="flex items-center justify-center p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                title="Refresh Inbox"
+              >
+                <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+              </button>
+
               <button
                 onClick={() => setIsComposeOpen(true)}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#2F6F6D] hover:bg-[#255a58] text-white px-4 py-2 rounded-md text-sm transition-colors cursor-pointer whitespace-nowrap"

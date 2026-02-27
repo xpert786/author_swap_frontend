@@ -59,7 +59,7 @@ const CommunicationMail = ({ mail, onBack }) => {
                 {/* Message Content */}
                 <div className="text-sm text-[#2D2F33] leading-relaxed mb-8 md:mb-10 max-w-4xl whitespace-pre-wrap">
                     <h3 className="font-semibold text-lg mb-2">{mail.subject}</h3>
-                    <p>{mail.body}</p>
+                    <div className="email-body" dangerouslySetInnerHTML={{ __html: mail.body }} />
 
                     {mail.attachment && (
                         <div className="mt-4 p-3 border border-gray-200 rounded-md inline-block bg-gray-50">

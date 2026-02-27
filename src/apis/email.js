@@ -1,5 +1,10 @@
 import apiClient from "./client";
 
+export const getSwapPartners = async () => {
+    const response = await apiClient.get("chat/my-partners/");
+    return response.data;
+};
+
 export const getEmails = async (folder = "inbox") => {
     const response = await apiClient.get(`emails/?folder=${folder}`);
     return response.data; // assuming returns { results: [], ... } or []
@@ -14,7 +19,7 @@ export const composeEmail = async (data) => {
     const formData = new FormData();
     if (data.recipient_id) formData.append("recipient_id", data.recipient_id);
     if (data.recipient_username) formData.append("recipient_username", data.recipient_username);
-    
+
     formData.append("subject", data.subject);
     formData.append("body", data.body);
     if (data.is_draft !== undefined) {
