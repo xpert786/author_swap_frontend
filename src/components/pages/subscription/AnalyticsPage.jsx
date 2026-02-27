@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
     LineChart,
     Line,
@@ -138,12 +138,34 @@ const AnalyticsPage = ({ isChildView = false }) => {
 
     const filteredCampaigns = campaigns.filter(camp => {
         if (!camp) return false;
-        const openRateVal = camp.open_rate ? parseFloat(camp.open_rate) : 0;
+
+        // Handle both object and primitive types for open_rate
+        const openRateRaw = camp.open_rate && typeof camp.open_rate === 'object'
+            ? camp.open_rate.value
+            : camp.open_rate;
+
+        const openRateVal = openRateRaw ? parseFloat(openRateRaw) : 0;
+
         if (activeCampaignTab === "Recent") return true;
         if (activeCampaignTab === "Top Performing") return openRateVal > 40;
         if (activeCampaignTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
         return true;
     });
+
+    // Normalize chart data to ensure values are primitives
+    const normalizedSubGrowth = useMemo(() => {
+        return subGrowth.map(item => ({
+            ...item,
+            value: item.value && typeof item.value === 'object' ? item.value.value : item.value
+        }));
+    }, [subGrowth]);
+
+    const normalizedHistTrend = useMemo(() => {
+        return histTrend.map(item => ({
+            ...item,
+            value: item.value && typeof item.value === 'object' ? item.value.value : item.value
+        }));
+    }, [histTrend]);
 
     const campaignDates = [...new Set(campaigns.map(c => c.date).filter(Boolean))];
 
@@ -208,22 +230,31 @@ const AnalyticsPage = ({ isChildView = false }) => {
                     {/* ================= KPI CARDS ================= */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 border-b pb-8 border-[#B5B5B5]">
                         {[
-                            { label: "Active", value: summaryStats.active_subscribers || "0", sub: "+0% this month", border: "border-emerald-400", icon: <UsersRound className="w-5 h-5" /> },
-                            { label: "Avg Open Rate", value: summaryStats.avg_open_rate || "0%", sub: "+0% this month", border: "border-amber-400", icon: <AvgOpenRate /> },
-                            { label: "Avg Click Rate", value: summaryStats.avg_click_rate || "0%", sub: "+0% this month", border: "border-red-400", icon: <RxCursorArrow className="w-5 h-5" /> },
-                            { label: "List Health Score", value: summaryStats.list_health_score || "0/100", sub: "0% growth", border: "border-gray-300", icon: <HeartPulse className="w-5 h-5" /> },
-                        ].map((item, i) => (
-                            <div key={i} className={`bg-white border ${item.border} rounded-xl p-5`}>
-                                <div className="flex items-center gap-2">
-                                    {item.icon}
-                                    <p className="text-xs text-gray-500">{item.label}</p>
+                            { label: "Active", data: summaryStats.active_subscribers, fallbackValue: "0", fallbackSub: "+0% this month", border: "border-emerald-400", icon: <UsersRound className="w-5 h-5" /> },
+                            { label: "Avg Open Rate", data: summaryStats.avg_open_rate, fallbackValue: "0%", fallbackSub: "+0% this month", border: "border-amber-400", icon: <AvgOpenRate /> },
+                            { label: "Avg Click Rate", data: summaryStats.avg_click_rate, fallbackValue: "0%", fallbackSub: "+0% this month", border: "border-red-400", icon: <RxCursorArrow className="w-5 h-5" /> },
+                            { label: "List Health Score", data: summaryStats.list_health_score, fallbackValue: "0/100", fallbackSub: "0% growth", border: "border-gray-300", icon: <HeartPulse className="w-5 h-5" /> },
+                        ].map((item, i) => {
+                            const isObj = item.data && typeof item.data === 'object';
+                            const displayValue = isObj ? item.data.value : (item.data || item.fallbackValue);
+                            const displaySub = isObj ? (item.data.delta_text || item.fallbackSub) : item.fallbackSub;
+                            const isPositive = isObj ? item.data.is_positive !== false : true;
+
+                            return (
+                                <div key={i} className={`bg-white border ${item.border} rounded-xl p-5`}>
+                                    <div className="flex items-center gap-2">
+                                        {item.icon}
+                                        <p className="text-xs text-gray-500">{item.label}</p>
+                                    </div>
+                                    <h2 className="text-2xl font-semibold text-gray-900 mt-2">
+                                        {displayValue}
+                                    </h2>
+                                    <p className={`text-xs mt-2 ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        {displaySub}
+                                    </p>
                                 </div>
-                                <h2 className="text-2xl font-semibold text-gray-900 mt-2">
-                                    {item.value}
-                                </h2>
-                                <p className="text-xs text-emerald-600 mt-2">{item.sub}</p>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* ================= GROWTH CHART ================= */}
@@ -232,7 +263,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         <div className="h-[320px]">
                             {isMounted ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={subGrowth} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <LineChart data={normalizedSubGrowth} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
                                         <XAxis
                                             dataKey="month"
@@ -270,18 +301,21 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         </p>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 border-b pb-8 border-[#B5B5B5]">
                             {[
-                                { label: "Bounce Rate", value: listHealth.bounce_rate || "0%" },
-                                { label: "Unsubscribe Rate", value: listHealth.unsubscribe_rate || "0%" },
-                                { label: "Active Rate", value: listHealth.active_rate || "0%" },
-                                { label: "Avg Engagement", value: listHealth.avg_engagement || "0" },
-                            ].map((item, i) => (
-                                <div key={i} className="bg-[#E07A5F0D] rounded-xl p-6 text-center">
-                                    <h3 className="text-xl font-semibold text-gray-900">
-                                        {item.value}
-                                    </h3>
-                                    <p className="text-xs text-gray-500 mt-1">{item.label}</p>
-                                </div>
-                            ))}
+                                { label: "Bounce Rate", data: listHealth.bounce_rate, fallback: "0%" },
+                                { label: "Unsubscribe Rate", data: listHealth.unsubscribe_rate, fallback: "0%" },
+                                { label: "Active Rate", data: listHealth.active_rate, fallback: "0%" },
+                                { label: "Avg Engagement", data: listHealth.avg_engagement, fallback: "0" },
+                            ].map((item, i) => {
+                                const displayValue = item.data && typeof item.data === 'object' ? item.data.value : (item.data || item.fallback);
+                                return (
+                                    <div key={i} className="bg-[#E07A5F0D] rounded-xl p-6 text-center">
+                                        <h3 className="text-xl font-semibold text-gray-900">
+                                            {displayValue}
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">{item.label}</p>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -321,7 +355,9 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                             </p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-semibold">{camp.open_rate}</p>
+                                            <p className="text-sm font-semibold">
+                                                {camp.open_rate && typeof camp.open_rate === 'object' ? camp.open_rate.value : camp.open_rate}
+                                            </p>
                                             <p className="text-xs text-gray-500">Open Rate</p>
                                         </div>
                                     </div>
@@ -364,12 +400,20 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                             <p className="text-gray-900 font-medium">{link.destination}</p>
                                             <p className="text-gray-400 text-[11px] mt-1 truncate">{link.url}</p>
                                         </div>
-                                        <div className="text-center text-gray-700">{link.clicks}</div>
-                                        <div className="text-center">
-                                            <p className="text-gray-900">{link.ctr}</p>
-                                            <p className="text-emerald-600 text-[11px]">Excellent</p>
+                                        <div className="text-center text-gray-700">
+                                            {link.clicks && typeof link.clicks === 'object' ? link.clicks.value : link.clicks}
                                         </div>
-                                        <div className="text-right text-gray-700">{link.conversion}</div>
+                                        <div className="text-center">
+                                            <p className="text-gray-900">
+                                                {link.ctr && typeof link.ctr === 'object' ? link.ctr.value : link.ctr}
+                                            </p>
+                                            <p className={`text-[11px] ${link.ctr?.is_positive !== false ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                                {link.ctr?.is_positive !== false ? 'Excellent' : 'Improving'}
+                                            </p>
+                                        </div>
+                                        <div className="text-right text-gray-700">
+                                            {link.conversion && typeof link.conversion === 'object' ? link.conversion.value : link.conversion}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -401,7 +445,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         <div className="h-[300px]">
                             {isMounted ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={histTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <AreaChart data={normalizedHistTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
                                         <XAxis
                                             dataKey="month"
