@@ -1,38 +1,65 @@
-import React from "react";
-import { X, Mail } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Mail, Loader2, Users } from "lucide-react";
 import { AiOutlineEye } from "react-icons/ai";
 import SwapPartnerDetails from "./SwapPartnerDetails";
-import { useState } from "react";
 import { formatCamelCaseName } from "../../../utils/formatName";
+import { getSlotDetails } from "../../../apis/newsletter";
+import toast from "react-hot-toast";
 
-
-const SlotDetails = ({ isOpen, onClose, onEdit }) => {
+const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
     const [swapOpen, setSwapOpen] = useState(false);
+    const [slotData, setSlotData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const formatLabel = (value) => {
+        if (!value) return "";
+        return value
+            .replace(/_/g, " ")
+            .toLowerCase()
+            .replace(/\b\w/g, char => char.toUpperCase());
+    };
+
+    useEffect(() => {
+        const fetchDetails = async () => {
+            if (!slotId) return;
+            try {
+                setLoading(true);
+                const response = await getSlotDetails(slotId);
+                setSlotData(response.data);
+            } catch (error) {
+                console.error("Failed to fetch slot details:", error);
+                toast.error("Failed to load slot details");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isOpen) {
+            fetchDetails();
+        }
+    }, [isOpen, slotId]);
+
     if (!isOpen) return null;
+
+    if (loading) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="bg-white w-[600px] h-[400px] rounded-[10px] flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
+                </div>
+            </div>
+        );
+    }
+
+    if (!slotData) return null;
+
     const slot = {
-        date: "Wednesday, May 15 at 10:00 AM EST",
-        audienceSize: "12,450 subscribers",
-        genre: "Fantasy",
-        status: "Booked",
-        visibility: "Private Only",
-        partners: [
-            {
-                name: "Jane Doe",
-                swaps: "2 swaps completed",
-                avatar: "https://i.pravatar.cc/40?img=5",
-                highlighted: true,
-            },
-            {
-                name: "Ema Chen",
-                swaps: "3 swaps completed",
-                avatar: "https://i.pravatar.cc/40?img=8",
-            },
-            {
-                name: "Ema Chen",
-                swaps: "3 swaps completed",
-                avatar: "https://i.pravatar.cc/40?img=12",
-            },
-        ],
+        date: `${slotData.formatted_date || ""} ${slotData.formatted_time || ""}`.trim() || slotData.send_time || "N/A",
+        audienceSize: Number(slotData.audience_size || 0).toLocaleString() + " subscribers",
+        genre: formatLabel(slotData.preferred_genre) || "N/A",
+        status: formatLabel(slotData.status) || "N/A",
+        visibility: formatLabel(slotData.visibility) || "N/A",
+        partners: slotData.partners || [],
     };
 
     return (
@@ -77,7 +104,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit }) => {
                                 <p className="text-[12px] font-medium text-gray-500 uppercase">
                                     Status
                                 </p>
-                                <span className="inline-flex w-fit rounded-full bg-[#16A34A15] px-3 py-0.5 text-[11px] font-semibold text-[#16A34A]">
+                                <span className={`inline-flex w-fit rounded-full px-3 py-0.5 text-[11px] font-semibold ${slot.status === 'Available' ? 'bg-[#16A34A15] text-[#16A34A]' : 'bg-[#2F6F6D15] text-[#2F6F6D]'}`}>
                                     {slot.status}
                                 </span>
                             </div>
@@ -119,52 +146,53 @@ const SlotDetails = ({ isOpen, onClose, onEdit }) => {
                         </h3>
 
                         <div className="space-y-3">
-                            {slot.partners.map((partner, index) => (
-                                <div
-                                    key={index}
-                                    className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${partner.highlighted
-                                        ? "border-[#E07A5F] bg-[#E07A5F08]"
-                                        : "border-gray-100 hover:border-gray-200"
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <img
-                                            src={partner.avatar}
-                                            alt={partner.name}
-                                            className="h-10 w-10 rounded-full object-cover shadow-sm"
-                                        />
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-800">
-                                                {formatCamelCaseName(partner.name)}
-                                            </p>
-                                            <p className="text-[12px] text-gray-500">
-                                                {partner.swaps}
-                                            </p>
+                            {slot.partners.length === 0 ? (
+                                <div className="text-center py-6 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-xl bg-gray-50/30">
+                                    No partners for this slot yet
+                                </div>
+                            ) : (
+                                slot.partners.map((partner, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex items-center justify-between rounded-xl border p-3 transition-colors border-gray-100 hover:border-gray-200`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={partner.sender_profile_picture || partner.avatar || `https://ui-avatars.com/api/?name=${partner.sender_name || 'User'}&background=random`}
+                                                alt={partner.sender_name}
+                                                className="h-10 w-10 rounded-full object-cover shadow-sm"
+                                            />
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-800">
+                                                    {partner.sender_name || 'Unknown Partner'}
+                                                </p>
+                                                <p className="text-[12px] text-gray-500">
+                                                    {partner.status || 'Active partner'}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Right Side Icons */}
-                                    <div className="flex items-center gap-2">
-                                        {partner.highlighted && (
+                                        {/* Right Side Icons */}
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setSwapOpen(true)}
                                                 className="p-2 rounded-lg bg-[#2F6F6D15] text-[#2F6F6D] hover:bg-[#2F6F6D25] transition-colors"
                                             >
                                                 <AiOutlineEye size={16} />
                                             </button>
-                                        )}
 
-                                        <SwapPartnerDetails
-                                            isOpen={swapOpen}
-                                            onClose={() => setSwapOpen(false)}
-                                        />
+                                            <SwapPartnerDetails
+                                                isOpen={swapOpen}
+                                                onClose={() => setSwapOpen(false)}
+                                            />
 
-                                        <button className="p-2 rounded-lg border border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
-                                            <Mail size={16} />
-                                        </button>
+                                            <button className="p-2 rounded-lg border border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+                                                <Mail size={16} />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
 
