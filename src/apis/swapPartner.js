@@ -1,7 +1,7 @@
 import apiClient from "./client";
 
 export const getExploreSlots = () => {
-    return apiClient.get("/slots/explore/");
+    return apiClient.get("slots/explore/");
 };
 
 export const getSlotDetails = (id) => {

@@ -53,8 +53,8 @@ const SwapHistory = () => {
                     <FiArrowLeft size={20} />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-semibold">Track My Swap</h1>
-                    <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Find places to promote your book</p>
+                    <h1 className="text-2xl font-semibold">Swap Detail</h1>
+                    <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">View your swap request and status details</p>
                 </div>
             </div>
 

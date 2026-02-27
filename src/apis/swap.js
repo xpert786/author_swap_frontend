@@ -1,7 +1,7 @@
 import apiClient from "./client";
 
 export const getSwaps = (tab = "all") => {
-    return apiClient.get("/swaps/", { params: { tab } });
+    return apiClient.get("swaps/", { params: { tab } });
 };
 
 export const getSwapHistory = (id) => {

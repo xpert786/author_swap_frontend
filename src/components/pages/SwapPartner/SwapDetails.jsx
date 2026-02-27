@@ -134,17 +134,11 @@ const SwapDetails = () => {
                         className="w-14 h-14 rounded-full object-cover shrink-0"
                     />
                     <div>
-                        <p className="text-base font-medium text-[Medium] mb-0.5">{data.author?.name || data.name}</p>
+                        <p className="text-base font-bold mb-0.5">{formatLabel((data.author?.name || data.name || "A").split(/[\s,]+/)[0])}</p>
                         <div className="flex items-center gap-3">
                             <p className="text-xs text-black flex items-center gap-1">
                                 <img src={SwapIcon} alt="" className="w-3 h-3 object-contain" /> {data.author?.swapsCompleted || 0} swaps completed
                             </p>
-                            {data.author?.reputationScore && (
-                                <div className="flex items-center gap-1">
-                                    <Stars count={data.author.reputationScore} />
-                                    <span className="text-[10px] text-gray-500">({data.author.reputationScore}/5)</span>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -192,21 +186,29 @@ const SwapDetails = () => {
             <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-4 mb-7">
                 <p className="text-xl font-medium text-black mb-4">Analytics</p>
                 <div className="sd-analytics-grid grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.avgOpenRate || "43.3%"}</p>
-                        <p className="text-xs text-[#374151]">Avg Open Rate</p>
+                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center transition-all hover:bg-[rgba(224,122,95,0.08)]">
+                        <p className="text-[22px] font-bold text-black mb-1">
+                            {data.author?.avgOpenRate !== undefined ? `${data.author.avgOpenRate}%` : "0%"}
+                        </p>
+                        <p className="text-xs text-[#374151] font-medium">Avg Open Rate</p>
                     </div>
-                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.avgClickRate || "8.7%"}</p>
-                        <p className="text-xs text-[#374151]">Avg Click Rate</p>
+                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center transition-all hover:bg-[rgba(224,122,95,0.08)]">
+                        <p className="text-[22px] font-bold text-black mb-1">
+                            {data.author?.avgClickRate !== undefined ? `${data.author.avgClickRate}%` : "0%"}
+                        </p>
+                        <p className="text-xs text-[#374151] font-medium">Avg Click Rate</p>
                     </div>
-                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.monthlyGrowth || "+312"}</p>
-                        <p className="text-xs text-[#374151]">Monthly Growth</p>
+                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center transition-all hover:bg-[rgba(224,122,95,0.08)]">
+                        <p className="text-[22px] font-bold text-black mb-1">
+                            {data.author?.monthlyGrowth !== undefined ? (data.author.monthlyGrowth >= 0 ? `+${data.author.monthlyGrowth}` : data.author.monthlyGrowth) : "0"}
+                        </p>
+                        <p className="text-xs text-[#374151] font-medium">Monthly Growth</p>
                     </div>
-                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center">
-                        <p className="text-[22px] font-medium text-black mb-1">{data.sendReliability || "94%"}</p>
-                        <p className="text-xs text-[#374151]">Send Reliability</p>
+                    <div className="bg-[rgba(224,122,95,0.05)] rounded-xl py-5 px-3 text-center transition-all hover:bg-[rgba(224,122,95,0.08)]">
+                        <p className="text-[22px] font-bold text-black mb-1">
+                            {data.author?.sendReliabilityPercent !== undefined ? `${data.author.sendReliabilityPercent}%` : "0%"}
+                        </p>
+                        <p className="text-xs text-[#374151] font-medium">Send Reliability</p>
                     </div>
                 </div>
             </div>
@@ -219,50 +221,50 @@ const SwapDetails = () => {
                 {[
                     {
                         title: "Confirmed Sends",
-                        score: data.author?.confirmedSendsScore || "45/50",
-                        percent: 90,
-                        subtext: "90% success rate",
-                        points: "+45 points",
+                        score: `${data.author?.confirmedSendsScore || 0}/50`,
+                        percent: (data.author?.confirmedSendsScore || 0) * 2,
+                        subtext: `${(data.author?.confirmedSendsScore || 0) * 2}% success rate`,
+                        points: `+${data.author?.confirmedSendsScore || 0} points`,
                         icon: <ConfirmedSendsIcon size={32} />,
                         color: "#16A34A"
                     },
                     {
                         title: "Timeliness",
-                        score: data.author?.timelinessScore || "28/30",
-                        percent: 94,
-                        subtext: "94% success rate",
-                        points: "+28 points",
+                        score: `${data.author?.timelinessScore || 0}/30`,
+                        percent: ((data.author?.timelinessScore || 0) / 30) * 100,
+                        subtext: `${Math.round(((data.author?.timelinessScore || 0) / 30) * 100)}% timeliness rate`,
+                        points: `+${data.author?.timelinessScore || 0} points`,
                         icon: <TimelinessIcon size={32} />,
                         color: "#F59E0B"
                     },
                     {
                         title: "Missed Sends",
-                        score: data.author?.missedSendsScore || "10/30",
-                        percent: 33,
-                        subtext: "5 missed sends",
-                        points: "-8 points",
+                        score: `${data.author?.missedSendsPenalty || 0}/30`,
+                        percent: ((data.author?.missedSendsPenalty || 0) / 30) * 100,
+                        subtext: `${data.author?.missedSendsPenalty || 0} penalty points`,
+                        points: `-${data.author?.missedSendsPenalty || 0} points`,
                         icon: <MissedSendsIcon size={32} />,
                         color: "#DC2626"
                     },
                     {
                         title: "Communication",
-                        score: data.author?.communicationScore || "10/30",
-                        percent: 85,
-                        subtext: "4.2h avg response",
-                        points: "+28 points",
+                        score: `${data.author?.communicationScore || 0}/30`,
+                        percent: ((data.author?.communicationScore || 0) / 30) * 100,
+                        subtext: "Engagement score",
+                        points: `+${data.author?.communicationScore || 0} points`,
                         icon: <CommunicationIcon size={32} />,
                         color: "#2F6F6D"
                     }
                 ].map((item, idx) => (
-                    <div key={idx} className="bg-white border border-[#B5B5B5] rounded-xl p-5">
+                    <div key={idx} className="bg-white border border-[#B5B5B5] rounded-xl p-5 shadow-sm hover:border-[#2F6F6D33] transition-all">
                         <div className="flex items-center justify-between">
                             <span className="flex items-center gap-2 text-sm font-semibold text-black">
                                 {item.icon} {item.title}
                             </span>
-                            <span className="text-[13px] font-medium text-black">{item.score}</span>
+                            <span className="text-[13px] font-bold text-black">{item.score}</span>
                         </div>
                         <ProgressBar percent={item.percent} color={item.color} />
-                        <div className="flex justify-between text-[11px] text-black font-medium">
+                        <div className="flex justify-between text-[11px] text-black font-semibold">
                             <span className="text-gray-500">{item.subtext}</span>
                             <span>{item.points}</span>
                         </div>
@@ -275,32 +277,36 @@ const SwapDetails = () => {
             <div className="bg-white border border-[rgba(181,181,181,1)] rounded-xl p-4 mb-7">
                 <p className="text-xl font-medium text-black mb-0.5">Reliability</p>
                 <p className="text-xs text-black mb-2.5">Reliability Score</p>
-                <ProgressBar percent={data.reliabilityScore || 92} color="#22c55e" />
+                <ProgressBar percent={data.author?.sendReliabilityPercent || 0} color="#22c55e" />
                 <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-[13px] font-medium text-black">{data.reliabilityScore || 92}/100</span>
-                    <span className="text-xs font-medium text-black">Excellent</span>
+                    <span className="text-[13px] font-bold text-black">{data.author?.sendReliabilityPercent || 0}/100</span>
+                    <span className="text-xs font-bold text-black">
+                        {data.author?.sendReliabilityPercent >= 80 ? "Excellent" : data.author?.sendReliabilityPercent >= 50 ? "Good" : "Needs Improvement"}
+                    </span>
                 </div>
 
                 {/* ── Recent Swap History ── */}
                 <p className="text-base font-bold text-black mt-5 mb-3">Recent Swap History</p>
-                <div className="sd-history-grid grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                    {(data.recentHistory && data.recentHistory.length > 0 ? data.recentHistory : [
-                        { name: "Jane Doe", status: "Completed", stars: 5, date: "25 Jan 2026" },
-                        { name: "John Smith", status: "Completed", stars: 4, date: "15 Feb 2026" },
-                        { name: "Alice Johnson", status: "Pending", stars: 0, date: "12 Mar 2026" }
-                    ]).map((h, i) => (
-                        <div key={i} className="border border-gray-200 rounded-xl p-3.5 flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-semibold text-black">{h.name}</span>
-                                <StatusChip status={h.status} />
-                                {h.stars > 0 && <Stars count={h.stars} />}
+                {data.recentHistory && data.recentHistory.length > 0 ? (
+                    <div className="sd-history-grid grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                        {data.recentHistory.map((h, i) => (
+                            <div key={i} className="border border-gray-200 rounded-xl p-3.5 flex flex-col gap-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-semibold text-black">{h.name}</span>
+                                    <StatusChip status={h.status} />
+                                    {h.stars > 0 && <Stars count={h.stars} />}
+                                </div>
+                                <span className="flex items-center gap-1.5 text-[13px] text-gray-500">
+                                    <CalendarIcon size={18} /> {h.date}
+                                </span>
                             </div>
-                            <span className="flex items-center gap-1.5 text-[13px] text-gray-500">
-                                <CalendarIcon size={18} /> {h.date}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-6 border border-dashed border-gray-200 rounded-xl">
+                        <p className="text-sm text-gray-500 italic">No recent swap history found.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

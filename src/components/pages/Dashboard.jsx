@@ -11,7 +11,10 @@ dayjs.extend(relativeTime);
 import OpenBookIcon from "../../assets/open-book.png"
 import { useNotifications } from "../../context/NotificationContext";
 import { getDashboardStats } from "../../apis/dashboard";
+import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../apis/newsletter";
+import { getGenres } from "../../apis/genre";
 import { formatCamelCaseName } from "../../utils/formatName";
+import toast from "react-hot-toast";
 
 
 const OpenBook = () => {
@@ -41,11 +44,16 @@ const Dashboard = () => {
 
   const [showAddBook, setShowAddBook] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(dayjs());
-  const [showGenreDropdown, setShowGenreDropdown] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState("Genre");
+  const [openDropdown, setOpenDropdown] = useState(null);
 
-  React.useEffect(() => {
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const [genre, setGenre] = useState("Genre");
+  const [selectedGenreValue, setSelectedGenreValue] = useState("");
+  const [genres, setGenres] = useState([]);
+  const [loadingGenres, setLoadingGenres] = useState(true);
+  const [calendarData, setCalendarData] = useState([]);
+
+  useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
@@ -60,7 +68,61 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const genres = ["All Genres", "Fantasy", "Fiction", "Mystery", "Non-Fiction", "Romance", "Sci-Fi", "Thriller"];
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const response = await getGenres();
+        setGenres(response);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingGenres(false);
+      }
+    };
+    loadGenres();
+  }, []);
+
+  const formatLabel = (value) => {
+    if (!value) return "";
+    return value
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  const getPeriod = (time) => {
+    if (!time) return "Morning";
+    let hour = parseInt(time.split(":")[0], 10);
+    const lowerTime = time.toLowerCase();
+    if (lowerTime.includes("pm") && hour < 12) hour += 12;
+    if (lowerTime.includes("am") && hour === 12) hour = 0;
+    if (hour < 12) return "Morning";
+    if (hour < 17) return "Afternoon";
+    return "Evening";
+  };
+
+  const fetchCalendarStats = async () => {
+    try {
+      const params = {
+        month: currentMonth.format("MM"),
+        year: currentMonth.format("YYYY"),
+        genre: selectedGenreValue || "all",
+        visibility: "all",
+        status: "all"
+      };
+      const response = await statsNewsSlot(params);
+      const calData = response.data?.calendar?.days || [];
+      setCalendarData(calData);
+    } catch (error) {
+      console.error("Failed to fetch calendar stats", error);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchCalendarStats();
+  }, [genre, currentMonth]);
+
 
   // Calendar logic for May 2024
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -123,7 +185,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
         {/* CALENDAR */}
         <div className="lg:col-span-8 bg-white rounded-[10px] border border-[#B5B5B5] p-5 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
@@ -141,35 +203,53 @@ const Dashboard = () => {
                 {currentMonth.format("MMMM YYYY")} Calendar
               </h3>
             </div>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
-                View Full
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  const now = dayjs();
+                  setCurrentMonth(now);
+                }}
+                className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Today
               </button>
+
               <div className="relative">
                 <button
-                  onClick={() => setShowGenreDropdown(!showGenreDropdown)}
+                  onClick={() => setOpenDropdown(openDropdown === "genre" ? null : "genre")}
                   className="px-3 py-1 border border-gray-200 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
                 >
-                  {selectedGenre} <IoChevronDown size={12} className={`transition-transform ${showGenreDropdown ? "rotate-180" : ""}`} />
+                  {genre} <IoChevronDown size={12} className={`transition-transform ${openDropdown === "genre" ? "rotate-180" : ""}`} />
                 </button>
 
-                {showGenreDropdown && (
+                {openDropdown === "genre" && (
                   <>
                     <div
                       className="fixed inset-0 z-10"
-                      onClick={() => setShowGenreDropdown(false)}
+                      onClick={() => setOpenDropdown(null)}
                     />
                     <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-100 rounded-lg shadow-lg z-20 py-1 overflow-hidden">
-                      {genres.map((genre) => (
+                      <button
+                        onClick={() => {
+                          setGenre("Genre");
+                          setSelectedGenreValue("");
+                          setOpenDropdown(null);
+                        }}
+                        className="w-full text-left px-3 py-2 text-[11px] font-medium text-gray-600 hover:bg-gray-50 hover:text-[#E07A5F] transition-colors"
+                      >
+                        All Genres
+                      </button>
+                      {genres.map((g) => (
                         <button
-                          key={genre}
+                          key={g.value}
                           onClick={() => {
-                            setSelectedGenre(genre === "All Genres" ? "Genre" : genre);
-                            setShowGenreDropdown(false);
+                            setGenre(g.label);
+                            setSelectedGenreValue(g.value);
+                            setOpenDropdown(null);
                           }}
                           className="w-full text-left px-3 py-2 text-[11px] font-medium text-gray-600 hover:bg-gray-50 hover:text-[#E07A5F] transition-colors"
                         >
-                          {genre}
+                          {g.label}
                         </button>
                       ))}
                     </div>
@@ -191,41 +271,63 @@ const Dashboard = () => {
             {calendarDays.map((date, idx) => {
               const isCurrentMonth = date.isSame(currentMonth, "month");
               const isToday = date.isSame(today, "day");
+              const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
+
+              let bgColor = "bg-white";
+              if (!isCurrentMonth) {
+                bgColor = "bg-gray-50/30";
+              } else if (dayApiData?.has_slots) {
+                if (dayApiData.has_verified) bgColor = "bg-[#9FB5B3]";
+                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
+                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]";
+                else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
+                else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
+                else bgColor = "bg-[#F3F4F6]";
+              }
 
               return (
                 <div
                   key={idx}
                   className={`h-16 md:h-20 p-1.5 border-r border-b border-gray-50 relative
-        ${!isCurrentMonth ? "bg-gray-50/30" : "bg-white"}
-      `}
+                    ${bgColor}
+                    ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""}
+                  `}
                 >
                   <span
                     className={`text-[10px] md:text-[11px] font-bold
-          ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}
-          ${isToday ? "text-[#E07A5F]" : ""}
-        `}
+                    ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"}
+                    ${isToday ? "text-[#E07A5F]" : ""}
+                  `}
                   >
                     {date.date()}
                   </span>
-
-                  {isToday && (
-                    <span className="absolute bottom-1 right-1.5 text-[8px] font-bold text-[#E07A5F] uppercase">
-                      Today
-                    </span>
-                  )}
-
-                  {/* API Activity Dots */}
-                  <div className="absolute bottom-1 left-1.5 flex gap-0.5">
-                    {dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"))?.has_slots && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#2F6F6D]" title="Slots available" />
-                    )}
-                    {dashboardData?.calendar?.days?.find(d => dayjs(d.date).isSame(date, "day"))?.has_scheduled && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#E07A5F]" title="Scheduled" />
-                    )}
-                  </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* LEGEND */}
+          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-6 justify-center">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-[2px] bg-[#16A34A33] border border-teal-100" />
+              <span className="text-[10px] font-medium text-[#374151]">Available</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-[2px] bg-[#F1B9AA]" />
+              <span className="text-[10px] font-medium text-[#374151]">Published</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-[2px] bg-[#87D1A1]" />
+              <span className="text-[10px] font-medium text-[#374151]">Confirmed</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-[2px] bg-[#FDE7C4]" />
+              <span className="text-[10px] font-medium text-[#374151]">Pending</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-[2px] bg-[#9FB5B3]" />
+              <span className="text-[10px] font-medium text-[#374151]">Verified</span>
+            </div>
           </div>
         </div>
 
@@ -239,7 +341,6 @@ const Dashboard = () => {
                 className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
               >
                 <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
-
                 <div className="w-full">
                   <div className="flex justify-between items-start w-full">
                     <p className="text-[12px] md:text-[13px] font-medium text-[#000000] leading-snug pr-2">
@@ -316,7 +417,10 @@ const Dashboard = () => {
       <AddNewsSlot
         isOpen={showAddSlot}
         onClose={() => setShowAddSlot(false)}
-        onSubmit={handleCreateSlot}
+        onSubmit={async () => {
+          await fetchCalendarStats();
+          setShowAddSlot(false);
+        }}
       />
     </div>
   );

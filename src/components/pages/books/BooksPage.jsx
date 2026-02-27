@@ -490,7 +490,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 <img
                     src={book.book_cover || "/placeholder.jpg"}
                     alt={book.title}
-                    className="h-40 w-full object-cover"
+                    className="h-[440px] w-full object-cover"
                 />
 
                 {(book.is_primary_promo || book.availability === "wide") && (
