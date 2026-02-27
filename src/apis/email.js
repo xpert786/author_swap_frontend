@@ -32,9 +32,7 @@ export const composeEmail = async (data) => {
         formData.append("attachment", data.attachment);
     }
 
-    const response = await apiClient.post("emails/compose/", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-    });
+    const response = await apiClient.post("emails/compose/", formData);
     return response.data;
 };
 
