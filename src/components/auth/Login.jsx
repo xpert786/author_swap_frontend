@@ -15,6 +15,7 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm();
 
@@ -26,7 +27,7 @@ const Login = () => {
       });
 
       if (!response?.token) {
-        throw new Error("Token not received");
+        throw new Error("Invalid response from server");
       }
 
       localStorage.setItem("token", response.token);
@@ -35,10 +36,50 @@ const Login = () => {
         response.isprofilecompleted?.toString() || "true"
       );
 
+      toast.success("Login successful! Welcome back.");
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      toast(error?.response?.data?.message || error.message || "Login failed");
+
+      const serverData = error?.response?.data;
+      let errorMessage = "Login failed";
+
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          // Fallback: use the first field error as the toast message
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      } else {
+        errorMessage = error.message;
+      }
+
+      // Handle field-specific errors from server for inline display
+      if (serverData && typeof serverData === 'object') {
+        Object.keys(serverData).forEach(field => {
+          if (!['message', 'error', 'detail', 'status'].includes(field)) {
+            const errorVal = serverData[field];
+            const message = Array.isArray(errorVal) ? errorVal[0] : errorVal;
+            setError(field, { type: "server", message });
+          }
+        });
+      }
+
+      toast.error(errorMessage);
+    }
+  };
+
+  const onError = (errors) => {
+    const firstError = Object.values(errors)[0];
+    if (firstError) {
+      toast.error(firstError.message || "Please fix the errors in the form");
     }
   };
 
@@ -74,7 +115,7 @@ const Login = () => {
               Log In
             </h2>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
               {/* Email address */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">

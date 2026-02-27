@@ -1,9 +1,10 @@
 import { useForm } from "react-hook-form";
 import { MdOutlineFileDownload } from "react-icons/md";
 import { FiX } from "react-icons/fi";
+import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { onboardingStep1, getProfile, editPenName } from "../../apis/onboarding";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getGenres } from "../../apis/genre"; // adjust path
 
 
@@ -12,11 +13,24 @@ const AccountBasics = ({ next }) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm();
   const [penNames, setPenNames] = useState([]);
   const [newPenName, setNewPenName] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const genreRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (genreRef.current && !genreRef.current.contains(event.target)) {
+        setIsGenreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -140,6 +154,15 @@ const AccountBasics = ({ next }) => {
     setNewPenName("");
   };
 
+  const handleRemoveImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPreview(null);
+    setValue("profilePhoto", null);
+    const fileInput = document.getElementById("profileUpload");
+    if (fileInput) fileInput.value = "";
+  };
+
 
   const removePenName = async (nameToRemove) => {
     try {
@@ -161,13 +184,11 @@ const AccountBasics = ({ next }) => {
     }
   };
 
-  const handleGenreSelect = (e) => {
-    const val = e.target.value;
+  const handleGenreSelect = (val) => {
     if (val && !selectedGenres.includes(val)) {
       setSelectedGenres([...selectedGenres, val]);
     }
-    // Reset select value to default
-    e.target.value = "";
+    setIsGenreOpen(false);
   };
 
   const removeGenre = (genreToRemove) => {
@@ -279,11 +300,20 @@ const AccountBasics = ({ next }) => {
               />
 
               {preview ? (
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="object-cover w-full h-full rounded-lg"
-                />
+                <div className="relative w-full h-full">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="object-cover w-full h-full rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md z-10"
+                  >
+                    <FiX size={16} />
+                  </button>
+                </div>
               ) : (
                 <label
                   htmlFor="profileUpload"
@@ -311,21 +341,47 @@ const AccountBasics = ({ next }) => {
           <div className="mb-6">
             <label className="block text-sm mb-2">Genre Preferences *</label>
 
-            <select
-              onChange={handleGenreSelect}
-              disabled={loadingGenres}
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none mb-3"
-            >
-              <option value="">
-                {loadingGenres ? "Loading genres..." : "Select genres..."}
-              </option>
+            <div className="relative mb-3" ref={genreRef}>
+              <button
+                type="button"
+                onClick={() => setIsGenreOpen(!isGenreOpen)}
+                disabled={loadingGenres}
+                className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 bg-white text-left flex items-center justify-between text-sm focus:outline-none"
+              >
+                <span className="text-gray-500">
+                  {loadingGenres ? "Loading genres..." : "Select genres..."}
+                </span>
+                <IoChevronDown
+                  size={18}
+                  className={`text-gray-400 transition-transform ${isGenreOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-              {genres.map((genre) => (
-                <option key={genre.value || genre.id || genre} value={genre.value || genre.id || genre}>
-                  {genre.label || genre.name || genre}
-                </option>
-              ))}
-            </select>
+              {isGenreOpen && !loadingGenres && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                  {genres.map((genre) => {
+                    const val = genre.value || genre.id || genre;
+                    const label = genre.label || genre.name || genre;
+                    const isSelected = selectedGenres.includes(val);
+
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleGenreSelect(val)}
+                        disabled={isSelected}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${isSelected
+                          ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                          : "hover:bg-[#2F6F6D1A] text-gray-700"
+                          }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Selected Genres Chips */}
             <div className="flex flex-wrap gap-2">
