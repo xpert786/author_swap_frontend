@@ -541,7 +541,10 @@ const Newsletter = () => {
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    {slot.status === "Available" ? (
+                                                    <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+                                                        <Eye size={14} className="text-gray-600" />
+                                                    </button>
+                                                    {slot.status === "Available" && (
                                                         <>
                                                             <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <img src={Edit} alt="Edit" className="w-5 h-5" />
@@ -550,10 +553,6 @@ const Newsletter = () => {
                                                                 <Trash2 size={14} />
                                                             </button>
                                                         </>
-                                                    ) : (
-                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
-                                                            <Eye size={14} className="text-gray-600" />
-                                                        </button>
                                                     )}
                                                 </div>
                                             </div>
