@@ -5,9 +5,11 @@ export const getSwapPartners = async () => {
     return response.data;
 };
 
-export const getEmails = async (folder = "inbox") => {
-    const response = await apiClient.get(`emails/?folder=${folder}`);
-    return response.data; // assuming returns { results: [], ... } or []
+export const getEmails = async (folder = "inbox", search = "") => {
+    const params = { folder };
+    if (search) params.search = search;
+    const response = await apiClient.get("emails/", { params });
+    return response.data;
 };
 
 export const getEmailDetail = async (id) => {
