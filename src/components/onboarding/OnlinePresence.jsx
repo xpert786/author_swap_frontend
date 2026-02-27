@@ -33,7 +33,6 @@ const OnlinePresence = ({ next, prev }) => {
           collaborationStatus: data.collaboration_status || "",
         });
 
-        toast.success("Profile loaded", { id: toastId });
       } catch (error) {
         toast.error(
           error?.response?.data?.message || "Failed to load profile",
