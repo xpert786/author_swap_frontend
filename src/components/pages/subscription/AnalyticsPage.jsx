@@ -122,14 +122,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
-            </div>
-        );
-    }
-
     const summaryStats = analytics?.summary_stats || {};
     const listHealth = analytics?.list_health_metrics || {};
 
@@ -141,19 +133,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const histTrend = Array.isArray(analytics?.historical_trends) && analytics.historical_trends.length > 0
         ? analytics.historical_trends
         : subGrowth;
-
-    const filteredCampaigns = campaigns.filter(camp => {
-        if (!camp) return false;
-
-        // Handle both object and primitive types for open_rate
-        const openRateRaw = getStatValue(camp.open_rate);
-        const openRateVal = openRateRaw ? parseFloat(openRateRaw) : 0;
-
-        if (activeCampaignTab === "Recent") return true;
-        if (activeCampaignTab === "Top Performing") return openRateVal > 40;
-        if (activeCampaignTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
-        return true;
-    });
 
     // Normalize chart data to ensure values are primitives
     const normalizedSubGrowth = useMemo(() => {
@@ -170,7 +149,32 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }));
     }, [histTrend]);
 
-    const campaignDates = [...new Set(campaigns.map(c => getStatValue(c.date)).filter(Boolean))];
+    const campaignDates = useMemo(() => {
+        return [...new Set(campaigns.map(c => getStatValue(c.date)).filter(Boolean))];
+    }, [campaigns]);
+
+    const filteredCampaigns = useMemo(() => {
+        return campaigns.filter(camp => {
+            if (!camp) return false;
+
+            // Handle both object and primitive types for open_rate
+            const openRateRaw = getStatValue(camp.open_rate);
+            const openRateVal = openRateRaw ? parseFloat(openRateRaw) : 0;
+
+            if (activeCampaignTab === "Recent") return true;
+            if (activeCampaignTab === "Top Performing") return openRateVal > 40;
+            if (activeCampaignTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
+            return true;
+        });
+    }, [campaigns, activeCampaignTab]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen">
