@@ -406,7 +406,7 @@ const BooksPage = () => {
             ) : filteredBooks.length === 0 ? (
                 <div className="text-center py-10 text-gray-500">No books found.</div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredBooks.map((book) => (
                         <BookCard
                             key={book.id}
@@ -480,36 +480,36 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
         <div
             onClick={() => onClick?.(book)}
             className="
-        bg-white rounded-xl border border-gray-200 
+        bg-white rounded-xl
         shadow-sm 
-        hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
-        hover:-translate-y-1
-        transition-all duration-300 
+        hover:-translate-y-2
+        transition-all duration-500 
         overflow-hidden flex flex-col cursor-pointer
-        hover:border-[#E07A5F]
+        group relative
     "
         >
             {/* Cover */}
-            <div className="relative">
+            <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden">
+
+
                 <img
                     src={book.book_cover || "/placeholder.jpg"}
                     alt={book.title}
-                    className="h-[440px] w-full object-cover"
+                    className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105 shadow-[0_8px_20px_rgba(0,0,0,0.1)] rounded-sm"
                 />
 
                 {(book.is_primary_promo || book.availability === "wide") && (
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-
+                    <div className="absolute top-4 left-4 flex flex-col gap-2.5 z-40">
                         {book.is_primary_promo && (
-                            <span className="flex items-center gap-1 bg-white text-[10px] font-medium px-2.5 py-1 rounded-full shadow-sm uppercase">
-                                <Star size={10} className="text-[#F59E0B] fill-[#F59E0B]" />
+                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-bold text-[#F59E0B] px-3 py-1.5 rounded-md shadow-sm border border-gray-100 uppercase tracking-wider">
+                                <Star size={11} className="fill-[#F59E0B]" />
                                 Primary
                             </span>
                         )}
 
                         {book.availability === "wide" && (
-                            <span className="flex items-center gap-1 bg-white text-[10px] font-medium px-2.5 py-1 rounded-full shadow-sm uppercase">
-                                <Globe size={10} className="text-blue-500" />
+                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-bold text-blue-600 px-3 py-1.5 rounded-md shadow-sm border border-gray-100 uppercase tracking-wider">
+                                <Globe size={11} />
                                 Wide
                             </span>
                         )}
@@ -517,17 +517,28 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 )}
             </div>
 
-            {/* Content */}
-            <div className="p-4 flex flex-col flex-1 gap-3">
+            {/* Content - Overlay on Hover */}
+            <div className="
+                absolute inset-x-0 bottom-0 
+                bg-white 
+                p-5 flex flex-col gap-3
+                translate-y-[calc(100%-8px)] group-hover:translate-y-0
+                transition-all duration-500 ease-out
+                border-t border-gray-100
+                z-30
+                shadow-[0_-5px_15px_rgba(0,0,0,0.05)]
+            ">
+                {/* Visual indicator/handle for hover */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-200 group-hover:hidden" />
 
-                <div className="flex justify-between items-start gap-3">
+                <div className="flex justify-between items-start gap-3 mt-2">
                     <div className="min-w-0">
-                        <h3 className="font-medium text-[16px] break-words">
+                        <h3 className="font-bold text-[17px] text-gray-900 leading-tight line-clamp-2">
                             {book.title}
                         </h3>
 
-                        <div className="flex gap-1.5 mt-1.5">
-                            <span className="text-[10px] font-semibold bg-[#16A34A33] px-2 py-0.5 rounded-md">
+                        <div className="flex gap-1.5 mt-2">
+                            <span className="text-[10px] font-bold text-[#16A34A] bg-[#16A34A15] px-2.5 py-1 rounded-md uppercase tracking-wide">
                                 {book.primary_genre
                                     ?.replace(/_/g, " ")
                                     .replace(/\b\w/g, (char) => char.toUpperCase())}
@@ -535,13 +546,14 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-1.5 shrink-0">
+                    <div className="flex gap-2 shrink-0">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onEdit?.(book);
                             }}
                             className="bg-[#2F6F6D33] p-1.5 rounded-md text-[#2F6F6D] hover:bg-[#2F6F6D] hover:text-white transition-colors"
+                            title="Edit Book"
                         >
                             <Pencil size={14} />
                         </button>
@@ -552,74 +564,76 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                                 onDelete?.(book);
                             }}
                             className="bg-[#2F6F6D33] p-1.5 rounded-md text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                            title="Delete Book"
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={15} />
                         </button>
                     </div>
                 </div>
 
                 {/* Meta */}
-                <div className="text-xs space-y-1.5 mt-3">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="w-3 h-3" />
+                <div className="flex items-center gap-4 text-[11px] text-gray-500 font-medium">
+                    <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
                         <span>{formattedDate}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <img src={Swap} alt="" className="w-3 h-3" />
+                    <div className="flex items-center gap-1.5">
+                        <img src={Swap} alt="" className="w-3.5 h-3.5" />
                         <span>0 Swaps</span>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-end mt-auto">
-
+                <div className="flex justify-between items-center mt-2 pt-3 border-t border-gray-100">
                     <div>
-                        <p className="text-[10px] uppercase tracking-widest mb-2">
-                            Available on:
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                            Availability
                         </p>
 
                         <div className="flex gap-2">
                             {book.amazon_url && (
-                                <div className="w-8 h-8 rounded-lg  bg-gradient-to-b from-[#FF9900] to-[#FF6B00] flex items-center justify-center text-white">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF9900] to-[#FF6B00] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
                                     <SiAmazon size={14} />
                                 </div>
                             )}
 
                             {book.apple_url && (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-[#000000] to-[#333333] flex items-center justify-center text-white">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#000000] to-[#333333] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
                                     <FaApple size={14} />
                                 </div>
                             )}
 
                             {book.kobo_url && (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-[#BF0000] to-[#8B0000] flex items-center justify-center text-white">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#BF0000] to-[#8B0000] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
                                     <FiBookOpen size={14} />
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Rating */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-lg">{rating}</span>
-
-                        <div className="flex gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                                <Star
-                                    key={i}
-                                    size={14}
-                                    className={
-                                        i < Math.floor(rating)
-                                            ? "text-[#F59E0B] fill-[#F59E0B]"
-                                            : "text-gray-300"
-                                    }
-                                />
-                            ))}
+                    <div className="text-right">
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                            Rating
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-gray-900">{rating}</span>
+                            <div className="flex gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={12}
+                                        className={
+                                            i < Math.floor(rating)
+                                                ? "text-[#F59E0B] fill-[#F59E0B]"
+                                                : "text-gray-200"
+                                        }
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
