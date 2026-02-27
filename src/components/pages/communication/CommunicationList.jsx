@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -8,34 +8,63 @@ import {
   FileText,
   Trash2,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
+import { getEmails } from "../../../apis/emails";
+import toast from "react-hot-toast";
 
 const CommunicationList = () => {
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [emails, setEmails] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentFolder, setCurrentFolder] = useState("inbox");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [folderCounts, setFolderCounts] = useState({
+    inbox: 0,
+    drafts: 0,
+    spam: 0,
+  });
 
-  const messages = [
-    {
-      id: 1,
-      name: "Jane Doe",
-      email: "jane@example.com",
-      time: "11:48 AM | 4 hours ago",
-      message: "Thanks for the update. What time should I expect the",
-      date: "Today",
-      avatar: "https://i.pravatar.cc/40?img=1",
-    },
-    ...Array.from({ length: 9 }).map((_, i) => ({
-      id: i + 2,
-      name: "John Smith",
-      email: "john@example.com",
-      time: "10:30 AM | Yesterday",
-      message: "Thanks for the update. What time should I expect the",
-      date: "13/10/2026",
-      avatar: `https://i.pravatar.cc/40?img=${i + 2}`,
-    })),
+  const fetchEmails = async () => {
+    try {
+      setLoading(true);
+      const response = await getEmails(currentFolder, searchQuery);
+      const data = response.data;
+
+      // Expected backend response: { results: [], folder_counts: { inbox: x, ... } }
+      setEmails(data.results || []);
+      if (data.folder_counts) {
+        setFolderCounts(data.folder_counts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch emails:", error);
+      toast.error("Failed to load emails");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmails();
+  }, [currentFolder]);
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      fetchEmails();
+    }
+  };
+
+  const navItems = [
+    { id: "inbox", label: "Inbox", icon: Mail, countKey: "inbox" },
+    { id: "snoozed", label: "Snoozed", icon: AlertCircle },
+    { id: "sent", label: "Sent", icon: Send },
+    { id: "drafts", label: "Drafts", icon: FileText, countKey: "drafts" },
+    { id: "spam", label: "Spam", icon: AlertCircle, countKey: "spam" },
+    { id: "trash", label: "Trash", icon: Trash2 },
   ];
 
   return (
@@ -52,7 +81,7 @@ const CommunicationList = () => {
       <div className="bg-white rounded-xl shadow border border-[#B5B5B5] p-4">
         {/* Top Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <h2 className="text-lg font-semibold">Email</h2>
+          <h2 className="text-lg font-semibold capitalize">{currentFolder.replace("_", " ")}</h2>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1 sm:flex-initial">
@@ -63,6 +92,9 @@ const CommunicationList = () => {
               <input
                 type="text"
                 placeholder="Search messages..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-full sm:w-[220px] pl-8 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-600 border border-[#B5B5B5]"
               />
             </div>
@@ -86,85 +118,96 @@ const CommunicationList = () => {
         </div>
 
         {/* Layout */}
-        <div className="flex flex-col md:flex-row border border-[#B5B5B5] rounded-lg overflow-hidden">
+        <div className="flex flex-col md:flex-row border border-[#B5B5B5] rounded-lg overflow-hidden min-h-[500px]">
           {/* Sidebar */}
           <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#B5B5B5] bg-gray-50/30">
             <div className="p-4">
               <ul className="space-y-1 text-sm">
-                <li className="flex justify-between items-center bg-[#E07A5F33] text-black p-2.5 rounded-md font-medium cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <Mail size={16} />
-                    <span>Inbox</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.">
-                    3
-                  </span>
-                </li>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = currentFolder === item.id;
+                  const count = item.countKey ? folderCounts[item.countKey] : null;
 
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
-                  <AlertCircle size={16} /> <span>Snoozed</span>
-                </li>
-
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
-                  <Send size={16} /> <span>Sent</span>
-                </li>
-
-                <li className="flex justify-between items-center p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileText size={16} /> <span>Drafts</span>
-                  </div>
-                  <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">1</span>
-                </li>
-
-                <li className="flex justify-between items-center p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle size={16} /> <span>Spam</span>
-                  </div>
-                  <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">3</span>
-                </li>
-
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
-                  <Trash2 size={16} /> <span>Trash</span>
-                </li>
+                  return (
+                    <li
+                      key={item.id}
+                      onClick={() => {
+                        setCurrentFolder(item.id);
+                        setSelectedMail(null);
+                      }}
+                      className={`flex justify-between items-center p-2.5 rounded-md font-medium cursor-pointer transition-colors ${isActive
+                        ? "bg-[#E07A5F33] text-black"
+                        : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={16} />
+                        <span>{item.label}</span>
+                      </div>
+                      {count > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "" : "bg-gray-200 text-gray-600"}`}>
+                          {count}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>
+
           {/* RIGHT SIDE (Message List OR Mail View) */}
-          <div className="flex-1 p-4 bg-white">
+          <div className="flex-1 p-4 bg-white relative">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+                <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
+              </div>
+            ) : null}
+
             {selectedMail ? (
               <CommunicationMail
                 mail={selectedMail}
-                onBack={() => setSelectedMail(null)}
+                onBack={() => {
+                  setSelectedMail(null);
+                  fetchEmails(); // Refresh list to update read status if needed
+                }}
               />
             ) : (
               <div className="space-y-3">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    onClick={() => setSelectedMail(msg)}
-                    className="flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <img
-                        src={msg.avatar}
-                        alt={msg.name}
-                        className="w-10 h-10 rounded-full flex-shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <h4 className="font-medium text-sm truncate">{msg.name}</h4>
-                        <p className="text-xs text-[#374151] font-normal truncate">
-                          {msg.message}
-                        </p>
+                {emails.length > 0 ? (
+                  emails.map((msg) => (
+                    <div
+                      key={msg.id}
+                      onClick={() => setSelectedMail(msg)}
+                      className={`flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors ${!msg.is_read ? "bg-gray-50 border-gray-400 font-semibold" : ""
+                        }`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <img
+                          src={msg.sender_avatar || msg.avatar || `https://ui-avatars.com/api/?name=${msg.sender_name || msg.name}&background=random`}
+                          alt={msg.sender_name || msg.name}
+                          className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="text-sm truncate">{msg.sender_name || msg.name}</h4>
+                          <p className="text-xs text-[#374151] font-normal truncate">
+                            {msg.subject || msg.message}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0 text-right">
+                        <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
+                          {msg.created_at || msg.date || msg.time}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="flex-shrink-0 text-right">
-                      <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                        {msg.date}
-                      </span>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 text-gray-500">
+                    No emails found in this folder.
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -172,7 +215,13 @@ const CommunicationList = () => {
       </div>
 
       {isComposeOpen && (
-        <SendEmail onClose={() => setIsComposeOpen(false)} />
+        <SendEmail
+          onClose={() => setIsComposeOpen(false)}
+          onSuccess={() => {
+            setIsComposeOpen(false);
+            fetchEmails();
+          }}
+        />
       )}
     </div>
   );

@@ -30,10 +30,10 @@ const formatLabel = (str) => {
 const SwapCard = ({ data, onRefresh, onViewDetails }) => {
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
+    const isCompleted = data.status === "completed" || data.status === "complete";
     const isRejected = data.status === "rejected" || data.status === "reject";
     const isPending = data.status === "pending" || data.status === "incoming";
     const isSending = data.status === "sending";
-    const isCompleted = data.status === "completed";
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -257,10 +257,27 @@ const SwapManagement = () => {
     }, [activeTab]);
 
     const filtered = (Array.isArray(swaps) ? swaps : []).filter((s) => {
-        // Since we fetch per tab, isTabMatch is usually true, but we keep it for robustness
-        const isTabMatch = activeTab.key === "all" ||
-            (s.status || "").toLowerCase() === activeTab.key.toLowerCase() ||
-            (s.category || "").toLowerCase() === activeTab.key.toLowerCase();
+        const sStatus = (s.status || "").toLowerCase();
+        const sCategory = (s.category || "").toLowerCase();
+        const tKey = activeTab.key.toLowerCase();
+
+        // Since we fetch per tab, we should trust the API if it's not the "all" tab.
+        // But we keep some filtering for robustness and for the "all" tab.
+        let isTabMatch = tKey === "all";
+
+        if (!isTabMatch) {
+            // Check exact match
+            if (sStatus === tKey || sCategory === tKey) {
+                isTabMatch = true;
+            }
+            // Check common variations
+            else if (tKey === "completed" && sStatus === "complete") isTabMatch = true;
+            else if (tKey === "pending" && sStatus === "incoming") isTabMatch = true;
+            else if (tKey === "rejected" && sStatus === "reject") isTabMatch = true;
+            else if (tKey === "sending" && sStatus === "active") isTabMatch = true;
+            // Robustness: If the API returned it for a specific tab, it's likely meant to be there
+            else if (activeTab.key !== "all") isTabMatch = true;
+        }
 
         const authorName = (s.author_name || s.author || "").toLowerCase();
         const rawBook = s.requesting_book || s.requestingBook;

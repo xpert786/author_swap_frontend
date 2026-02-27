@@ -86,15 +86,10 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
       setLoading(false);
     }
   };
-
-
-
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
         <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
-
           <div className="mb-6 flex items-start justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
@@ -126,7 +121,6 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
                 />
               </div>
-
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Send Time(Optional)

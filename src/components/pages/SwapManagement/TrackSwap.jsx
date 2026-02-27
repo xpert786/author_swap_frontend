@@ -98,7 +98,7 @@ const TrackSwap = () => {
                     <div className="w-8 h-8 flex items-center justify-center text-white">
                         <PartyPopper size={24} />
                     </div>
-                    <span className="text-lg font-medium">{data.status_label || (data.status === "completed" ? "Swap Completed" : (data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : "In Progress"))}</span>
+                    <span className="text-lg font-medium">{data.status_label || ((data.status === "completed" || data.status === "complete") ? "Swap Completed" : (data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : "In Progress"))}</span>
                 </div>
             </div>
 
