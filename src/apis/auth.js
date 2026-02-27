@@ -1,8 +1,6 @@
-import apiClient, { ensureCsrfToken } from "./client";
+import apiClient from "./client";
 
 export const login = async (data) => {
-  // Ensure CSRF cookie is present before making the login POST
-  await ensureCsrfToken();
   const response = await apiClient.post("login/", data);
   return response.data;
 };

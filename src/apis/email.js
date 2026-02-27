@@ -17,9 +17,6 @@ export const getEmailDetails = async (id) => {
     return response.data;
 };
 
-// Alias specifically needed by CommunicationMail component
-export const getEmailDetails = getEmailDetail;
-
 export const updateEmail = async (id, data) => {
     const response = await apiClient.patch(`emails/${id}/`, data);
     return response.data;
@@ -54,15 +51,5 @@ export const composeEmail = async (data) => {
 export const emailAction = async (id, action) => {
     // action can be string like 'mark_read', 'trash', 'restore'
     const response = await apiClient.post(`emails/${id}/action/`, { action });
-    return response.data;
-};
-
-export const updateEmail = async (id, data) => {
-    const response = await apiClient.patch(`emails/${id}/`, data);
-    return response.data;
-};
-
-export const deleteEmail = async (id) => {
-    const response = await apiClient.delete(`emails/${id}/`);
     return response.data;
 };
