@@ -7,28 +7,48 @@ import {
   Image,
   Smile,
   Link,
-  Lock,
   MoreVertical,
   Type,
   Trash2,
-  HardDrive,
-  PenTool,
+  Loader2,
 } from "lucide-react";
+import { composeEmail } from "../../../apis/emails";
+import toast from "react-hot-toast";
 
-const SendEmail = ({ onClose }) => {
+const SendEmail = ({ onClose, onSuccess }) => {
   const [recipient, setRecipient] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    console.log("Sending email:", { recipient, subject, body });
-    alert("Email Sent!");
-    onClose();
+  const handleSend = async () => {
+    if (!recipient || !subject || !body) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await composeEmail({
+        recipient_username: recipient,
+        subject,
+        body,
+      });
+      toast.success("Email sent successfully!");
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      toast.error(error?.response?.data?.message || "Failed to send email");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleQuickReply = (text) => {
     setBody((prev) => (prev ? prev + "\n" + text : text));
   };
+
 
   return (
     <div className="fixed inset-0 sm:inset-auto sm:bottom-0 sm:right-10 w-full sm:w-[540px] h-full sm:h-auto bg-white sm:rounded-t-xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden z-[9999] font-sans">
@@ -111,9 +131,11 @@ const SendEmail = ({ onClose }) => {
         <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
           <button
             onClick={handleSend}
-            className="bg-[#326C6A] text-white px-7 py-2 rounded-lg text-[14px] font-medium hover:bg-[#2a5957] transition-colors shadow-sm"
+            disabled={loading}
+            className="bg-[#326C6A] text-white px-7 py-2 rounded-lg text-[14px] font-medium hover:bg-[#2a5957] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
           >
-            Send
+            {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+            {loading ? "Sending..." : "Send"}
           </button>
 
           <div className="flex items-center gap-3 text-gray-500 ml-auto sm:ml-4">
