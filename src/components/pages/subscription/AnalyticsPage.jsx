@@ -84,6 +84,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
         );
     };
 
+    const getStatValue = (val, fallback = "") => {
+        if (!val) return fallback;
+        if (typeof val === 'object' && val !== null) return val.value ?? fallback;
+        return val ?? fallback;
+    };
+
     const navigate = useNavigate();
     const [pageTab, setPageTab] = useState("analytics");
     const [analytics, setAnalytics] = useState(null);
@@ -140,10 +146,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
         if (!camp) return false;
 
         // Handle both object and primitive types for open_rate
-        const openRateRaw = camp.open_rate && typeof camp.open_rate === 'object'
-            ? camp.open_rate.value
-            : camp.open_rate;
-
+        const openRateRaw = getStatValue(camp.open_rate);
         const openRateVal = openRateRaw ? parseFloat(openRateRaw) : 0;
 
         if (activeCampaignTab === "Recent") return true;
@@ -156,18 +159,18 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const normalizedSubGrowth = useMemo(() => {
         return subGrowth.map(item => ({
             ...item,
-            value: item.value && typeof item.value === 'object' ? item.value.value : item.value
+            value: getStatValue(item.value, 0)
         }));
     }, [subGrowth]);
 
     const normalizedHistTrend = useMemo(() => {
         return histTrend.map(item => ({
             ...item,
-            value: item.value && typeof item.value === 'object' ? item.value.value : item.value
+            value: getStatValue(item.value, 0)
         }));
     }, [histTrend]);
 
-    const campaignDates = [...new Set(campaigns.map(c => c.date).filter(Boolean))];
+    const campaignDates = [...new Set(campaigns.map(c => getStatValue(c.date)).filter(Boolean))];
 
     return (
         <div className="min-h-screen">
@@ -236,7 +239,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             { label: "List Health Score", data: summaryStats.list_health_score, fallbackValue: "0/100", fallbackSub: "0% growth", border: "border-gray-300", icon: <HeartPulse className="w-5 h-5" /> },
                         ].map((item, i) => {
                             const isObj = item.data && typeof item.data === 'object';
-                            const displayValue = isObj ? item.data.value : (item.data || item.fallbackValue);
+                            const displayValue = getStatValue(item.data, item.fallbackValue);
                             const displaySub = isObj ? (item.data.delta_text || item.fallbackSub) : item.fallbackSub;
                             const isPositive = isObj ? item.data.is_positive !== false : true;
 
@@ -306,7 +309,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 { label: "Active Rate", data: listHealth.active_rate, fallback: "0%" },
                                 { label: "Avg Engagement", data: listHealth.avg_engagement, fallback: "0" },
                             ].map((item, i) => {
-                                const displayValue = item.data && typeof item.data === 'object' ? item.data.value : (item.data || item.fallback);
+                                const displayValue = getStatValue(item.data, item.fallback);
                                 return (
                                     <div key={i} className="bg-[#E07A5F0D] rounded-xl p-6 text-center">
                                         <h3 className="text-xl font-semibold text-gray-900">
@@ -351,12 +354,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                                 {camp.name}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {camp.date} • Sent to {camp.sent_to}
+                                                {getStatValue(camp.date)} • Sent to {getStatValue(camp.sent_to)}
                                             </p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-semibold">
-                                                {camp.open_rate && typeof camp.open_rate === 'object' ? camp.open_rate.value : camp.open_rate}
+                                                {getStatValue(camp.open_rate)}
                                             </p>
                                             <p className="text-xs text-gray-500">Open Rate</p>
                                         </div>
@@ -401,18 +404,18 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                             <p className="text-gray-400 text-[11px] mt-1 truncate">{link.url}</p>
                                         </div>
                                         <div className="text-center text-gray-700">
-                                            {link.clicks && typeof link.clicks === 'object' ? link.clicks.value : link.clicks}
+                                            {getStatValue(link.clicks)}
                                         </div>
                                         <div className="text-center">
                                             <p className="text-gray-900">
-                                                {link.ctr && typeof link.ctr === 'object' ? link.ctr.value : link.ctr}
+                                                {getStatValue(link.ctr)}
                                             </p>
                                             <p className={`text-[11px] ${link.ctr?.is_positive !== false ? 'text-emerald-600' : 'text-amber-500'}`}>
                                                 {link.ctr?.is_positive !== false ? 'Excellent' : 'Improving'}
                                             </p>
                                         </div>
                                         <div className="text-right text-gray-700">
-                                            {link.conversion && typeof link.conversion === 'object' ? link.conversion.value : link.conversion}
+                                            {getStatValue(link.conversion)}
                                         </div>
                                     </div>
                                 ))}
