@@ -5,6 +5,7 @@ import { getSwaps, acceptSwap, declineSwap, restoreSwap, trackSwap, getSwapHisto
 import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
+import SwapDetailsModal from './SwapDetailsModal';
 
 const tabs = [
     { label: "All Swaps", key: "all" },
@@ -83,7 +84,7 @@ const staticSwaps = [
     }
 ];
 
-const SwapCard = ({ data, onRefresh }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails }) => {
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
     const isCompleted = data.status === "completed";
@@ -248,7 +249,7 @@ const SwapCard = ({ data, onRefresh }) => {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    navigate(`/swap-history/${data.id}`, { state: { data } });
+                                    onViewDetails();
                                 }}
                                 className="px-5 py-[8px] border border-[#B5B5B5] text-black rounded-[6px] text-[12px] font-medium hover:bg-gray-50 transition-colors"
                             >
@@ -273,7 +274,7 @@ const SwapCard = ({ data, onRefresh }) => {
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/swap-history/${data.id}`, { state: { data } });
+                                onViewDetails();
                             }}
                             className="border border-[#B5B5B5] text-black text-[12px] font-medium px-5 py-[8px] rounded-[6px] hover:bg-gray-50 transition-colors"
                         >
@@ -292,6 +293,8 @@ const SwapManagement = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [detailsId, setDetailsId] = useState(null);
 
     const fetchSwaps = async (tabKey = "all") => {
         try {
@@ -396,7 +399,15 @@ const SwapManagement = () => {
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filtered.map((swap) => (
-                            <SwapCard key={swap.id} data={swap} onRefresh={() => fetchSwaps(activeTab.key)} />
+                                <SwapCard
+                                    key={swap.id}
+                                    data={swap}
+                                    onRefresh={() => fetchSwaps(activeTab.key)}
+                                    onViewDetails={() => {
+                                        setDetailsId(swap.id);
+                                        setIsDetailsOpen(true);
+                                    }}
+                                />
                             ))}
                         </div>
                         {filtered.length === 0 && (
@@ -407,6 +418,15 @@ const SwapManagement = () => {
                     </>
                 )}
             </div>
+
+            <SwapDetailsModal
+                isOpen={isDetailsOpen}
+                swapId={detailsId}
+                onClose={() => {
+                    setIsDetailsOpen(false);
+                    setDetailsId(null);
+                }}
+            />
         </div>
     );
 };

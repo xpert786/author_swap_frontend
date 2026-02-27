@@ -305,30 +305,6 @@ const Dashboard = () => {
               );
             })}
           </div>
-
-          {/* LEGEND */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-6 justify-center">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-[2px] bg-[#16A34A33] border border-teal-100" />
-              <span className="text-[10px] font-medium text-[#374151]">Available</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-[2px] bg-[#F1B9AA]" />
-              <span className="text-[10px] font-medium text-[#374151]">Published</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-[2px] bg-[#87D1A1]" />
-              <span className="text-[10px] font-medium text-[#374151]">Confirmed</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-[2px] bg-[#FDE7C4]" />
-              <span className="text-[10px] font-medium text-[#374151]">Pending</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-[2px] bg-[#9FB5B3]" />
-              <span className="text-[10px] font-medium text-[#374151]">Verified</span>
-            </div>
-          </div>
         </div>
 
         {/* RECENT ACTIVITY */}

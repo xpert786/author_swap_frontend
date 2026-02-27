@@ -167,8 +167,8 @@ const Newsletter = () => {
                 month: currentMonth.format("MM"),
                 year: currentMonth.format("YYYY"),
                 genre: selectedGenreValue || "all",
-                visibility: visibility === "All Visibility" ? "all" : visibility.toLowerCase().replace(/ /g, "_"),
-                status: status === "All Status" ? "all" : status.toLowerCase()
+                visibility: visibility === "All Visibility" ? "all" : (visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_")),
+                status: status === "All Status" ? "all" : (status === "Verified" ? "verified_sent" : status.toLowerCase())
             };
             const response = await statsNewsSlot(params);
             const statsData = response.data?.stats_cards || {};
@@ -482,9 +482,24 @@ const Newsletter = () => {
                                     const periodSlots = slots
                                         .filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"))
                                         .filter(s => s.period === period)
-                                        .filter(s => (genre === "Genre" || s.rawGenre === selectedGenreValue.toLowerCase()))
-                                        .filter(s => (visibility === "All Visibility" || s.rawVisibility === visibility.toLowerCase().replace(/ /g, "_")))
-                                        .filter(s => (status === "All Status" || s.rawStatus === status.toLowerCase()));
+                                        .filter(s => {
+                                            if (genre === "Genre") return true;
+                                            return s.rawGenre === selectedGenreValue.toLowerCase();
+                                        })
+                                        .filter(s => {
+                                            if (visibility === "All Visibility") return true;
+                                            const vKey = visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_");
+                                            return s.rawVisibility === vKey.toLowerCase();
+                                        })
+                                        .filter(s => {
+                                            if (status === "All Status") return true;
+                                            const targetStatus = status.toLowerCase();
+                                            // Handle mapping variations like Verified vs Verified Sent
+                                            if (targetStatus === "verified") {
+                                                return s.rawStatus === "verified" || s.rawStatus === "verified_sent";
+                                            }
+                                            return s.rawStatus === targetStatus;
+                                        });
 
                                     if (periodSlots.length === 0) {
                                         return (

@@ -130,15 +130,18 @@ const BooksPage = () => {
 
             const matchesAvailability =
                 availability === "all" ||
-                book.availability?.toLowerCase() === availability.toLowerCase();
+                (availability === "kindle"
+                    ? (book.availability?.toLowerCase() === "kindle" || book.availability?.toLowerCase() === "kindle_unlimited" || book.availability?.toLowerCase() === "ku")
+                    : book.availability?.toLowerCase() === availability.toLowerCase());
 
             const matchesStatus =
                 status === "all" ||
-                (status === "primary" && book.is_primary_promo === true);
+                (status === "primary" && book.is_primary_promo === true) ||
+                (status !== "primary" && book.status?.toLowerCase() === status.toLowerCase());
 
             const matchesGenre =
                 genre === "all" ||
-                book.genre?.toLowerCase() === genre.toLowerCase();
+                (book.primary_genre?.toLowerCase() === genre.toLowerCase());
 
             return (
                 matchesSearch &&
@@ -182,7 +185,7 @@ const BooksPage = () => {
 
             const response = await updateBook(updatedData.id, formData);
             const savedBook = response.data;
-            
+
             // ✅ Format the saved book before updating state
             const formattedBook = {
                 ...savedBook,
@@ -198,7 +201,7 @@ const BooksPage = () => {
                     b.id === formattedBook.id ? formattedBook : b
                 )
             );
-            
+
             toast.success("Book updated successfully!");
         } catch (err) {
             console.error("Update failed", err);
