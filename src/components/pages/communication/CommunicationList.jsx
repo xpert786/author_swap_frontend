@@ -9,10 +9,11 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
-import { getEmails } from "../../../apis/emails";
+import { getEmails } from "../../../apis/email";
 import toast from "react-hot-toast";
 
 const CommunicationList = () => {
@@ -23,22 +24,21 @@ const CommunicationList = () => {
   const [loading, setLoading] = useState(true);
   const [currentFolder, setCurrentFolder] = useState("inbox");
   const [searchQuery, setSearchQuery] = useState("");
-  const [folderCounts, setFolderCounts] = useState({
+  const [counts, setCounts] = useState({
     inbox: 0,
     drafts: 0,
     spam: 0,
   });
 
-  const fetchEmails = async () => {
+  const fetchEmails = async (folder = currentFolder, search = searchQuery) => {
     try {
       setLoading(true);
-      const response = await getEmails(currentFolder, searchQuery);
-      const data = response.data;
+      const data = await getEmails(folder, search);
 
-      // Expected backend response: { results: [], folder_counts: { inbox: x, ... } }
-      setEmails(data.results || []);
-      if (data.folder_counts) {
-        setFolderCounts(data.folder_counts);
+      // Handle both { results: [], folder_counts: {} } and direct array/object
+      setEmails(data.results || data.emails || []);
+      if (data.folder_counts || data.counts) {
+        setCounts(data.folder_counts || data.counts);
       }
     } catch (error) {
       console.error("Failed to fetch emails:", error);
@@ -49,12 +49,12 @@ const CommunicationList = () => {
   };
 
   useEffect(() => {
-    fetchEmails();
+    fetchEmails(currentFolder);
   }, [currentFolder]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
-      fetchEmails();
+      fetchEmails(currentFolder, searchQuery);
     }
   };
 
@@ -101,6 +101,14 @@ const CommunicationList = () => {
 
             <div className="flex items-center gap-3">
               <button
+                onClick={() => fetchEmails(currentFolder)}
+                className="flex items-center justify-center p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+                title="Refresh Inbox"
+              >
+                <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+              </button>
+
+              <button
                 onClick={() => setIsComposeOpen(true)}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#2F6F6D] hover:bg-[#255a58] text-white px-4 py-2 rounded-md text-sm transition-colors cursor-pointer whitespace-nowrap"
               >
@@ -126,7 +134,7 @@ const CommunicationList = () => {
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = currentFolder === item.id;
-                  const count = item.countKey ? folderCounts[item.countKey] : null;
+                  const count = item.countKey ? counts[item.countKey] : null;
 
                   return (
                     <li
@@ -169,44 +177,45 @@ const CommunicationList = () => {
                 mail={selectedMail}
                 onBack={() => {
                   setSelectedMail(null);
-                  fetchEmails(); // Refresh list to update read status if needed
+                  fetchEmails(currentFolder);
                 }}
               />
             ) : (
               <div className="space-y-3">
-                {emails.length > 0 ? (
+                {loading && emails.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">Loading emails...</div>
+                ) : emails.length === 0 ? (
+                  <div className="text-center py-20 text-gray-500">
+                    No emails found in this folder.
+                  </div>
+                ) : (
                   emails.map((msg) => (
                     <div
                       key={msg.id}
                       onClick={() => setSelectedMail(msg)}
-                      className={`flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors ${!msg.is_read ? "bg-gray-50 border-gray-400 font-semibold" : ""
-                        }`}
+                      className={`flex flex-row items-center justify-between gap-4 p-3 border rounded-lg cursor-pointer transition-colors ${!msg.is_read && currentFolder === 'inbox' ? 'bg-blue-50/40 border-blue-200 font-semibold shadow-sm' : 'border-[#B5B5B5] hover:bg-[#E07A5F0D]'}`}
                     >
                       <div className="flex items-center gap-4 min-w-0">
                         <img
-                          src={msg.sender_avatar || msg.avatar || `https://ui-avatars.com/api/?name=${msg.sender_name || msg.name}&background=random`}
-                          alt={msg.sender_name || msg.name}
+                          src={msg.sender_profile_picture || msg.sender_avatar || msg.avatar || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User')}
+                          alt={msg.sender_name}
                           className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                         />
                         <div className="min-w-0">
-                          <h4 className="text-sm truncate">{msg.sender_name || msg.name}</h4>
-                          <p className="text-xs text-[#374151] font-normal truncate">
-                            {msg.subject || msg.message}
+                          <h4 className="font-medium text-sm truncate">{msg.sender_name || msg.name}</h4>
+                          <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
+                            {msg.subject} <span className="text-gray-400 font-normal">- {msg.snippet || msg.message}</span>
                           </p>
                         </div>
                       </div>
 
                       <div className="flex-shrink-0 text-right">
                         <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                          {msg.created_at || msg.date || msg.time}
+                          {msg.formatted_date || msg.created_at || msg.date}
                         </span>
                       </div>
                     </div>
                   ))
-                ) : (
-                  <div className="text-center py-20 text-gray-500">
-                    No emails found in this folder.
-                  </div>
                 )}
               </div>
             )}
@@ -219,7 +228,7 @@ const CommunicationList = () => {
           onClose={() => setIsComposeOpen(false)}
           onSuccess={() => {
             setIsComposeOpen(false);
-            fetchEmails();
+            fetchEmails(currentFolder);
           }}
         />
       )}
