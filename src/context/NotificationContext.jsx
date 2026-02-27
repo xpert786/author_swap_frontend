@@ -84,7 +84,7 @@ export const NotificationProvider = ({ children }) => {
                     toast.custom((t) => (
                         <div
                             className={`${t.visible ? "animate-enter" : "animate-leave"
-                                } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+                                } max-w-md w-full bg-[rgb(58,141,139)] text-white shadow-lg rounded-md pointer-events-auto flex border-b-[3px] border-[#E07A5F]`}
                         >
                             <div className="flex-1 w-0 p-4">
                                 <div className="flex items-start">
@@ -92,25 +92,25 @@ export const NotificationProvider = ({ children }) => {
                                         🔔
                                     </div>
                                     <div className="ml-3 flex-1">
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-bold">
                                             {newNotification.title}
                                         </p>
-                                        <p className="mt-1 text-sm text-gray-500">
+                                        <p className="mt-1 text-xs opacity-90">
                                             {newNotification.message}
                                         </p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex border-l border-gray-200">
+                            <div className="flex border-l border-white/20">
                                 <button
                                     onClick={() => toast.dismiss(t.id)}
-                                    className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-[#1F4F4D] hover:text-[#163a39] focus:outline-none"
+                                    className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold hover:bg-white/10 transition-colors"
                                 >
                                     Close
                                 </button>
                             </div>
                         </div>
-                    ), { duration: 5000 });
+                    ), { duration: 6000 });
                 }
             } catch (error) {
                 console.error("Error parsing WS message:", error);

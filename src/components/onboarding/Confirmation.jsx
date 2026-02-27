@@ -65,13 +65,15 @@ const Confirmation = ({ prev, finish, goToStep }) => {
                 />
               ) : null}
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <h4 className="font-semibold">
                 {profile?.pen_name || "N/A"}
               </h4>
-              <p className="text-sm text-gray-600">
-                {profile?.author_bio || "No bio added"}
-              </p>
+              <div className="max-h-24 overflow-y-auto custom-scrollbar pr-2">
+                <p className="text-sm text-gray-600 break-all">
+                  {profile?.author_bio || "No bio added"}
+                </p>
+              </div>
               {profile?.primary_genre && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {(Array.isArray(profile.primary_genre)

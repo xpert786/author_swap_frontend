@@ -56,11 +56,10 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
       // Remove audience_size from the payload
       const { audience_size, ...payload } = formData;
       await createNewsSlot(payload);
-
+      toast.success("Newsletter slot created successfully!");
       if (onSubmit) {
         await onSubmit();
       }
-
       onClose();
       setFormData({
         send_date: "",
@@ -71,17 +70,27 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
         visibility: "Public",
       });
     } catch (err) {
-      const data = err?.response?.data;
+      console.error("Creation failed:", err);
+      const serverData = err?.response?.data;
+      let errorMessage = "Failed to create newsletter slot";
 
-      if (data && typeof data === "object") {
-        Object.values(data).forEach((messages) => {
-          if (Array.isArray(messages)) {
-            messages.forEach((msg) => toast.error(msg));
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
           }
-        });
+        }
       } else {
-        toast.error("Something went wrong.");
+        errorMessage = err.message;
       }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

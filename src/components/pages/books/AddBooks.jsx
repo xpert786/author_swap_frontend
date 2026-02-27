@@ -178,10 +178,29 @@ const AddBooks = ({ onClose, onBookAdded }) => {
       toast.success("Book added successfully!");
       onClose();
     } catch (error) {
-      console.error(error);
-      toast.error(
-        error?.response?.data?.message || "Failed to add book"
-      );
+      console.error("Book addition failed:", error);
+
+      const serverData = error?.response?.data;
+      let errorMessage = "Failed to add book";
+
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          // Fallback: use the first field error as the toast message
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      } else {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

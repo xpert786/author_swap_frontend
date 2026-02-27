@@ -169,7 +169,27 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "" }) => {
       onClose();
     } catch (error) {
       console.error("Failed to send email:", error);
-      toast.error(error?.response?.data?.message || error?.response?.data?.error || "Failed to send email");
+
+      const serverData = error?.response?.data;
+      let errorMessage = "Failed to send email";
+
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      } else {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSending(false);
     }

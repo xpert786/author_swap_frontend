@@ -20,7 +20,6 @@ const OnlinePresence = ({ next, prev }) => {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const toastId = toast.loading("Loading profile...");
       try {
         const response = await getProfile();
         const data = response.data;
@@ -32,12 +31,9 @@ const OnlinePresence = ({ next, prev }) => {
           facebook: data.facebook_url || "",
           collaborationStatus: data.collaboration_status || "",
         });
-
-        toast.success("Profile loaded", { id: toastId });
       } catch (error) {
         toast.error(
-          error?.response?.data?.message || "Failed to load profile",
-          { id: toastId }
+          error?.response?.data?.message || "Failed to load profile"
         );
       }
     };
@@ -80,7 +76,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Website */}
           <div>
-            <label className="block text-sm mb-2">Website URL</label>
+            <label className="block text-sm mb-2">Website URL (optional)</label>
             <input
               {...register("website")}
               placeholder="Enter Website URL"
@@ -91,7 +87,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Instagram */}
           <div>
-            <label className="block text-sm mb-2">Instagram</label>
+            <label className="block text-sm mb-2">Instagram (optional)</label>
             <input
               {...register("instagram")}
               placeholder="Enter Instagram link"
@@ -102,7 +98,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* TikTok */}
           <div>
-            <label className="block text-sm mb-2">TikTok</label>
+            <label className="block text-sm mb-2">TikTok (optional)</label>
             <input
               {...register("tiktok")}
               placeholder="Enter TikTok link"
@@ -113,7 +109,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Facebook */}
           <div>
-            <label className="block text-sm mb-2">Facebook</label>
+            <label className="block text-sm mb-2">Facebook (optional)</label>
             <input
               {...register("facebook")}
               placeholder="Enter Facebook link"

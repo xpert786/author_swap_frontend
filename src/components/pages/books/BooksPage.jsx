@@ -3,6 +3,7 @@ import {
     Search,
     Star,
     Trash2,
+    Pencil,
     Plus,
     Calendar,
     Globe,
@@ -551,10 +552,10 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                                 e.stopPropagation();
                                 onEdit?.(book);
                             }}
-                            className="bg-[#2F6F6D15] hover:bg-[#2F6F6D25] text-[#2F6F6D] p-2 rounded-lg transition-colors"
+                            className="bg-[#2F6F6D33] p-1.5 rounded-md text-[#2F6F6D] hover:bg-[#2F6F6D] hover:text-white transition-colors"
                             title="Edit Book"
                         >
-                            <img src={edit} alt="" className="w-4 h-4" />
+                            <Pencil size={14} />
                         </button>
 
                         <button
@@ -562,7 +563,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                                 e.stopPropagation();
                                 onDelete?.(book);
                             }}
-                            className="bg-red-50 hover:bg-red-100 text-red-500 p-2 rounded-lg transition-colors"
+                            className="bg-[#2F6F6D33] p-1.5 rounded-md text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                             title="Delete Book"
                         >
                             <Trash2 size={15} />
