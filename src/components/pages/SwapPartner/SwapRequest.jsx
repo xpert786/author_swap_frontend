@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiX, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { CheckBadgeIcon } from "../../icons";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
+import { getBooks } from "../../../apis/bookManegment";
 import { toast } from "react-hot-toast";
 
 
@@ -28,12 +29,17 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                     setLoading(true);
 
                     // Fetch data from slots/{id}/request/
-                    const response = await getSlotRequestData(id);
-                    const data = response.data;
-                    const fetchedBooks = data?.books || data?.results || [];
+                    const slotResponse = await getSlotRequestData(id);
+
+                    // Also fetch user's books from book management as the primary source
+                    const booksResponse = await getBooks();
+                    const fetchedBooks = booksResponse.data?.results || booksResponse.data || [];
+
                     setBookList(fetchedBooks);
                     if (fetchedBooks.length > 0 && !selectedBook) {
-                        setSelectedBook(fetchedBooks[0].id);
+                        // Priority: try to find a primary book first, otherwise pick the first one
+                        const primaryBook = fetchedBooks.find(b => b.is_primary || b.is_primary_promo);
+                        setSelectedBook(primaryBook ? primaryBook.id : fetchedBooks[0].id);
                     }
                 } catch (error) {
                     console.error("Failed to fetch initial data:", error);

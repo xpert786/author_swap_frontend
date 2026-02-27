@@ -38,7 +38,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
     <div className="w-full flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
 
-        <p className="text-sm text-gray-500 mb-1">Step 3 of 3</p>
+        <p className="text-sm text-gray-500 mb-1">Step 4 of 4</p>
         <h2 className="text-2xl font-semibold mb-6">
           Confirmation & Review
         </h2>
@@ -73,9 +73,19 @@ const Confirmation = ({ prev, finish, goToStep }) => {
                 {profile?.author_bio || "No bio added"}
               </p>
               {profile?.primary_genre && (
-                <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                  {profile.primary_genre}
-                </span>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(Array.isArray(profile.primary_genre)
+                    ? profile.primary_genre
+                    : profile.primary_genre.split(",")
+                  ).map((g, i) => (
+                    <span
+                      key={i}
+                      className="inline-block text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full"
+                    >
+                      {g.trim()}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -119,6 +129,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
               <span>{profile?.facebook_url || "-"}</span>
             </div>
           </div>
+
         </div>
 
         <div className="flex justify-between mt-6">

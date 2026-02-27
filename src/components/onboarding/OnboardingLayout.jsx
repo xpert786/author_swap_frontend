@@ -2,6 +2,7 @@ import { useState } from "react";
 import OnboardingSidebar from "./OnboardingSidebar";
 import AccountBasics from "./AccountBasics";
 import OnlinePresence from "./OnlinePresence";
+import Mailerlite from "./Mailerlite";
 import Confirmation from "./Confirmation";
 import { useNavigate } from "react-router-dom";
 
@@ -45,10 +46,16 @@ const OnboardingLayout = () => {
             />
           )}
           {step === 3 && (
+            <Mailerlite
+              next={next}
+              prev={prev}
+            />
+          )}
+          {step === 4 && (
             <Confirmation
               prev={prev}
               finish={finish}
-              goToStep={goToStep}   // 👈 pass it here
+              goToStep={goToStep}
             />
           )}
         </div>

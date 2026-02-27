@@ -270,12 +270,15 @@ const Newsletter = () => {
                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "genre" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "genre" && (
-                                <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    <button onClick={() => { setGenre("Genre"); setSelectedGenreValue(""); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
-                                    {genres.map((g) => (
-                                        <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+                                    <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+                                        <button onClick={() => { setGenre("Genre"); setSelectedGenreValue(""); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
+                                        {genres.map((g) => (
+                                            <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
@@ -286,11 +289,14 @@ const Newsletter = () => {
                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "visibility" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "visibility" && (
-                                <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map((item) => (
-                                        <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+                                    <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+                                        {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map((item) => (
+                                            <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
@@ -301,11 +307,14 @@ const Newsletter = () => {
                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "status" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "status" && (
-                                <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    {["All Status", "Available", "Pending", "Confirmed", "Verified", "Published"].map((item) => (
-                                        <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+                                    <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+                                        {["All Status", "Available", "Pending", "Confirmed", "Verified", "Published"].map((item) => (
+                                            <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
 
@@ -325,28 +334,31 @@ const Newsletter = () => {
                             </button>
 
                             {exportDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                    <button
-                                        onClick={handleExportGoogle}
-                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                    >
-                                        Google Calendar
-                                    </button>
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setExportDropdownOpen(false)} />
+                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+                                        <button
+                                            onClick={handleExportGoogle}
+                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                        >
+                                            Google Calendar
+                                        </button>
 
-                                    <button
-                                        onClick={handleExportOutlook}
-                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                    >
-                                        Outlook
-                                    </button>
+                                        <button
+                                            onClick={handleExportOutlook}
+                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                        >
+                                            Outlook
+                                        </button>
 
-                                    <button
-                                        onClick={handleExportICS}
-                                        className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                    >
-                                        Download ICS File
-                                    </button>
-                                </div>
+                                        <button
+                                            onClick={handleExportICS}
+                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+                                        >
+                                            Download ICS File
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
@@ -429,7 +441,7 @@ const Newsletter = () => {
                                     className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80
                                         ${bgColor} 
                                         ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""}
-                                        ${date.isSame(selectedDate, "day") ? "ring-2 ring-[#2F6F6D] z-10" : ""}
+                                        ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}
                                     `}
                                 >
                                     <span

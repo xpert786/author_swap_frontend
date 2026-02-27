@@ -14,6 +14,11 @@ const steps = [
     },
     {
         id: 3,
+        title: "Mailerlite",
+        subtitle: "Email Integration",
+    },
+    {
+        id: 4,
         title: "Confirmation & Review",
         subtitle: "Transparency",
     },

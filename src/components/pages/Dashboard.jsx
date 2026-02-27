@@ -59,6 +59,9 @@ const Dashboard = () => {
         setLoading(true);
         const data = await getDashboardStats();
         setDashboardData(data);
+        if (data?.calendar?.days) {
+          setCalendarData(data.calendar.days);
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
       } finally {
@@ -155,15 +158,19 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen">
       {/* HEADER */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">
-          {dashboardData?.welcome?.name
-            ? `Welcome back, ${formatCamelCaseName(dashboardData.welcome.name)}!`
-            : (dashboardData?.welcome?.greeting || "Welcome back, Author!")}
-        </h1>
-        <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
-          {dashboardData?.welcome?.subtitle || "Here's what's happening with your swaps and books."}
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              {dashboardData?.welcome?.name
+                ? `Welcome back, ${dashboardData.welcome.name.split(/[\\s,]+/)[0]}!`
+                : "Welcome back, Author!"}
+            </h1>
+            <p className="text-[12px] md:text-[13px] text-gray-500 font-medium mt-0.5">
+              {dashboardData?.welcome?.subtitle || "Here's what's happening with your swaps and books."}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* STATS CARDS */}
@@ -277,12 +284,10 @@ const Dashboard = () => {
               if (!isCurrentMonth) {
                 bgColor = "bg-gray-50/30";
               } else if (dayApiData?.has_slots) {
-                if (dayApiData.has_verified) bgColor = "bg-[#9FB5B3]";
-                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
-                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]";
-                else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
-                else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
-                else bgColor = "bg-[#F3F4F6]";
+                if (dayApiData.has_scheduled) bgColor = "bg-[#87D1A1]"; // Green for scheduled
+                else if (dayApiData.has_confirmed) bgColor = "bg-[#9FB5B3]"; // Teal for confirmed
+                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]"; // Orange/Yellow for pending
+                else bgColor = "bg-[#2F6F6D1A]"; // Light teal for general slots
               }
 
               return (
