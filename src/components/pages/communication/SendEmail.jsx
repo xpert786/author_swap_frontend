@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 
 const EMOJI_LIST = ["😊", "👍", "❤️", "🎉", "🙏", "✅", "🚀", "😄", "🤝", "👏"];
 
-const SendEmail = ({ onClose, onSuccess, defaultRecipient = "" }) => {
+const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject = "", initialBody = "", initialCc = "" }) => {
   // To Recipient
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,13 +26,13 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "" }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Cc / Bcc Recipient (requested separate fields)
-  const [cc, setCc] = useState("");
+  const [cc, setCc] = useState(initialCc);
   const [bcc, setBcc] = useState("");
-  const [showCc, setShowCc] = useState(false);
+  const [showCc, setShowCc] = useState(!!initialCc);
   const [showBcc, setShowBcc] = useState(false);
 
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [subject, setSubject] = useState(initialSubject);
+  const [body, setBody] = useState(initialBody);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -362,6 +362,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "" }) => {
                 contentEditable
                 suppressContentEditableWarning={true}
                 onInput={(e) => setBody(e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: initialBody ? initialBody : undefined }}
                 className="flex-1 w-full px-4 py-3 outline-none text-[13px] min-h-[150px] sm:min-h-[250px] overflow-y-auto whitespace-pre-wrap"
               />
               {!body && <div className="pointer-events-none absolute text-[13px] text-gray-400 px-4 py-3 top-0">Body Text</div>}

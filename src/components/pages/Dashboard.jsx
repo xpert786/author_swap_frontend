@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiBookOpen } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
@@ -24,15 +25,16 @@ const OpenBook = () => {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { notifications } = useNotifications();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const stats = [
-    { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]" },
-    { label: "Newsletter Slots", value: dashboardData?.stats_cards?.newsletter_slots || "0", icon: OpenBook, color: "bg-[#E07A5F80]" },
-    { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]" },
-    { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]" },
+    { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]", path: "/books" },
+    { label: "Newsletter Slots", value: dashboardData?.stats_cards?.newsletter_slots || "0", icon: OpenBook, color: "bg-[#E07A5F80]", path: "/newsletter" },
+    { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]", path: "/swap-management" },
+    { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]", path: "/reputation" },
   ];
 
   const analytics = [
@@ -176,7 +178,11 @@ const Dashboard = () => {
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1">
+          <div
+            key={index}
+            onClick={() => stat.path && navigate(stat.path)}
+            className={`bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1 ${stat.path ? 'cursor-pointer' : ''}`}
+          >
             <div className="flex justify-between items-start">
               <div className={`p-1.5 rounded-lg ${stat.color} text-lg flex items-center justify-center w-8 h-8`}>
                 <stat.icon />

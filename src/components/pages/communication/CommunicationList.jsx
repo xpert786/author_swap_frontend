@@ -20,6 +20,7 @@ const CommunicationList = () => {
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [composeData, setComposeData] = useState({ recipient: "", subject: "", body: "", cc: "" });
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentFolder, setCurrentFolder] = useState("inbox");
@@ -68,6 +69,41 @@ const CommunicationList = () => {
     { id: "trash", label: "Trash", icon: Trash2 },
   ];
 
+  const getSenderIdentifier = (mail) => mail.sender_username || mail.sender_email || mail.sender_name || "";
+
+  const handleReply = (mail, quickReplyText = "") => {
+    let newBody = `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${mail.sender_name || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`;
+    if (quickReplyText) newBody = `${quickReplyText}${newBody}`;
+
+    setComposeData({
+      recipient: getSenderIdentifier(mail),
+      subject: mail.subject.toLowerCase().startsWith("re:") ? mail.subject : `Re: ${mail.subject}`,
+      body: newBody,
+      cc: "",
+    });
+    setIsComposeOpen(true);
+  };
+
+  const handleReplyAll = (mail) => {
+    setComposeData({
+      recipient: getSenderIdentifier(mail),
+      subject: mail.subject.toLowerCase().startsWith("re:") ? mail.subject : `Re: ${mail.subject}`,
+      body: `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${mail.sender_name || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
+      cc: mail.recipient_email || mail.recipient_username || "",
+    });
+    setIsComposeOpen(true);
+  };
+
+  const handleForward = (mail) => {
+    setComposeData({
+      recipient: "", // Requires user to fill in
+      subject: mail.subject.toLowerCase().startsWith("fwd:") ? mail.subject : `Fwd: ${mail.subject}`,
+      body: `<br/><br/><blockquote><strong>From:</strong> ${mail.sender_name} &lt;${getSenderIdentifier(mail)}&gt;<br/><strong>Date:</strong> ${mail.formatted_date || mail.date}<br/><strong>Subject:</strong> ${mail.subject}<br/><br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
+      cc: "",
+    });
+    setIsComposeOpen(true);
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       {/* Header */}
@@ -110,7 +146,10 @@ const CommunicationList = () => {
               </button>
 
               <button
-                onClick={() => setIsComposeOpen(true)}
+                onClick={() => {
+                  setComposeData({ recipient: "", subject: "", body: "", cc: "" });
+                  setIsComposeOpen(true);
+                }}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#2F6F6D] hover:bg-[#255a58] text-white px-4 py-2 rounded-md text-sm transition-colors cursor-pointer whitespace-nowrap"
               >
                 <Plus size={16} /> Compose Email
@@ -180,6 +219,9 @@ const CommunicationList = () => {
                   setSelectedMail(null);
                   fetchEmails(currentFolder);
                 }}
+                onReply={handleReply}
+                onForward={handleForward}
+                onReplyAll={handleReplyAll}
               />
             ) : (
               <div className="space-y-3">
@@ -231,6 +273,10 @@ const CommunicationList = () => {
             setIsComposeOpen(false);
             fetchEmails(currentFolder);
           }}
+          defaultRecipient={composeData.recipient}
+          initialSubject={composeData.subject}
+          initialBody={composeData.body}
+          initialCc={composeData.cc}
         />
       )}
     </div>

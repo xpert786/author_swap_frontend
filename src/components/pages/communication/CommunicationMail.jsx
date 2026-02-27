@@ -12,7 +12,7 @@ import {
 import { getEmailDetails, updateEmail, deleteEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
 
-const CommunicationMail = ({ mail, onBack }) => {
+const CommunicationMail = ({ mail, onBack, onReply, onForward, onReplyAll }) => {
     const [fullMail, setFullMail] = useState(mail);
     const [loading, setLoading] = useState(true);
 
@@ -116,7 +116,7 @@ const CommunicationMail = ({ mail, onBack }) => {
                                 onClick={handleDelete}
                                 className="cursor-pointer hover:text-red-500"
                             />
-                            <Reply size={18} className="cursor-pointer hover:text-gray-600" />
+                            <Reply size={18} onClick={() => onReply(fullMail)} className="cursor-pointer hover:text-gray-600" />
                             <MoreVertical
                                 size={18}
                                 className="cursor-pointer hover:text-gray-600"
@@ -143,24 +143,24 @@ const CommunicationMail = ({ mail, onBack }) => {
                 {/* Quick Action Buttons */}
                 <div className="space-y-4 pt-4 border-t border-gray-100">
                     <div className="flex flex-wrap gap-2 md:gap-3">
-                        <button className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button onClick={() => onReply(fullMail, "Thanks for the request")} className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             Thanks for the request
                         </button>
-                        <button className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button onClick={() => onReply(fullMail, "Accepted - Here's my promo info")} className="flex-1 sm:flex-none px-4 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                             Accepted - Here's my promo info
                         </button>
                     </div>
 
                     <div className="flex flex-wrap gap-2 md:gap-3">
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button onClick={() => onReply(fullMail)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             <Reply size={16} />
                             Reply
                         </button>
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button onClick={() => onForward(fullMail)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             Forward
                             <CornerUpRight size={16} />
                         </button>
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button onClick={() => onReplyAll(fullMail)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-[#B5B5B5] rounded-lg text-[12px] md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                             Reply All
                             <ReplyAll size={16} />
                         </button>
