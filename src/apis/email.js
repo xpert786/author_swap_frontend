@@ -17,6 +17,19 @@ export const getEmailDetail = async (id) => {
     return response.data;
 };
 
+// Alias specifically needed by CommunicationMail component
+export const getEmailDetails = getEmailDetail;
+
+export const updateEmail = async (id, data) => {
+    const response = await apiClient.patch(`emails/${id}/`, data);
+    return response.data;
+};
+
+export const deleteEmail = async (id) => {
+    const response = await apiClient.delete(`emails/${id}/`);
+    return response.data;
+};
+
 export const composeEmail = async (data) => {
     const formData = new FormData();
     if (data.recipient_id) formData.append("recipient_id", data.recipient_id);
