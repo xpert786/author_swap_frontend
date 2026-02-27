@@ -26,26 +26,25 @@ const CommunicationMail = ({ mail, onBack }) => {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 md:mb-8">
                     <div className="flex items-start gap-3 md:gap-4">
                         <img
-                            src={mail.avatar || "https://i.pravatar.cc/40?img=1"}
-                            alt={mail.name}
+                            src={mail.sender_profile_picture || "https://ui-avatars.com/api/?name=" + (mail.sender_name || 'User')}
+                            alt={mail.sender_name}
                             className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-sm"
                         />
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-baseline gap-x-2">
-                                <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">{mail.name}</h2>
+                                <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">{mail.sender_name || 'Unknown'}</h2>
                                 <span className="text-gray-400 text-xs md:text-sm truncate">
-                                    &lt;{mail.email}&gt;
+                                    &lt;{mail.sender_username || mail.sender_name}&gt;
                                 </span>
                             </div>
                             <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mt-1">
-                                <span>To me , john Deo</span>
-                                <ChevronDown size={14} className="cursor-pointer" />
+                                <span>To me</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-4 text-gray-400">
-                        <span className="text-[10px] md:text-xs font-medium">9:14 AM (8 hours ago)</span>
+                        <span className="text-[10px] md:text-xs font-medium">{mail.formatted_date}</span>
                         <div className="flex items-center gap-3">
                             <Star size={18} className="cursor-pointer hover:text-yellow-400" />
                             <Reply size={18} className="cursor-pointer hover:text-gray-600" />
@@ -58,13 +57,18 @@ const CommunicationMail = ({ mail, onBack }) => {
                 </div>
 
                 {/* Message Content */}
-                <div className="text-sm text-[#2D2F33] leading-relaxed mb-8 md:mb-10 max-w-4xl">
-                    <p>
-                        Aliqua id fugiat nostrud irure ex duis ea quis id quis ad et. qui
-                        esse pariatur duis deserunt mollit dolore cillum minim tempor enim.
-                        Elit aute irure tempor cupidatat incididunt sint deserunt ut
-                        voluptate aute id deserunt nisi.
-                    </p>
+                <div className="text-sm text-[#2D2F33] leading-relaxed mb-8 md:mb-10 max-w-4xl whitespace-pre-wrap">
+                    <h3 className="font-semibold text-lg mb-2">{mail.subject}</h3>
+                    <p>{mail.body}</p>
+
+                    {mail.attachment && (
+                        <div className="mt-4 p-3 border border-gray-200 rounded-md inline-block bg-gray-50">
+                            <a href={mail.attachment} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[#2F6F6D] hover:underline font-medium text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+                                View Attachment
+                            </a>
+                        </div>
+                    )}
                 </div>
 
                 {/* Quick Action Buttons */}

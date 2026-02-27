@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Minus,
   Maximize2,
@@ -15,15 +15,51 @@ import {
   PenTool,
 } from "lucide-react";
 
-const SendEmail = ({ onClose }) => {
-  const [recipient, setRecipient] = useState("");
+import { composeEmail } from "../../../apis/email";
+
+const SendEmail = ({ onClose, defaultRecipient = "" }) => {
+  const [recipient, setRecipient] = useState(defaultRecipient);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isSending, setIsSending] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleSend = () => {
-    console.log("Sending email:", { recipient, subject, body });
-    alert("Email Sent!");
-    onClose();
+  const handleSend = async () => {
+    if (!recipient || !subject || !body) {
+      alert("Please fill all required fields before sending.");
+      return;
+    }
+
+    try {
+      setIsSending(true);
+      await composeEmail({
+        recipient_username: recipient,
+        subject,
+        body,
+        attachment: selectedFile
+      });
+      alert("Email Sent successfully!");
+      onClose();
+    } catch (err) {
+      console.error("Failed to send email", err);
+      alert(err.response?.data?.error || "Failed to send email. Ensure the username/email is correct.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleQuickReply = (text) => {
@@ -111,13 +147,28 @@ const SendEmail = ({ onClose }) => {
         <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
           <button
             onClick={handleSend}
-            className="bg-[#326C6A] text-white px-7 py-2 rounded-lg text-[14px] font-medium hover:bg-[#2a5957] transition-colors shadow-sm"
+            disabled={isSending}
+            className={`text-white px-7 py-2 rounded-lg text-[14px] font-medium transition-colors shadow-sm ${isSending ? 'bg-gray-400' : 'bg-[#326C6A] hover:bg-[#2a5957]'}`}
           >
-            Send
+            {isSending ? 'Sending...' : 'Send'}
           </button>
 
           <div className="flex items-center gap-3 text-gray-500 ml-auto sm:ml-4">
-            <Paperclip size={18} className="cursor-pointer hover:text-gray-800" />
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            <button onClick={() => fileInputRef.current?.click()} className={`${selectedFile ? 'text-[#1F4F4D]' : 'hover:text-gray-800'}`}>
+              <Paperclip size={18} className="cursor-pointer" />
+            </button>
+            {selectedFile && (
+              <span className="text-xs text-[#1F4F4D] bg-[#1F4F4D]/10 px-2 py-1 rounded truncate max-w-[100px]" title={selectedFile.name}>
+                {selectedFile.name}
+                <button onClick={clearFile} className="ml-1 text-red-500 font-bold">&times;</button>
+              </span>
+            )}
             <Link size={18} className="cursor-pointer hover:text-gray-800" />
             <Image size={18} className="cursor-pointer hover:text-gray-800" />
             <div className="hidden md:flex items-center gap-3">

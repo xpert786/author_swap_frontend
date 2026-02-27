@@ -84,71 +84,109 @@ const CommunicationTools = () => {
         };
         fetchHistory();
 
-        // Connect WebSocket
-        const token = localStorage.getItem("token");
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
-        const apiBase = import.meta.env.VITE_API_BASE_URL || "";
-        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const host = backendUrl.replace(/^https?:\/\//, "");
-        const pathPrefix = apiBase.includes("/authorswap") ? "/authorswap" : "";
-        const socketPath = `${wsProtocol}//${host}${pathPrefix}/ws/chat/${activeConv}/?token=${token}`;
+        let reconnectTimer = null;
+        let pollingTimer = null;
+        let isComponentMounted = true;
 
-        console.log("Connecting to Chat WebSocket:", socketPath);
-        const socket = new WebSocket(socketPath);
-        socketRef.current = socket;
-
-        socket.onmessage = (event) => {
-            console.log("DEBUG: Chat WebSocket message received:", event.data);
-            const data = JSON.parse(event.data);
-            if (data.type === "chat_message") {
-                const currentUserId = currentUser?.id || currentUser?.user_id;
-                const isMine = String(data.sender_id) === String(currentUserId);
-                const newMsg = {
-                    id: Date.now(),
-                    sender: isMine ? "me" : activeConversation?.name || data.sender_name || "Partner",
-                    text: data.message || data.content,
-                    attachment: data.attachment,
-                    time: data.formatted_time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isFile: !!data.is_file
-                };
-
-                // Avoid duplicates and update optimistic messages with real data (like attachment URLs)
-                setChatMessages(prev => {
-                    const isMine = String(data.sender_id) === String(currentUserId);
-                    const existingIndex = prev.findIndex(m => 
-                        m.sender === "me" && 
-                        m.text === newMsg.text &&
-                        (Date.now() - m.id < 10000)
-                    );
-
-                    if (isMine && existingIndex !== -1) {
-                        const updatedMessages = [...prev];
-                        updatedMessages[existingIndex] = {
-                            ...updatedMessages[existingIndex],
-                            ...newMsg,
-                            // Keep the optimistic ID if we need it for something, but typically update to real ID
-                            id: data.id || updatedMessages[existingIndex].id
-                        };
-                        return updatedMessages;
+        const startFallbackPolling = () => {
+            if (!pollingTimer) {
+                console.log("Starting fallback HTTP polling for messages...");
+                pollingTimer = setInterval(() => {
+                    // Only poll if WebSocket is not open
+                    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+                        fetchHistory();
+                        fetchConversations();
                     }
-
-                    // Regular duplicate check by ID
-                    if (prev.some(m => m.id === (data.id || newMsg.id))) return prev;
-                    
-                    return [newMsg, ...prev];
-                });
-
-                // ... update conversations list logic ...
-                fetchConversations();
+                }, 5000);
             }
         };
 
-        socket.onclose = () => {
-            console.log("WebSocket disconnected");
+        const connectWebSocket = () => {
+            const token = localStorage.getItem("token");
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:8000";
+            const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+            const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const host = backendUrl.replace(/^https?:\/\//, "");
+            const pathPrefix = apiBase.includes("/authorswap") ? "/authorswap" : "";
+            const socketPath = `${wsProtocol}//${host}${pathPrefix}/ws/chat/${activeConv}/?token=${token}`;
+
+            console.log("Connecting to Chat WebSocket:", socketPath);
+            const socket = new WebSocket(socketPath);
+            socketRef.current = socket;
+
+            socket.onopen = () => {
+                console.log("WebSocket connected successfully!");
+                // Clear polling if socket succeeds
+                if (pollingTimer) {
+                    clearInterval(pollingTimer);
+                    pollingTimer = null;
+                }
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "chat_message") {
+                    const currentUserId = currentUser?.id || currentUser?.user_id;
+                    const isMine = String(data.sender_id) === String(currentUserId);
+                    const newMsg = {
+                        id: Date.now(),
+                        sender: isMine ? "me" : activeConversation?.name || data.sender_name || "Partner",
+                        text: data.message || data.content,
+                        attachment: data.attachment,
+                        time: data.formatted_time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        isFile: !!data.is_file
+                    };
+
+                    setChatMessages(prev => {
+                        const existingIndex = prev.findIndex(m =>
+                            m.sender === "me" &&
+                            m.text === newMsg.text &&
+                            (Date.now() - m.id < 10000)
+                        );
+
+                        if (isMine && existingIndex !== -1) {
+                            const updatedMessages = [...prev];
+                            updatedMessages[existingIndex] = {
+                                ...updatedMessages[existingIndex],
+                                ...newMsg,
+                                id: data.id || updatedMessages[existingIndex].id
+                            };
+                            return updatedMessages;
+                        }
+
+                        if (prev.some(m => m.id === (data.id || newMsg.id))) return prev;
+                        return [newMsg, ...prev];
+                    });
+                    fetchConversations();
+                }
+            };
+
+            socket.onclose = (e) => {
+                console.warn(`WebSocket disconnected: ${e.code} ${e.reason}`);
+                socketRef.current = null;
+                if (isComponentMounted) {
+                    // Start generic HTTP polling since WebSockets are failing
+                    startFallbackPolling();
+                    console.log("Attempting to reconnect WebSocket in 5 seconds...");
+                    reconnectTimer = setTimeout(connectWebSocket, 5000);
+                }
+            };
+
+            socket.onerror = (err) => {
+                console.error("WebSocket encountered an error:", err);
+                socket.close();
+            };
         };
 
+        if (activeConv) {
+            connectWebSocket();
+        }
+
         return () => {
-            socket.close();
+            isComponentMounted = false;
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            if (pollingTimer) clearInterval(pollingTimer);
+            if (socketRef.current) socketRef.current.close();
         };
     }, [activeConv]);
 
@@ -176,7 +214,13 @@ const CommunicationTools = () => {
             setChatMessages(prev => [optimisticText, ...prev]);
 
             try {
-                await sendMessage(activeConv, text);
+                const res = await sendMessage(activeConv, text);
+                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                    socketRef.current.send(JSON.stringify({
+                        type: 'broadcast_message',
+                        message_data: res
+                    }));
+                }
             } catch (error) {
                 console.error("DEBUG: Failed to send text:", error);
             }
@@ -196,7 +240,13 @@ const CommunicationTools = () => {
             setChatMessages(prev => [optimisticFile, ...prev]);
 
             try {
-                await sendMessage(activeConv, "", file);
+                const res = await sendMessage(activeConv, "", file);
+                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                    socketRef.current.send(JSON.stringify({
+                        type: 'broadcast_message',
+                        message_data: res
+                    }));
+                }
             } catch (error) {
                 console.error("DEBUG: Failed to send file:", error);
                 alert("Failed to send file. Please check your connection.");
@@ -487,7 +537,12 @@ const CommunicationTools = () => {
                                             type="text"
                                             value={messageInput}
                                             onChange={(e) => setMessageInput(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleSendMessage();
+                                                }
+                                            }}
                                             placeholder="Write your messages here..."
                                             className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-[12px] sm:text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#1F4F4D] pr-12 shadow-sm placeholder:text-gray-400"
                                         />

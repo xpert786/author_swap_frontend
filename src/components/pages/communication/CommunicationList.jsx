@@ -11,32 +11,34 @@ import {
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
+import { getEmails } from "../../../apis/email";
 
 const CommunicationList = () => {
   const navigate = useNavigate();
   const [selectedMail, setSelectedMail] = useState(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
-  const messages = [
-    {
-      id: 1,
-      name: "Jane Doe",
-      email: "jane@example.com",
-      time: "11:48 AM | 4 hours ago",
-      message: "Thanks for the update. What time should I expect the",
-      date: "Today",
-      avatar: "https://i.pravatar.cc/40?img=1",
-    },
-    ...Array.from({ length: 9 }).map((_, i) => ({
-      id: i + 2,
-      name: "John Smith",
-      email: "john@example.com",
-      time: "10:30 AM | Yesterday",
-      message: "Thanks for the update. What time should I expect the",
-      date: "13/10/2026",
-      avatar: `https://i.pravatar.cc/40?img=${i + 2}`,
-    })),
-  ];
+  const [emails, setEmails] = useState([]);
+  const [counts, setCounts] = useState({});
+  const [currentFolder, setCurrentFolder] = useState("inbox");
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    fetchEmails(currentFolder);
+  }, [currentFolder, !isComposeOpen]); // Re-fetch when compose closes too
+
+  const fetchEmails = async (folder) => {
+    try {
+      setLoading(true);
+      const data = await getEmails(folder);
+      setEmails(data.emails || []);
+      setCounts(data.counts || {});
+    } catch (err) {
+      console.error("Failed to load emails:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
@@ -91,39 +93,55 @@ const CommunicationList = () => {
           <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#B5B5B5] bg-gray-50/30">
             <div className="p-4">
               <ul className="space-y-1 text-sm">
-                <li className="flex justify-between items-center bg-[#E07A5F33] text-black p-2.5 rounded-md font-medium cursor-pointer">
+                <li
+                  onClick={() => { setCurrentFolder("inbox"); setSelectedMail(null); }}
+                  className={`flex justify-between items-center p-2.5 rounded-md font-medium cursor-pointer transition-colors ${currentFolder === "inbox" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <div className="flex items-center gap-3">
                     <Mail size={16} />
                     <span>Inbox</span>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.">
-                    3
-                  </span>
+                  {counts.inbox > 0 && <span className="text-[10px] px-1.5 py-0.5">{counts.inbox}</span>}
                 </li>
 
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
+                <li
+                  onClick={() => { setCurrentFolder("snoozed"); setSelectedMail(null); }}
+                  className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors ${currentFolder === "snoozed" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <AlertCircle size={16} /> <span>Snoozed</span>
                 </li>
 
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
+                <li
+                  onClick={() => { setCurrentFolder("sent"); setSelectedMail(null); }}
+                  className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors ${currentFolder === "sent" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <Send size={16} /> <span>Sent</span>
                 </li>
 
-                <li className="flex justify-between items-center p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
+                <li
+                  onClick={() => { setCurrentFolder("drafts"); setSelectedMail(null); }}
+                  className={`flex justify-between items-center p-2.5 rounded-md cursor-pointer transition-colors ${currentFolder === "drafts" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <div className="flex items-center gap-3">
                     <FileText size={16} /> <span>Drafts</span>
                   </div>
-                  <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">1</span>
+                  {counts.drafts > 0 && <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">{counts.drafts}</span>}
                 </li>
 
-                <li className="flex justify-between items-center p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
+                <li
+                  onClick={() => { setCurrentFolder("spam"); setSelectedMail(null); }}
+                  className={`flex justify-between items-center p-2.5 rounded-md cursor-pointer transition-colors ${currentFolder === "spam" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <div className="flex items-center gap-3">
                     <AlertCircle size={16} /> <span>Spam</span>
                   </div>
-                  <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">3</span>
+                  {counts.spam > 0 && <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded-full text-gray-600">{counts.spam}</span>}
                 </li>
 
-                <li className="flex items-center gap-3 p-2.5 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition-colors">
+                <li
+                  onClick={() => { setCurrentFolder("trash"); setSelectedMail(null); }}
+                  className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors ${currentFolder === "trash" ? "bg-[#E07A5F33] text-black" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   <Trash2 size={16} /> <span>Trash</span>
                 </li>
               </ul>
@@ -138,33 +156,39 @@ const CommunicationList = () => {
               />
             ) : (
               <div className="space-y-3">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    onClick={() => setSelectedMail(msg)}
-                    className="flex flex-row items-center justify-between gap-4 p-3 border border-[#B5B5B5] rounded-lg hover:bg-[#E07A5F0D] cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <img
-                        src={msg.avatar}
-                        alt={msg.name}
-                        className="w-10 h-10 rounded-full flex-shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <h4 className="font-medium text-sm truncate">{msg.name}</h4>
-                        <p className="text-xs text-[#374151] font-normal truncate">
-                          {msg.message}
-                        </p>
+                {loading ? (
+                  <div className="p-4 text-center text-gray-500">Loading emails...</div>
+                ) : emails.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">No emails in {currentFolder}</div>
+                ) : (
+                  emails.map((msg) => (
+                    <div
+                      key={msg.id}
+                      onClick={() => setSelectedMail(msg)}
+                      className={`flex flex-row items-center justify-between gap-4 p-3 border rounded-lg cursor-pointer transition-colors ${!msg.is_read && currentFolder === 'inbox' ? 'bg-blue-50/40 border-blue-200 font-semibold' : 'border-[#B5B5B5] hover:bg-[#E07A5F0D]'}`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <img
+                          src={msg.sender_profile_picture || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User')}
+                          alt={msg.sender_name}
+                          className="w-10 h-10 rounded-full flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="font-medium text-sm truncate">{msg.sender_name}</h4>
+                          <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
+                            {msg.subject} <span className="text-gray-400 font-normal">- {msg.snippet}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex-shrink-0 text-right">
+                        <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
+                          {msg.formatted_date}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="flex-shrink-0 text-right">
-                      <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                        {msg.date}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>
