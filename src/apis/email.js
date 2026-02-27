@@ -12,7 +12,7 @@ export const getEmails = async (folder = "inbox", search = "") => {
     return response.data;
 };
 
-export const getEmailDetail = async (id) => {
+export const getEmailDetails = async (id) => {
     const response = await apiClient.get(`emails/${id}/`);
     return response.data;
 };
@@ -41,10 +41,6 @@ export const composeEmail = async (data) => {
 export const emailAction = async (id, action) => {
     // action can be string like 'mark_read', 'trash', 'restore'
     const response = await apiClient.post(`emails/${id}/action/`, { action });
-    return response.data;
-};
-export const getEmailDetails = async (id) => {
-    const response = await apiClient.get(`emails/${id}/`);
     return response.data;
 };
 
