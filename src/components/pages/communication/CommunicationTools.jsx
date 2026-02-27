@@ -126,11 +126,11 @@ const CommunicationTools = () => {
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === "chat_message") {
-                    const currentUserId = currentUser?.id || currentUser?.user_id;
-                    const isMine = String(data.sender_id) === String(currentUserId);
+                    // The backend never echoes messages back to the sender.
+                    // Every message arriving here is always from the other person.
                     const newMsg = {
-                        id: Date.now(),
-                        sender: isMine ? "me" : activeConversation?.name || data.sender_name || "Partner",
+                        id: data.id || Date.now(),
+                        sender: data.sender_name || "Partner",
                         text: data.message || data.content,
                         attachment: data.attachment,
                         time: data.formatted_time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -138,23 +138,8 @@ const CommunicationTools = () => {
                     };
 
                     setChatMessages(prev => {
-                        const existingIndex = prev.findIndex(m =>
-                            m.sender === "me" &&
-                            m.text === newMsg.text &&
-                            (Date.now() - m.id < 10000)
-                        );
-
-                        if (isMine && existingIndex !== -1) {
-                            const updatedMessages = [...prev];
-                            updatedMessages[existingIndex] = {
-                                ...updatedMessages[existingIndex],
-                                ...newMsg,
-                                id: data.id || updatedMessages[existingIndex].id
-                            };
-                            return updatedMessages;
-                        }
-
-                        if (prev.some(m => m.id === (data.id || newMsg.id))) return prev;
+                        // Simple dedup check by message ID
+                        if (data.id && prev.some(m => m.id === data.id)) return prev;
                         return [newMsg, ...prev];
                     });
                     fetchConversations();
@@ -195,8 +180,6 @@ const CommunicationTools = () => {
         const file = selectedFile;
         if ((!text && !file) || !activeConv) return;
 
-        console.log("DEBUG: Sending messages to", activeConv);
-
         // Clear inputs immediately for better UX
         setMessageInput("");
         setSelectedFile(null);
@@ -206,6 +189,7 @@ const CommunicationTools = () => {
             const tempId = Date.now();
             const optimisticText = {
                 id: tempId,
+                _optimistic: true,
                 sender: "me",
                 text: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -214,13 +198,9 @@ const CommunicationTools = () => {
             setChatMessages(prev => [optimisticText, ...prev]);
 
             try {
-                const res = await sendMessage(activeConv, text);
-                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                    socketRef.current.send(JSON.stringify({
-                        type: 'broadcast_message',
-                        message_data: res
-                    }));
-                }
+                await sendMessage(activeConv, text);
+                // Backend broadcasts via Redis → our WebSocket onmessage will receive it
+                // and the deduplication logic will replace this optimistic message
             } catch (error) {
                 console.error("DEBUG: Failed to send text:", error);
             }
@@ -231,6 +211,7 @@ const CommunicationTools = () => {
             const tempIdFile = Date.now() + 1;
             const optimisticFile = {
                 id: tempIdFile,
+                _optimistic: true,
                 sender: "me",
                 text: file.name,
                 attachment: URL.createObjectURL(file),
@@ -240,13 +221,7 @@ const CommunicationTools = () => {
             setChatMessages(prev => [optimisticFile, ...prev]);
 
             try {
-                const res = await sendMessage(activeConv, "", file);
-                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                    socketRef.current.send(JSON.stringify({
-                        type: 'broadcast_message',
-                        message_data: res
-                    }));
-                }
+                await sendMessage(activeConv, "", file);
             } catch (error) {
                 console.error("DEBUG: Failed to send file:", error);
                 alert("Failed to send file. Please check your connection.");
