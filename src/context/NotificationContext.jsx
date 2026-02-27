@@ -16,6 +16,9 @@ export const NotificationProvider = ({ children }) => {
 
     const fetchInitialCounts = async () => {
         try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
             const response = await getUnreadCount();
             setUnreadCount(response.data.total);
             setUnreadCounts({

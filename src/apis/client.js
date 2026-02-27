@@ -47,7 +47,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
 
-      window.location.replace("/authorswap-frontend/login");
+      // Only redirect if not already on the login page to prevent infinite loops
+      if (!window.location.pathname.includes("/login")) {
+        window.location.replace("/authorswap-frontend/login");
+      }
     }
 
     return Promise.reject(error);

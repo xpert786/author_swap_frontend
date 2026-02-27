@@ -37,8 +37,9 @@ const CommunicationList = () => {
 
       // Handle both { results: [], folder_counts: {} } and direct array/object
       setEmails(data.results || data.emails || []);
-      if (data.folder_counts || data.counts) {
-        setCounts(data.folder_counts || data.counts);
+      const folderCounts = data.folder_counts || data.counts;
+      if (folderCounts) {
+        setCounts(folderCounts);
       }
     } catch (error) {
       console.error("Failed to fetch emails:", error);
@@ -50,7 +51,7 @@ const CommunicationList = () => {
 
   useEffect(() => {
     fetchEmails(currentFolder);
-  }, [currentFolder]);
+  }, [currentFolder, isComposeOpen]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter") {
@@ -211,7 +212,7 @@ const CommunicationList = () => {
 
                       <div className="flex-shrink-0 text-right">
                         <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                          {msg.formatted_date || msg.created_at || msg.date}
+                          {msg.formatted_date || msg.created_at || msg.date || msg.time}
                         </span>
                       </div>
                     </div>
