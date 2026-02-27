@@ -26,63 +26,6 @@ const formatLabel = (str) => {
         .join(" ");
 };
 
-const staticSwaps = [
-
-    {
-        id: 101,
-        author_name: "Sophia Patel",
-        author_role: "Fantasy Writer",
-        author_image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150",
-        audience_size: "12k",
-        reliability_score: "98%",
-        requesting_book: "The Midnight Garden",
-        message: "I'd love to swap newsletter slots for our February releases.",
-        status: "pending",
-        badge: "Pending",
-        category: "pending"
-    },
-    {
-        id: 102,
-        author_name: "Marcus Lee",
-        author_role: "Sci-Fi Author",
-        author_image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-        audience_size: "8.5k",
-        reliability_score: "94%",
-        requesting_book: "Starlight Void",
-        message: "Great opportunity to reach more readers in the tech-thriller space.",
-        status: "completed",
-        badge: "Completed",
-        category: "completed"
-    },
-    {
-        id: 103,
-        author_name: "Elena Rodriguez",
-        author_role: "Romance Novelist",
-        author_image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150",
-        audience_size: "25k",
-        reliability_score: "99%",
-        requesting_book: "Summer in Seville",
-        message: "Your audience fits perfectly with my latest romance series!",
-        status: "active",
-        badge: "Active",
-        category: "sending"
-    },
-    {
-        id: 104,
-        author_name: "James Wilson",
-        author_role: "Mystery Writer",
-        author_image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150",
-        audience_size: "5.2k",
-        reliability_score: "85%",
-        requesting_book: "The Hidden Clue",
-        message: "Looking for a cross-promo for my upcoming book launch.",
-        status: "rejected",
-        badge: "Rejected",
-        category: "reject",
-        rejection_reason: "Audience mismatch in specific genre niches.",
-        rejection_date: "12 Feb, 2026"
-    }
-];
 
 const SwapCard = ({ data, onRefresh, onViewDetails }) => {
     const navigate = useNavigate();
@@ -300,19 +243,10 @@ const SwapManagement = () => {
                 setTabCounts(responseData.tab_counts);
             }
 
-            // Fallback to static data if API returns empty list
-            if (data.length === 0 && tabKey === "all") {
-                console.log("No dynamic swaps found, showing static fallback data.");
-                data = staticSwaps;
-            }
             setSwaps(data);
         } catch (error) {
-            console.error("Failed to fetch swaps, showing static fallback data:", error);
-            if (activeTab.key === "all") {
-                setSwaps(staticSwaps);
-            } else {
-                setSwaps([]);
-            }
+            console.error("Failed to fetch swaps:", error);
+            setSwaps([]);
         } finally {
             setLoading(false);
         }

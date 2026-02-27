@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification, connectMailerlite } from "../../../apis/subscription";
+import { getSubscriberVerification } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 
 
@@ -81,9 +81,6 @@ export default function SubscriptionPage() {
     const [activeTab, setActiveTab] = useState("subscription");
     const [verification, setVerification] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showConnect, setShowConnect] = useState(false);
-    const [apiKey, setApiKey] = useState("");
-    const [connecting, setConnecting] = useState(false);
 
     const fetchVerification = async () => {
         try {
@@ -97,24 +94,6 @@ export default function SubscriptionPage() {
         }
     };
 
-    const handleConnect = async () => {
-        if (!apiKey) {
-            toast.error("Please enter an API key");
-            return;
-        }
-        try {
-            setConnecting(true);
-            await connectMailerlite({ api_key: apiKey });
-            toast.success("Connected to MailerLite successfully");
-            setShowConnect(false);
-            fetchVerification();
-        } catch (error) {
-            console.error("Connection failed", error);
-            toast.error("Failed to connect to MailerLite");
-        } finally {
-            setConnecting(false);
-        }
-    };
 
     useEffect(() => {
         fetchVerification();
@@ -183,55 +162,6 @@ export default function SubscriptionPage() {
                 {activeTab === "subscription" ? (
                     <>
                         {/* MailerLite Connection Section */}
-                        {!isConnected ? (
-                            <div className="mb-8 p-6 bg-white border border-[#B5B5B5] rounded-xl">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-[#111827]">Connect MailerLite</h3>
-                                        <p className="text-sm text-[#374151]">Your newsletter must be connected to verify swaps and view analytics.</p>
-                                    </div>
-                                    {!showConnect && (
-                                        <button
-                                            onClick={() => setShowConnect(true)}
-                                            className="bg-[#2F6F6D] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all"
-                                        >
-                                            Connect Now
-                                        </button>
-                                    )}
-                                </div>
-
-                                {showConnect && (
-                                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">MailerLite API Key</label>
-                                        <div className="flex gap-3">
-                                            <input
-                                                type="password"
-                                                value={apiKey}
-                                                onChange={(e) => setApiKey(e.target.value)}
-                                                placeholder="Paste your API Key here"
-                                                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
-                                            />
-                                            <button
-                                                onClick={handleConnect}
-                                                disabled={connecting}
-                                                className="bg-[#2F6F6D] text-white px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
-                                            >
-                                                {connecting ? "Connecting..." : "Confirm"}
-                                            </button>
-                                            <button
-                                                onClick={() => setShowConnect(false)}
-                                                className="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                        <p className="mt-2 text-[11px] text-gray-500">
-                                            Last synced: {lastSynced}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        ) : null}
 
 
 

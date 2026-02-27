@@ -27,3 +27,8 @@ export const editPenName = async (penName) => {
   });
   return response.data;
 };
+
+export const connectMailerlite = async (data) => {
+  const response = await apiClient.post("connect-mailerlite/", data);
+  return response.data;
+};

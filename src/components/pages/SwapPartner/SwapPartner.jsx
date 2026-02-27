@@ -264,10 +264,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 };
 
 // ─── Filter Dropdown ──────────────────────────────────────────────────────────
-const FilterDropdown = ({ label, options, align = "left" }) => {
+const FilterDropdown = ({ label, options, selected, onSelect, align = "left" }) => {
 
     const [open, setOpen] = useState(false);
-    const [selected, setSelected] = useState(null);
     const ref = React.useRef(null);
 
     React.useEffect(() => {
@@ -304,7 +303,7 @@ const FilterDropdown = ({ label, options, align = "left" }) => {
                             className={`px-5 py-2.5 text-sm text-black cursor-pointer transition-colors hover:bg-gray-100 ${selected === opt ? "text-[#2F6F6D] font-semibold bg-green-50" : ""
                                 }`}
                             onClick={() => {
-                                setSelected(opt === selected ? null : opt);
+                                onSelect(opt === selected ? null : opt);
                                 setOpen(false);
                             }}
                         >
@@ -346,6 +345,11 @@ const SwapPartner = () => {
     const [requestingId, setRequestingId] = useState(null);
     const [genres, setGenres] = useState([]);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
+
+    const [selectedGenre, setSelectedGenre] = useState(null);
+    const [selectedAudience, setSelectedAudience] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedPaid, setSelectedPaid] = useState(null);
 
 
     const fetchSlots = async () => {
@@ -394,10 +398,42 @@ const SwapPartner = () => {
     }, []);
 
 
-    const filtered = (Array.isArray(slots) ? slots : []).filter((p) =>
-        (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (p.preferredGenre || p.genre || "").toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = (Array.isArray(slots) ? slots : []).filter((p) => {
+        const matchesSearch = (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+            (p.preferredGenre || p.genre || "").toLowerCase().includes(search.toLowerCase());
+
+        if (!matchesSearch) return false;
+
+        if (selectedGenre && (p.preferredGenre || p.genre || "").toLowerCase() !== selectedGenre.toLowerCase()) return false;
+
+        if (selectedAudience) {
+            const rawAudience = p.audienceSize ?? p.audience ?? 0;
+            const size = typeof rawAudience === 'string' ? parseInt(rawAudience.replace(/,/g, '')) : Number(rawAudience);
+            if (selectedAudience === "0 – 5,000" && size > 5000) return false;
+            if (selectedAudience === "5,000 – 20,000" && (size <= 5000 || size > 20000)) return false;
+            if (selectedAudience === "20,000 – 50,000" && (size <= 20000 || size > 50000)) return false;
+            if (selectedAudience === "50,000+" && size <= 50000) return false;
+        }
+
+        if (selectedDate) {
+            const dateStr = p.sendDate || p.date;
+            if (!dateStr) return false;
+            const date = dayjs(dateStr);
+            if (selectedDate === "Today" && !date.isSame(dayjs(), 'day')) return false;
+            if (selectedDate === "This Week" && !date.isSame(dayjs(), 'week')) return false;
+            if (selectedDate === "Next Week" && !date.isSame(dayjs().add(1, 'week'), 'week')) return false;
+            if (selectedDate === "This Month" && !date.isSame(dayjs(), 'month')) return false;
+        }
+
+        if (selectedPaid && selectedPaid !== "All") {
+            const price = parseFloat(p.price || 0);
+            if (selectedPaid === "Free" && price > 0) return false;
+            if (selectedPaid === "Paid" && price === 0) return false;
+            if (selectedPaid === "Genre-Specific" && (p.promotionType || p.badge || "").toLowerCase() !== "genre_specific") return false;
+        }
+
+        return true;
+    });
 
     return (
         <div className="min-h-screen pb-10 bg-white">
@@ -426,19 +462,27 @@ const SwapPartner = () => {
                     <FilterDropdown
                         label="Genre"
                         options={genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"]}
+                        selected={selectedGenre}
+                        onSelect={setSelectedGenre}
                     />
 
                     <FilterDropdown
                         label="Audience Size"
                         options={["0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
+                        selected={selectedAudience}
+                        onSelect={setSelectedAudience}
                     />
                     <FilterDropdown
                         label="Date"
                         options={["Today", "This Week", "Next Week", "This Month"]}
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
                     />
                     <FilterDropdown
                         label="Free / Paid"
                         options={["All", "Free", "Paid", "Genre-Specific"]}
+                        selected={selectedPaid}
+                        onSelect={setSelectedPaid}
                         align="right"
                     />
 

@@ -38,13 +38,33 @@ const Stars = ({ count }) => (
     </div>
 );
 
-const StatusChip = ({ status }) => {
-    const isCompleted = status?.toLowerCase() === "completed";
+const StatusIndicator = ({ status }) => {
+    const s = status?.toLowerCase();
+    if (s === "completed" || s === "pending" || s === "confirmed" || s === "accepted") {
+        return (
+            <div className="flex items-center gap-1 text-[#16A34A] font-medium text-[11px]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                {status}
+            </div>
+        );
+    }
+    if (s === "missed" || s === "rejected") {
+        return (
+            <div className="flex items-center gap-1 text-[#DC2626] font-medium text-[11px]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                {status}
+            </div>
+        );
+    }
     return (
-        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${isCompleted ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"
-            }`}>
+        <div className="flex items-center gap-1 text-gray-500 font-medium text-[11px]">
             {status}
-        </span>
+        </div>
     );
 };
 
@@ -86,6 +106,7 @@ const SwapDetails = () => {
                 setLoading(true);
                 const response = await getSlotDetails(passed.id);
                 setDetail(toCamel(response.data));
+                console.log(response.data); 
             } catch (error) {
                 console.error("Failed to fetch slot details:", error);
             } finally {
@@ -286,25 +307,47 @@ const SwapDetails = () => {
                 </div>
 
                 {/* ── Recent Swap History ── */}
-                <p className="text-base font-bold text-black mt-5 mb-3">Recent Swap History</p>
-                {data.recentHistory && data.recentHistory.length > 0 ? (
-                    <div className="sd-history-grid grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                        {data.recentHistory.map((h, i) => (
-                            <div key={i} className="border border-gray-200 rounded-xl p-3.5 flex flex-col gap-1.5">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-sm font-semibold text-black">{h.name}</span>
-                                    <StatusChip status={h.status} />
-                                    {h.stars > 0 && <Stars count={h.stars} />}
+                <p className="text-base font-bold text-[#1F2937] mt-8 mb-4">Recent Swap History</p>
+                {(data.swapPartners || data.swap_partners) && (data.swapPartners || data.swap_partners).length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {(data.swapPartners || data.swap_partners).slice(0, 9).map((h, i) => {
+                            const partnerName = h.author?.name || "Unknown Author";
+                            const firstName = partnerName.split(/[\s,]+/)[0];
+                            const formattedName = formatLabel(firstName);
+                            const formattedDate = h.createdAt || h.created_at ? new Date(h.createdAt || h.created_at).toLocaleDateString('en-GB', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                            }) : "N/A";
+
+                            return (
+                                <div key={i} className="border border-[#B5B5B5] rounded-[10px] p-4 flex items-center justify-between bg-white gap-2 transition-shadow hover:shadow-sm">
+                                    {/* Left: Name and Date */}
+                                    <div className="flex flex-col gap-1 min-w-0 shrink">
+                                        <span className="text-[14px] font-semibold text-[#2D2F33] truncate" title={formattedName}>
+                                            {formattedName}
+                                        </span>
+                                        <span className="flex items-center gap-1 text-[10px] text-[#374151] font-medium whitespace-nowrap">
+                                            <CalendarIcon size={12} /> {formattedDate}
+                                        </span>
+                                    </div>
+
+                                    {/* Center: Status */}
+                                    <div className="flex-1 flex justify-center min-w-0 px-2 overflow-hidden">
+                                        <div className="scale-90 sm:scale-100 origin-center truncate">
+                                            <StatusIndicator status={formatLabel(h.status)} />
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Rating */}
+                                    <div className="shrink-0">
+                                        <Stars count={Math.round(h.author?.rating || 0)} />
+                                    </div>
                                 </div>
-                                <span className="flex items-center gap-1.5 text-[13px] text-gray-500">
-                                    <CalendarIcon size={18} /> {h.date}
-                                </span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
-                    <div className="text-center py-6 border border-dashed border-gray-200 rounded-xl">
-                        <p className="text-sm text-gray-500 italic">No recent swap history found.</p>
+                    <div className="text-center py-10 border border-dashed border-gray-200 rounded-xl bg-gray-50">
+                        <p className="text-sm text-gray-500 italic">No recent swap history found for this author.</p>
                     </div>
                 )}
             </div>
