@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 
+import { getUnreadCount } from "../apis/notification";
+
 const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
@@ -8,8 +10,31 @@ export const useNotifications = () => useContext(NotificationContext);
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadCounts, setUnreadCounts] = useState({ notifications: 0, chat: 0, email: 0 });
     const socketRef = useRef(null);
     const reconnectTimeoutRef = useRef(null);
+
+    const fetchInitialCounts = async () => {
+        try {
+            const response = await getUnreadCount();
+            setUnreadCount(response.data.total);
+            setUnreadCounts({
+                notifications: response.data.notifications,
+                chat: response.data.chat,
+                email: response.data.email
+            });
+        } catch (error) {
+            console.error("Failed to fetch initial unread counts:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchInitialCounts();
+
+        // Fetch every 5 minutes as a fallback
+        const interval = setInterval(fetchInitialCounts, 5 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const connectWebSocket = () => {
         const token = localStorage.getItem("token");
@@ -122,9 +147,11 @@ export const NotificationProvider = ({ children }) => {
     const value = {
         notifications,
         unreadCount,
+        unreadCounts,
         setUnreadCount,
         setNotifications,
-        refreshConnection: connectWebSocket
+        refreshConnection: connectWebSocket,
+        refreshCounts: fetchInitialCounts
     };
 
     return (
