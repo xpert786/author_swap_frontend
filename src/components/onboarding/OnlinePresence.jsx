@@ -31,6 +31,7 @@ const OnlinePresence = ({ next, prev }) => {
           facebook: data.facebook_url || "",
           collaborationStatus: data.collaboration_status || "",
         });
+
       } catch (error) {
         toast.error(
           error?.response?.data?.message || "Failed to load profile"
