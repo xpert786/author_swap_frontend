@@ -17,6 +17,10 @@ import toast from "react-hot-toast";
 
 const SendEmail = ({ onClose, onSuccess }) => {
   const [recipient, setRecipient] = useState("");
+  const [cc, setCc] = useState("");
+  const [bcc, setBcc] = useState("");
+  const [showCc, setShowCc] = useState(false);
+  const [showBcc, setShowBcc] = useState(false);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +35,8 @@ const SendEmail = ({ onClose, onSuccess }) => {
       setLoading(true);
       await composeEmail({
         recipient_username: recipient,
+        cc_usernames: cc, // Assuming backend might support these
+        bcc_usernames: bcc,
         subject,
         body,
       });
@@ -71,22 +77,74 @@ const SendEmail = ({ onClose, onSuccess }) => {
       <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
         {/* Recipients */}
         <div className="flex items-center px-4 py-2 border-b border-gray-100 group">
-          <span className="text-gray-500 text-[13px] w-20 flex-shrink-0">Recipients</span>
+          <span className="text-gray-500 text-[13px] w-20 flex-shrink-0">To</span>
           <input
             type="text"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             className="flex-1 outline-none py-1 text-[13px] min-w-0"
           />
-          <div className="hidden sm:flex gap-2 text-gray-500 text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="cursor-pointer hover:text-gray-900 mx-1">Cc</span>
-            <span className="cursor-pointer hover:text-gray-900">Bcc</span>
-          </div>
-          <div className="flex sm:hidden gap-2 text-gray-500 text-[12px]">
-            <span className="cursor-pointer">Cc</span>
-            <span className="cursor-pointer">Bcc</span>
+          <div className="flex gap-2 text-gray-500 text-[12px] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+            {!showCc && (
+              <span
+                className="cursor-pointer hover:text-gray-900 mx-1"
+                onClick={() => setShowCc(true)}
+              >
+                Cc
+              </span>
+            )}
+            {!showBcc && (
+              <span
+                className="cursor-pointer hover:text-gray-900"
+                onClick={() => setShowBcc(true)}
+              >
+                Bcc
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Cc Field */}
+        {showCc && (
+          <div className="flex items-center px-4 py-2 border-b border-gray-100">
+            <span className="text-gray-500 text-[13px] w-20 flex-shrink-0">Cc</span>
+            <input
+              type="text"
+              value={cc}
+              onChange={(e) => setCc(e.target.value)}
+              className="flex-1 outline-none py-1 text-[13px] min-w-0"
+            />
+            {!showBcc && (
+              <span
+                className="text-gray-500 text-[12px] cursor-pointer hover:text-gray-900"
+                onClick={() => setShowBcc(true)}
+              >
+                Bcc
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Bcc Field */}
+        {showBcc && (
+          <div className="flex items-center px-4 py-2 border-b border-gray-100">
+            <span className="text-gray-500 text-[13px] w-20 flex-shrink-0">Bcc</span>
+            <input
+              type="text"
+              value={bcc}
+              onChange={(e) => setBcc(e.target.value)}
+              className="flex-1 outline-none py-1 text-[13px] min-w-0"
+            />
+            {!showCc && (
+              <span
+                className="text-gray-500 text-[12px] cursor-pointer hover:text-gray-900"
+                onClick={() => setShowCc(true)}
+              >
+                Cc
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Subject */}
         <div className="flex items-center px-4 py-2 border-b border-gray-100">
