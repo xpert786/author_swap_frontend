@@ -87,9 +87,10 @@ const staticSwaps = [
 const SwapCard = ({ data, onRefresh, onViewDetails }) => {
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
-    const isCompleted = data.status === "completed";
     const isRejected = data.status === "rejected" || data.status === "reject";
     const isPending = data.status === "pending" || data.status === "incoming";
+    const isSending = data.status === "sending";
+    const isCompleted = data.status === "completed";
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -142,7 +143,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
 
     return (
         <div
-            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full
+            onClick={onViewDetails}
+            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full cursor-pointer hover:shadow-md
             ${isCompleted ? "bg-[#EBF5EE] border-[#16A34A]" : "bg-white border-[#B5B5B5]"}
             `}
         >
@@ -198,37 +200,27 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
                 <p className="text-[12px] text-black font-semibold leading-tight">"{data.message || "No message provided"}"</p>
             </div>
 
-            {/* Actions / Status Specifics */}
+            {/* Action logic per design */}
             <div className="mt-auto pt-2 space-y-3">
-                {(data.status_note || data.statusNote) && (
-                    <div
-                        className={`text-[9px] font-medium px-3 py-1 rounded-full w-fit bg-[#F59E0B33]`}
-                    >
-                        {data.status_note || data.statusNote}
-                    </div>
-                )}
-
-                {/* Pending: Accept + Decline only */}
                 {isPending && (
                     <div className="flex gap-2">
                         <button
-                            onClick={handleDecline}
+                            onClick={(e) => { e.stopPropagation(); handleDecline(e); }}
                             disabled={actionLoading === "decline"}
-                            className="flex-1 px-4 py-[8px] border border-[#DC2626] text-[#DC2626] rounded-[6px] text-[12px] font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 border border-[#DC2626] text-[#DC2626] rounded-[6px] text-xs font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
                         >
-                            {actionLoading === "decline" ? "..." : "Decline"}
+                            Decline
                         </button>
                         <button
-                            onClick={handleAccept}
+                            onClick={(e) => { e.stopPropagation(); handleAccept(e); }}
                             disabled={actionLoading === "accept"}
-                            className="flex-1 px-4 py-[8px] bg-[#16A34A] text-white rounded-[6px] text-[12px] font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
                         >
-                            {actionLoading === "accept" ? "..." : "Accept"}
+                            Accept
                         </button>
                     </div>
                 )}
 
-                {/* Rejected: Restore + View Details */}
                 {isRejected && (
                     <div className="space-y-3">
                         <div className="bg-[#FEF2F2] p-3 rounded-[8px] border border-[#FEE2E2]">
@@ -238,49 +230,50 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
                                 {data.rejection_date || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleRestore}
-                                disabled={actionLoading === "restore"}
-                                className="px-5 py-[8px] border border-[#B5B5B5] text-black rounded-[6px] text-[12px] font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
-                            >
-                                {actionLoading === "restore" ? "Restoring..." : "Restore"}
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onViewDetails();
-                                }}
-                                className="px-5 py-[8px] border border-[#B5B5B5] text-black rounded-[6px] text-[12px] font-medium hover:bg-gray-50 transition-colors"
-                            >
-                                View Details
-                            </button>
-                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleRestore(e); }}
+                            disabled={actionLoading === "restore"}
+                            className="px-6 py-2 border border-[#B5B5B5] text-black rounded-[6px] text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        >
+                            Restore
+                        </button>
                     </div>
                 )}
 
-                {/* Accepted / Confirmed / Active / Scheduled / Completed: Track My Swap + View Details */}
-                {(data.status === "accepted" || data.status === "confirmed" || data.status === "active" || data.status === "scheduled" || isCompleted || data.status === "sending") && (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/track-swap/${data.id}`, { state: { data } });
-                            }}
-                            className="bg-[#2F6F6D] text-white text-[12px] font-medium px-5 py-[8px] rounded-[6px] hover:opacity-90 transition-opacity"
-                        >
-                            Track My Swap
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onViewDetails();
-                            }}
-                            className="border border-[#B5B5B5] text-black text-[12px] font-medium px-5 py-[8px] rounded-[6px] hover:bg-gray-50 transition-colors"
-                        >
-                            View Details
-                        </button>
+                {isCompleted && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/swap-history/${data.id}`, { state: { data } });
+                        }}
+                        className="w-fit px-5 py-2.5 bg-[#2F6F6D] text-white rounded-[6px] text-xs font-medium hover:opacity-90 transition-opacity"
+                    >
+                        View Swap History
+                    </button>
+                )}
+
+                {isSending && (
+                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Waiting for partner response
                     </div>
+                )}
+
+                {data.status === "scheduled" && (
+                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Scheduled for {data.scheduled_date || data.send_date || "N/A"}
+                    </div>
+                )}
+
+                {(data.status === "accepted" || data.status === "confirmed" || data.status === "active") && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/track-swap/${data.id}`, { state: { data } });
+                        }}
+                        className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                    >
+                        Track My Swap
+                    </button>
                 )}
             </div>
         </div>
