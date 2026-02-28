@@ -9,6 +9,7 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
   const [genres, setGenres] = useState([]);
   const [allSubGenres, setAllSubGenres] = useState({});
   const [subGenres, setSubGenres] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     title: "",
@@ -131,6 +132,38 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
     if (fileInput) fileInput.value = "";
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith("image/")) {
+        setFormData((prev) => ({
+          ...prev,
+          coverImage: file,
+          preview: URL.createObjectURL(file)
+        }));
+      } else {
+        toast.error("Please drop an image file");
+      }
+    }
+  };
+
   const handleChange = (e) => {
 
     const { name, value, type, checked, files } = e.target;
@@ -218,7 +251,7 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Book Info Grid */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Book Title
@@ -294,7 +327,12 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
                 Book Cover Image
               </label>
 
-              <label className="mt-2 relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-44 cursor-pointer hover:border-[#2F6F6D] transition overflow-hidden bg-gray-50/30">
+              <label
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`mt-2 relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-44 cursor-pointer transition overflow-hidden ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-gray-300 hover:border-[#2F6F6D] bg-gray-50/30"}`}
+              >
                 <input
                   type="file"
                   name="coverImage"

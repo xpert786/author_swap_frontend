@@ -8,6 +8,7 @@ import { getProfile } from "../apis/profile";
 
 import { useNotifications } from "../context/NotificationContext";
 import { useProfile } from "../context/ProfileContext";
+import { formatCamelCaseName } from "../utils/formatName";
 
 const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -160,19 +161,11 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         <div className="flex items-center gap-2">
                             <div className="hidden md:flex flex-col">
                                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                                    {((profile?.pen_name || profile?.name || profile?.username || "User")
-                                        .split(",")[0].trim())
-                                        .toLowerCase()
-                                        .replace(/\b\w/g, char => char.toUpperCase())}
+                                    {formatCamelCaseName(profile?.pen_name || profile?.name || profile?.username || "User")}
                                 </p>
                                 <p className="text-[11px] text-gray-500">
                                     {profile?.primary_genre
-                                        ? `${profile.primary_genre
-                                            .split(",")[0]
-                                            .trim()
-                                            .split("_")
-                                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                            .join(" ")} Author`
+                                        ? `${formatCamelCaseName(profile.primary_genre)} Author`
                                         : "Author"}
                                 </p>
                             </div>
@@ -204,7 +197,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                                     localStorage.removeItem("token");
                                     localStorage.removeItem("isprofilecompleted");
                                     setIsDropdownOpen(false);
-                                    navigate("/login");
+                                    window.location.href = "/authorswap-frontend/login";
                                 }}
                                 className="w-full px-4 py-2 text-[15px] text-[#001524] hover:bg-[#FFF9F7] rounded-lg transition-all text-left font-medium"
                             >

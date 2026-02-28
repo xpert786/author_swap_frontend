@@ -24,7 +24,7 @@ const steps = [
     },
 ];
 
-const OnboardingSidebar = ({ currentStep }) => {
+const OnboardingSidebar = ({ currentStep, maxStep = 1 }) => {
     return (
         <div
             className="h-full w-full bg-cover bg-center bg-no-repeat flex flex-col relative"
@@ -48,7 +48,7 @@ const OnboardingSidebar = ({ currentStep }) => {
                     <div className="relative">
                         {steps.map((step, index) => {
                             const isActive = currentStep === step.id;
-                            const isCompleted = currentStep > step.id;
+                            const isCompleted = maxStep > step.id;
                             const isGreen = isActive || isCompleted;
 
                             return (

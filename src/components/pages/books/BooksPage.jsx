@@ -404,7 +404,7 @@ const BooksPage = () => {
             ) : error ? (
                 <div className="text-center py-10 text-red-500">{error}</div>
             ) : filteredBooks.length === 0 ? (
-                <div className="text-center py-10 text-gray-500">No books found.</div>
+                <div className="text-center py-10 text-gray-500">Add books to get started.</div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredBooks.map((book) => (
@@ -498,7 +498,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                     className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105 shadow-[0_8px_20px_rgba(0,0,0,0.1)] rounded-sm"
                 />
 
-                {(book.is_primary_promo || book.availability === "wide") && (
+                {(book.is_primary_promo || book.availability === "wide" || book.availability === "kindle_unlimited") && (
                     <div className="absolute top-4 left-4 flex flex-col gap-2.5 z-40">
                         {book.is_primary_promo && (
                             <span className="flex items-center gap-1.5 bg-white text-[10px] font-bold text-[#F59E0B] px-3 py-1.5 rounded-md shadow-sm border border-gray-100 uppercase tracking-wider">
@@ -513,6 +513,13 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                                 Wide
                             </span>
                         )}
+
+                        {book.availability === "kindle_unlimited" && (
+                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-bold text-black px-3 py-1.5 rounded-md shadow-sm border border-gray-100 uppercase tracking-wider">
+                                <LuBookOpen size={11} />
+                                KU
+                            </span>
+                        )}
                     </div>
                 )}
             </div>
@@ -521,24 +528,24 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
             <div className="
                 absolute inset-x-0 bottom-0 
                 bg-white 
-                p-5 flex flex-col gap-3
-                translate-y-[calc(100%-8px)] group-hover:translate-y-0
+                px-6 py-6 flex flex-col gap-4
+                translate-y-[calc(100%-12px)] group-hover:translate-y-0
                 transition-all duration-500 ease-out
                 border-t border-gray-100
                 z-30
                 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]
             ">
                 {/* Visual indicator/handle for hover */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-200 group-hover:hidden" />
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-100 group-hover:hidden" />
 
-                <div className="flex justify-between items-start gap-3 mt-2">
+                <div className="flex justify-between items-start gap-3 mt-1">
                     <div className="min-w-0">
-                        <h3 className="font-bold text-[17px] text-gray-900 leading-tight line-clamp-2">
+                        <h3 className="font-medium text-[16px] text-gray-900 leading-tight line-clamp-2">
                             {book.title}
                         </h3>
 
-                        <div className="flex gap-1.5 mt-2">
-                            <span className="text-[10px] font-bold text-[#16A34A] bg-[#16A34A15] px-2.5 py-1 rounded-md uppercase tracking-wide">
+                        <div className="flex gap-1.5 mt-2.5">
+                            <span className="text-[10px] font-medium text-[#16A34A] bg-[#16A34A15] px-2.5 py-1 rounded-md uppercase tracking-wide">
                                 {book.primary_genre
                                     ?.replace(/_/g, " ")
                                     .replace(/\b\w/g, (char) => char.toUpperCase())}
@@ -585,9 +592,9 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-between items-center mt-2 pt-3 border-t border-gray-100">
+                <div className="flex justify-between items-center mt-3 pt-4 border-t border-gray-100">
                     <div>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                        <p className="text-[9px] font-medium text-gray-400 uppercase tracking-widest mb-2">
                             Availability
                         </p>
 
@@ -613,11 +620,11 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                     </div>
 
                     <div className="text-right">
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                        <p className="text-[9px] font-medium text-gray-400 uppercase tracking-widest mb-1.5">
                             Rating
                         </p>
                         <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-bold text-gray-900">{rating}</span>
+                            <span className="text-sm font-medium text-gray-900">{rating}</span>
                             <div className="flex gap-0.5">
                                 {[...Array(5)].map((_, i) => (
                                     <Star
