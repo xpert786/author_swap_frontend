@@ -480,8 +480,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
         <div
             onClick={() => onClick?.(book)}
             className="
-        bg-white rounded-xl
-        shadow-sm 
+        bg-white
         hover:-translate-y-2
         transition-all duration-500 
         overflow-hidden flex flex-col cursor-pointer

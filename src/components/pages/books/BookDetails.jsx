@@ -181,22 +181,12 @@ export default function BookDetails() {
             <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-stretch">
                     <div className="w-full lg:w-80 xl:w-96">
-                        <div
-                            className={`h-full rounded-[10px] overflow-hidden shadow-md ${book.amazonUrl ? "cursor-pointer group relative" : ""}`}
-                            onClick={() => book.amazonUrl && window.open(book.amazonUrl, "_blank")}
-                        >
+                        <div className="h-full rounded-[10px] overflow-hidden shadow-md">
                             <img
                                 src={book.coverImage || "/placeholder.jpg"}
                                 alt="Book Cover"
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                className="w-full h-full object-cover"
                             />
-                            {book.amazonUrl && (
-                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <span className="bg-white/90 text-[#2F6F6D] px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                                        View on Amazon
-                                    </span>
-                                </div>
-                            )}
                         </div>
                     </div>
 
