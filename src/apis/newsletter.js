@@ -23,3 +23,7 @@ export const statsNewsSlot = async (params) => {
 export const getSlotDetails = async (id) => {
     return apiClient.get(`slots/${id}/details/`);
 }
+
+export const exportNewsSlot = async (id, format) => {
+    return apiClient.get(`newsletter-slot/${id}/export/`, { params: { format } });
+}

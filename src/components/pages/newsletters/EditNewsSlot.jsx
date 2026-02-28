@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getGenres, audienceSize } from "../../../apis/genre";
+import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 
 const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
@@ -14,6 +15,8 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
 
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
+  const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const genreRef = useRef(null);
 
   // Fetch Genres
   useEffect(() => {
@@ -37,6 +40,17 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
       fetchData();
     }
   }, [isOpen]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (genreRef.current && !genreRef.current.contains(event.target)) {
+        setIsGenreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Populate form with raw data from slotData
   useEffect(() => {
@@ -65,6 +79,14 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
     }));
   };
 
+  const handleGenreSelect = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      preferred_genre: value,
+    }));
+    setIsGenreOpen(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -79,6 +101,8 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
       setLoading(false);
     }
   };
+
+  const selectedGenreLabel = genres.find(g => g.value === formData.preferred_genre)?.label || "Select Genre";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
@@ -148,23 +172,41 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
                 />
               </div>
 
-              <div>
+              <div className="relative" ref={genreRef}>
                 <label className="text-[13px] font-medium text-gray-600">
                   Preferred Genre
                 </label>
-                <select
-                  name="preferred_genre"
-                  value={formData.preferred_genre}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                <div
+                  onClick={() => setIsGenreOpen(!isGenreOpen)}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D] flex items-center justify-between cursor-pointer"
                 >
-                  <option value="">Select Genre</option>
-                  {genres.map((genre) => (
-                    <option key={genre.value} value={genre.value}>
-                      {genre.label}
-                    </option>
-                  ))}
-                </select>
+                  <span className={formData.preferred_genre ? "text-gray-800" : "text-gray-400"}>
+                    {selectedGenreLabel}
+                  </span>
+                  <IoChevronDown className={`transition-transform duration-200 ${isGenreOpen ? "rotate-180" : ""}`} />
+                </div>
+
+                {isGenreOpen && (
+                  <div className="absolute left-0 right-0 mt-1 bg-white border border-[#B5B5B5] rounded-lg shadow-lg z-[60] overflow-hidden">
+                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div
+                        onClick={() => handleGenreSelect("")}
+                        className="px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 cursor-pointer"
+                      >
+                        Select Genre
+                      </div>
+                      {genres.map((genre) => (
+                        <div
+                          key={genre.value}
+                          onClick={() => handleGenreSelect(genre.value)}
+                          className={`px-3 py-2 text-sm hover:bg-[#2F6F6D0D] hover:text-[#2F6F6D] cursor-pointer transition-colors ${formData.preferred_genre === genre.value ? "bg-[#2F6F6D0D] text-[#2F6F6D] font-medium" : "text-gray-700"}`}
+                        >
+                          {genre.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createNewsSlot } from "../../../apis/newsletter";
 import { getGenres, audienceSize } from "../../../apis/genre";
+import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 
 const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
@@ -14,6 +15,9 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
   });
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
+  const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const genreRef = useRef(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -21,9 +25,6 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
           getGenres(),
           audienceSize()
         ]);
-
-        console.log("GENRES RESPONSE:", genresRes);
-        console.log("AUDIENCE SIZE RESPONSE:", audienceRes);
 
         setGenres(genresRes);
         setFormData(prev => ({
@@ -35,7 +36,20 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
       }
     };
 
-    fetchData();
+    if (isOpen) {
+      fetchData();
+    }
+  }, [isOpen]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (genreRef.current && !genreRef.current.contains(event.target)) {
+        setIsGenreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (!isOpen) return null;
@@ -46,6 +60,14 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleGenreSelect = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      preferred_genre: value,
+    }));
+    setIsGenreOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -95,6 +117,9 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
       setLoading(false);
     }
   };
+
+  const selectedGenreLabel = genres.find(g => g.value === formData.preferred_genre)?.label || "Select Genre";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
@@ -127,7 +152,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.send_date}
                   onChange={handleChange}
                   required
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>
               <div>
@@ -139,7 +164,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   name="send_time"
                   value={formData.send_time}
                   onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>
 
@@ -154,29 +179,45 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   onChange={handleChange}
                   placeholder="1500"
                   readOnly
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed outline-none"
                 />
               </div>
 
-              <div>
+              <div className="relative" ref={genreRef}>
                 <label className="text-[13px] font-medium text-gray-600">
                   Preferred Genre
                 </label>
-
-                <select
-                  name="preferred_genre"
-                  value={formData.preferred_genre}
-                  onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm"
+                <div
+                  onClick={() => setIsGenreOpen(!isGenreOpen)}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D] flex items-center justify-between cursor-pointer"
                 >
-                  <option value="">Select Genre</option>
+                  <span className={formData.preferred_genre ? "text-gray-800" : "text-gray-400"}>
+                    {selectedGenreLabel}
+                  </span>
+                  <IoChevronDown className={`transition-transform duration-200 ${isGenreOpen ? "rotate-180" : ""}`} />
+                </div>
 
-                  {genres.map((genre) => (
-                    <option key={genre.value} value={genre.value}>
-                      {genre.label}
-                    </option>
-                  ))}
-                </select>
+                {isGenreOpen && (
+                  <div className="absolute left-0 right-0 mt-1 bg-white border border-[#B5B5B5] rounded-lg shadow-lg z-[60] overflow-hidden">
+                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div
+                        onClick={() => handleGenreSelect("")}
+                        className="px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 cursor-pointer"
+                      >
+                        Select Genre
+                      </div>
+                      {genres.map((genre) => (
+                        <div
+                          key={genre.value}
+                          onClick={() => handleGenreSelect(genre.value)}
+                          className={`px-3 py-2 text-sm hover:bg-[#2F6F6D0D] hover:text-[#2F6F6D] cursor-pointer transition-colors ${formData.preferred_genre === genre.value ? "bg-[#2F6F6D0D] text-[#2F6F6D] font-medium" : "text-gray-700"}`}
+                        >
+                          {genre.label}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -189,7 +230,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.max_partners}
                   onChange={handleChange}
                   placeholder="5"
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>
 
@@ -201,7 +242,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   name="visibility"
                   value={formData.visibility}
                   onChange={handleChange}
-                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 >
                   <option value="Public">Public</option>
                   <option value="friend_only">Friend Only</option>
@@ -216,7 +257,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-1.5 text-[13px] rounded-lg border text-gray-600"
+                className="px-5 py-1.5 text-[13px] rounded-lg border text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
@@ -224,7 +265,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white disabled:opacity-50"
+                className="px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white disabled:opacity-50 transition-opacity hover:opacity-90 shadow-sm"
               >
                 {loading ? "Creating..." : "Create Slot"}
               </button>
