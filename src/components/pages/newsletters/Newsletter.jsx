@@ -21,7 +21,7 @@ import Edit from "../../../assets/edit.png";
 import Swap from "../../../assets/swap-bg.png";
 import dayjs from "dayjs";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
-import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot, exportNewsSlot } from "../../../apis/newsletter";
+import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
@@ -54,53 +54,99 @@ const Newsletter = () => {
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
     const [calendarData, setCalendarData] = useState([]);
 
-    const handleSlotExport = async (slotId, format) => {
-        if (format === "ics") {
-            const url = `${import.meta.env.VITE_API_BASE_URL}newsletter-slot/${slotId}/export/?format=ics`;
-            window.open(url, "_blank");
+    const handleSlotExport = (slotId, format) => {
+        const slot = slots.find(s => s.id === slotId);
+        if (!slot) return;
+
+        const { raw_data } = slot;
+        const eventTitle = `Newsletter Slot: ${slot.genre}`;
+        const eventDescription = `Newsletter promotion for ${slot.genre}. Audience size: ${slot.audience}. Status: ${slot.status}`;
+
+        // Construct start and end times in local time from send_date and send_time
+        let startMoment;
+        const timeStr = raw_data.send_time || "10:00:00"; // Default to 10 AM if no time
+
+        // Handle HH:mm AM/PM or HH:mm:ss formats
+        if (timeStr.toLowerCase().includes("am") || timeStr.toLowerCase().includes("pm")) {
+            startMoment = dayjs(`${raw_data.send_date} ${timeStr}`, "YYYY-MM-DD h:mm A");
         } else {
-            try {
-                const response = await exportNewsSlot(slotId, format);
-                if (response.data?.url) {
-                    window.open(response.data.url, "_blank");
-                }
-            } catch (error) {
-                toast.error(`Failed to export to ${format === "google" ? "Google Calendar" : "Outlook"}`);
-            }
+            startMoment = dayjs(`${raw_data.send_date} ${timeStr}`);
+        }
+
+        if (!startMoment.isValid()) {
+            startMoment = dayjs(raw_data.send_date).set("hour", 10).set("minute", 0);
+        }
+
+        const endMoment = startMoment.add(1, "hour");
+
+        // Format for URL and ICS
+        const startTimeStr = startMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        const endTimeStr = endMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+        if (format === "google") {
+            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startTimeStr}/${endTimeStr}&details=${encodeURIComponent(eventDescription)}&sf=true&output=xml`;
+            window.open(url, "_blank");
+        } else if (format === "outlook") {
+            const url = `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`;
+            window.open(url, "_blank");
+        } else if (format === "ics") {
+            const icsContent = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//AuthorSwap//Newsletter Calendar//EN",
+                "BEGIN:VEVENT",
+                `UID:newsletter-slot-${slotId}@authorswap.com`,
+                `DTSTAMP:${dayjs().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+                `DTSTART:${startTimeStr}`,
+                `DTEND:${endTimeStr}`,
+                `SUMMARY:${eventTitle}`,
+                `DESCRIPTION:${eventDescription}`,
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\n");
+
+            const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute("download", `newsletter_slot_${slotId}.ics`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
         setOpenDropdown(null);
     };
 
 
-    const handleExportGoogle = async () => {
+    const handleExportGoogle = () => {
         const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
         if (daySlots.length === 0) {
             toast.error("No slots available for this day");
             return;
         }
-        await handleSlotExport(daySlots[0].id, "google");
+        handleSlotExport(daySlots[0].id, "google");
         setExportDropdownOpen(false);
     };
 
-    const handleExportOutlook = async () => {
+    const handleExportOutlook = () => {
         const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
         if (daySlots.length === 0) {
             toast.error("No slots available for this day");
             return;
         }
-        await handleSlotExport(daySlots[0].id, "outlook");
+        handleSlotExport(daySlots[0].id, "outlook");
         setExportDropdownOpen(false);
     };
 
-    const handleExportICS = async () => {
+    const handleExportICS = () => {
         const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
         if (daySlots.length === 0) {
             toast.error("No slots available for this day");
             return;
         }
-        await handleSlotExport(daySlots[0].id, "ics");
+        handleSlotExport(daySlots[0].id, "ics");
         setExportDropdownOpen(false);
     };
+
 
 
 

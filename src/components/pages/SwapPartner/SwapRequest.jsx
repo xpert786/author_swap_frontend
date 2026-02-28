@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiChevronDown, FiRefreshCw } from "react-icons/fi";
+import { FiX, FiChevronDown, FiRefreshCw, FiCheck } from "react-icons/fi";
 import { CheckBadgeIcon } from "../../icons";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { getBooks } from "../../../apis/bookManegment";
@@ -21,8 +21,28 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
     });
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [compatibility, setCompatibility] = useState({
+        genre_match: false,
+        audience_comparable: false,
+        reliability_match: false
+    });
+
+    const handleBookSelect = (book) => {
+        setSelectedBook(book.id);
+        setRetailerLinks({
+            amazonUrl: book.amazon_url || "",
+            appleUrl: book.apple_url || "",
+            koboUrl: book.kobo_url || "",
+            barnesNobleUrl: book.barnes_noble_url || ""
+        });
+        // Auto-fill message with book description if available
+        if (book.description && !message) {
+            setMessage(book.description.slice(0, 250));
+        }
+    };
 
     useEffect(() => {
+
         const fetchInitialData = async () => {
             if (isOpen && id) {
                 try {
@@ -30,17 +50,27 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
                     // Fetch data from slots/{id}/request/
                     const slotResponse = await getSlotRequestData(id);
+                    if (slotResponse.data?.compatibility) {
+                        setCompatibility(slotResponse.data.compatibility);
+                    }
 
-                    // Also fetch user's books from book management as the primary source
-                    const booksResponse = await getBooks();
-                    const fetchedBooks = booksResponse.data?.results || booksResponse.data || [];
+                    // Set default max partners from slot data
+                    if (slotResponse.data?.max_partners) {
+                        const mp = slotResponse.data.max_partners;
+                        setMaxPartners(mp === 5 || mp === 10 ? `${mp} Partners` : "5 Partners");
+                    }
 
+                    // Use user's books directly from the request API
+                    const fetchedBooks = slotResponse.data?.my_books || [];
                     setBookList(fetchedBooks);
                     if (fetchedBooks.length > 0 && !selectedBook) {
                         // Priority: try to find a primary book first, otherwise pick the first one
                         const primaryBook = fetchedBooks.find(b => b.is_primary || b.is_primary_promo);
-                        setSelectedBook(primaryBook ? primaryBook.id : fetchedBooks[0].id);
+                        const initialBook = primaryBook || fetchedBooks[0];
+                        handleBookSelect(initialBook);
                     }
+
+
                 } catch (error) {
                     console.error("Failed to fetch initial data:", error);
                     toast.error("Failed to load initial data");
@@ -118,7 +148,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                     bookList.map((book) => (
                                         <div
                                             key={book.id}
-                                            onClick={() => setSelectedBook(book.id)}
+                                            onClick={() => handleBookSelect(book)}
                                             className={`flex-none w-32 p-2 rounded-[10px] border-2 
                                                 transition-all duration-200 ease-in-out cursor-pointer
                                                 ${selectedBook === book.id
@@ -153,41 +183,54 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                 Compatibility Indicators
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div className="flex gap-3 border border-[#B5B5B5] p-3 rounded-xl">
-                                    <CheckBadgeIcon size={24} />
+                                {/* Genre Match */}
+                                <div className={`flex gap-3 border p-3 rounded-xl transition-colors ${compatibility.genre_match ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"}`}>
+                                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${compatibility.genre_match ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                        {compatibility.genre_match ? <FiCheck size={20} /> : <FiX size={20} />}
+                                    </div>
                                     <div>
-                                        <h4 className="text-[12px] font-medium text-[#111827]">
+                                        <h4 className={`text-[12px] font-semibold ${compatibility.genre_match ? "text-green-700" : "text-red-700"}`}>
                                             Genre Match
                                         </h4>
-                                        <p className="text-[10px] text-[#374151] leading-tight mt-0.5">
-                                            Find partners in similar genres for better audience overlap
+                                        <p className="text-[10px] text-[#374151] leading-tight mt-0.5 font-medium">
+                                            {compatibility.genre_match ? "Perfect genre alignment!" : "Genres don't match well."}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3 border border-[#B5B5B5] p-3 rounded-xl">
-                                    <CheckBadgeIcon size={24} />
+
+                                {/* Audience Size */}
+                                <div className={`flex gap-3 border p-3 rounded-xl transition-colors ${compatibility.audience_comparable ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"}`}>
+                                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${compatibility.audience_comparable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                        {compatibility.audience_comparable ? <FiCheck size={20} /> : <FiX size={20} />}
+                                    </div>
                                     <div>
-                                        <h4 className="text-[12px] font-medium text-[#111827]">
+                                        <h4 className={`text-[12px] font-semibold ${compatibility.audience_comparable ? "text-green-700" : "text-red-700"}`}>
                                             Audience Size
                                         </h4>
-                                        <p className="text-[10px] text- [#374151] leading-tight mt-0.5">
-                                            Compare audience sizes for fair value exchange
+                                        <p className="text-[10px] text-[#374151] leading-tight mt-0.5 font-medium">
+                                            {compatibility.audience_comparable ? "Audiences are comparable." : "Audience sizes differ significantly."}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3 border border-[#B5B5B5] p-3 rounded-xl">
-                                    <CheckBadgeIcon size={24} />
+
+                                {/* Reliability */}
+                                <div className={`flex gap-3 border p-3 rounded-xl transition-colors ${compatibility.reliability_match ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"}`}>
+                                    <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${compatibility.reliability_match ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                        {compatibility.reliability_match ? <FiCheck size={20} /> : <FiX size={20} />}
+                                    </div>
                                     <div>
-                                        <h4 className="text-[12px] font-medium text-[#111827]">
+                                        <h4 className={`text-[12px] font-semibold ${compatibility.reliability_match ? "text-green-700" : "text-red-700"}`}>
                                             Reliability
                                         </h4>
-                                        <p className="text-[10px] text-[#374151] leading-tight mt-0.5">
-                                            Partner's consistent track record of sending on time
+                                        <p className="text-[10px] text-[#374151] leading-tight mt-0.5 font-medium">
+                                            {compatibility.reliability_match ? "Trusted partner track record." : "Low reliability score."}
                                         </p>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
+
 
                         {/* Placement Style */}
                         <div className="p-4 border border-[#B5B5B5] rounded-xl">
@@ -235,11 +278,14 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                     >
                                         <option value="5 Partners">5 Partners</option>
                                         <option value="10 Partners">10 Partners</option>
+                                        {/* Dynamic option if slot has different max_partners */}
+                                        {maxPartners !== "5 Partners" && maxPartners !== "10 Partners" && (
+                                            <option value={maxPartners}>{maxPartners}</option>
+                                        )}
                                     </select>
                                     <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 </div>
                             </div>
-
                             <div>
                                 <h3 className="text-[13px] font-medium text-[#111827] mb-3">
                                     Retailer Links
