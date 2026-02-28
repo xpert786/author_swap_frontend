@@ -404,9 +404,9 @@ const SwapPartner = () => {
 
         if (!matchesSearch) return false;
 
-        if (selectedGenre && (p.preferredGenre || p.genre || "").toLowerCase() !== selectedGenre.toLowerCase()) return false;
+        if (selectedGenre && selectedGenre !== "All" && (p.preferredGenre || p.genre || "").toLowerCase() !== selectedGenre.toLowerCase()) return false;
 
-        if (selectedAudience) {
+        if (selectedAudience && selectedAudience !== "All") {
             const rawAudience = p.audienceSize ?? p.audience ?? 0;
             const size = typeof rawAudience === 'string' ? parseInt(rawAudience.replace(/,/g, '')) : Number(rawAudience);
             if (selectedAudience === "0 – 5,000" && size > 5000) return false;
@@ -415,7 +415,7 @@ const SwapPartner = () => {
             if (selectedAudience === "50,000+" && size <= 50000) return false;
         }
 
-        if (selectedDate) {
+        if (selectedDate && selectedDate !== "All") {
             const dateStr = p.sendDate || p.date;
             if (!dateStr) return false;
             const date = dayjs(dateStr);
@@ -461,20 +461,20 @@ const SwapPartner = () => {
                 <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                     <FilterDropdown
                         label="Genre"
-                        options={genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"]}
+                        options={["All", ...(genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"])]}
                         selected={selectedGenre}
                         onSelect={setSelectedGenre}
                     />
 
                     <FilterDropdown
                         label="Audience Size"
-                        options={["0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
+                        options={["All", "0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
                         selected={selectedAudience}
                         onSelect={setSelectedAudience}
                     />
                     <FilterDropdown
                         label="Date"
-                        options={["Today", "This Week", "Next Week", "This Month"]}
+                        options={["All", "Today", "This Week", "Next Week", "This Month"]}
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                     />

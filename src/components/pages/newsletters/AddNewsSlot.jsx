@@ -56,6 +56,15 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "max_partners") {
+      const val = parseInt(value, 10);
+      if (val > 10) {
+        setFormData((prev) => ({ ...prev, [name]: 10 }));
+        return;
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -230,6 +239,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   value={formData.max_partners}
                   onChange={handleChange}
                   placeholder="5"
+                  max="10"
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>
