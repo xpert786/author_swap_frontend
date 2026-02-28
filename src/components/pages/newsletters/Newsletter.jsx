@@ -636,44 +636,7 @@ const Newsletter = () => {
                                                             </button>
                                                         </>
                                                     )}
-                                                    {/* Individual Slot Export Dropdown */}
-                                                    <div className="relative">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setOpenDropdown(openDropdown === `export_${slot.id}` ? null : `export_${slot.id}`);
-                                                            }}
-                                                            className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition"
-                                                            title="Export Slot"
-                                                        >
-                                                            <Download size={14} className="text-gray-600" />
-                                                        </button>
-                                                        {openDropdown === `export_${slot.id}` && (
-                                                            <>
-                                                                <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
-                                                                <div className="absolute left-0 bottom-full mb-2 w-44 bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[9999]">
-                                                                    <button
-                                                                        onClick={() => handleSlotExport(slot.id, "google")}
-                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
-                                                                    >
-                                                                        Google Calendar
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleSlotExport(slot.id, "outlook")}
-                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
-                                                                    >
-                                                                        Outlook Calendar
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleSlotExport(slot.id, "ics")}
-                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
-                                                                    >
-                                                                        Download ICS File
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
+
                                                 </div>
 
                                             </div>

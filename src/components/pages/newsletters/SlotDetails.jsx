@@ -94,64 +94,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                         </button>
                     </div>
 
-                    {/* Slot Owner / Author Info */}
-                    <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <h3 className="text-[12px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
-                            Slot Owner
-                        </h3>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <img
-                                    src={slotData.author?.profile_picture || `https://ui-avatars.com/api/?name=${slotData.author?.name || 'User'}&background=random`}
-                                    alt={slotData.author?.name}
-                                    className="h-16 w-16 rounded-full object-cover shadow-sm border-2 border-white"
-                                />
-                                <div>
-                                    <p className="text-lg font-bold text-gray-800">
-                                        {slotData.author?.name || 'Unknown Author'}
-                                    </p>
-                                    <p className="text-[13px] text-gray-500 font-medium">
-                                        {slotData.author?.swaps_completed || 0} Swaps Completed
-                                    </p>
-                                    {slotData.author?.reputation_score !== undefined && (
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <span className="text-[11px] font-bold bg-[#E07A5F33] text-[#E07A5F] px-2 py-0.5 rounded-full">
-                                                ★ {slotData.author.reputation_score.toFixed(1)} Reputation
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            {/* Author Reputation Stats Icons - Only show if > 0 */}
-                            <div className="flex gap-2">
-                                {slotData.author?.avg_open_rate > 0 && (
-                                    <div className="flex flex-col items-center">
-                                        <div title="Average Open Rate" className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                                            <Mail size={16} />
-                                        </div>
-                                        <span className="text-[10px] font-bold mt-1">{slotData.author.avg_open_rate}%</span>
-                                    </div>
-                                )}
-                                {slotData.author?.send_reliability_percent > 0 && (
-                                    <div className="flex flex-col items-center">
-                                        <div title="Reliability" className="p-2 rounded-lg bg-green-50 text-green-600">
-                                            <ReliabilityIcon size={16} />
-                                        </div>
-                                        <span className="text-[10px] font-bold mt-1">{slotData.author.send_reliability_percent}%</span>
-                                    </div>
-                                )}
-                                {slotData.author?.timeliness_score > 0 && (
-                                    <div className="flex flex-col items-center">
-                                        <div title="Timeliness" className="p-2 rounded-lg bg-orange-50 text-orange-600">
-                                            <TimelinessIcon size={16} />
-                                        </div>
-                                        <span className="text-[10px] font-bold mt-1">{slotData.author.timeliness_score}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Slot Information */}
                     <div className="mb-8 mt-8">
@@ -232,7 +175,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                                                 </p>
                                                 <div className="flex items-center gap-2">
                                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${partner.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                            partner.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                                        partner.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
                                                         }`}>
                                                         {partner.status || 'active'}
                                                     </span>
