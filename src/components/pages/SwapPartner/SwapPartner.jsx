@@ -265,7 +265,6 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
 // ─── Filter Dropdown ──────────────────────────────────────────────────────────
 const FilterDropdown = ({ label, options, selected, onSelect, align = "left" }) => {
-
     const [open, setOpen] = useState(false);
     const ref = React.useRef(null);
 
@@ -277,15 +276,23 @@ const FilterDropdown = ({ label, options, selected, onSelect, align = "left" }) 
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    const selectedOption = options.find((opt) =>
+        (typeof opt === "string" ? opt : opt.value) === selected
+    );
+    const displayLabel = selectedOption
+        ? (typeof selectedOption === "string" ? selectedOption : selectedOption.label)
+        : label;
+
     return (
         <div ref={ref} className="relative">
             <button
-                className="flex items-center gap-2 px-4 py-1.5 border border-[#B5B5B5] rounded-lg bg-white text-[13px] text-black font-medium cursor-pointer whitespace-nowrap transition-all hover:bg-gray-50"
+                className="flex items-center gap-2 px-3 py-1.5 border border-[#B5B5B5] rounded-lg bg-white text-[13px] text-black font-medium cursor-pointer whitespace-nowrap transition-all hover:bg-gray-50"
                 onClick={() => setOpen((o) => !o)}
             >
-                {selected || label}
+                <span>{displayLabel}</span>
                 <FiChevronDown
                     size={14}
+                    className="shrink-0 text-gray-400"
                     style={{
                         transform: open ? "rotate(180deg)" : "rotate(0deg)",
                         transition: "transform 0.2s ease",
@@ -295,21 +302,25 @@ const FilterDropdown = ({ label, options, selected, onSelect, align = "left" }) 
 
             {open && (
                 <div className={`absolute top-[calc(100%+6px)] ${align === "right" ? "right-0" : "left-0"
-                    } min-w-[170px] bg-white border border-[#B5B5B5] rounded-lg shadow-xl z-[100] py-2`}>
+                    } min-w-[170px] bg-white border border-[#B5B5B5] rounded-lg shadow-xl z-[100] py-2 overflow-y-auto max-h-[250px]`}>
 
-                    {options.map((opt) => (
-                        <div
-                            key={opt}
-                            className={`px-5 py-2.5 text-sm text-black cursor-pointer transition-colors hover:bg-gray-100 ${selected === opt ? "text-[#2F6F6D] font-semibold bg-green-50" : ""
-                                }`}
-                            onClick={() => {
-                                onSelect(opt === selected ? null : opt);
-                                setOpen(false);
-                            }}
-                        >
-                            {opt}
-                        </div>
-                    ))}
+                    {options.map((opt) => {
+                        const val = typeof opt === "string" ? opt : opt.value;
+                        const lab = typeof opt === "string" ? opt : opt.label;
+                        return (
+                            <div
+                                key={val}
+                                className={`px-5 py-2.5 text-sm text-black cursor-pointer transition-colors hover:bg-gray-100 ${selected === val ? "text-[#2F6F6D] font-semibold bg-green-50" : ""
+                                    }`}
+                                onClick={() => {
+                                    onSelect(val === selected ? null : val);
+                                    setOpen(false);
+                                }}
+                            >
+                                {lab}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -343,7 +354,20 @@ const SwapPartner = () => {
     const [search, setSearch] = useState("");
     const [selectedId, setSelectedId] = useState(null);
     const [requestingId, setRequestingId] = useState(null);
-    const [genres, setGenres] = useState([]);
+    const [genres, setGenres] = useState([
+        { value: "romance", label: "Romance" },
+        { value: "mystery_thriller", label: "Mystery / Thriller" },
+        { value: "science_fiction", label: "Science Fiction" },
+        { value: "fantasy", label: "Fantasy" },
+        { value: "young_adult", label: "Young Adult" },
+        { value: "childrens", label: "Children’s Books" },
+        { value: "horror", label: "Horror" },
+        { value: "literary", label: "Literary Fiction" },
+        { value: "womens_fiction", label: "Women’s Fiction" },
+        { value: "nonfiction", label: "Nonfiction" },
+        { value: "action_adventure", label: "Action / Adventure" },
+        { value: "comics_graphic", label: "Comics & Graphic Novels" }
+    ]);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
 
     const [selectedGenre, setSelectedGenre] = useState(null);
@@ -380,15 +404,12 @@ const SwapPartner = () => {
     const fetchGenres = async () => {
         try {
             const data = await getGenres();
-            // Map to string array if response is objects
-            const list = Array.isArray(data) ? data.map(g =>
-                typeof g === 'string' ? g : (g.name || g.label || g.title)
-            ) : [];
-            setGenres(list);
+            if (Array.isArray(data) && data.length > 0) {
+                // Keep the object structure if returned by API
+                setGenres(data);
+            }
         } catch (error) {
             console.error("Failed to fetch genres:", error);
-            // Optional: fallback if API fails
-            setGenres(["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"]);
         }
     };
 
@@ -404,7 +425,11 @@ const SwapPartner = () => {
 
         if (!matchesSearch) return false;
 
-        if (selectedGenre && selectedGenre !== "All" && (p.preferredGenre || p.genre || "").toLowerCase() !== selectedGenre.toLowerCase()) return false;
+        if (selectedGenre && selectedGenre !== "All") {
+            const pGenre = p.preferredGenre || p.genre || "";
+            // Direct comparison with slug (value)
+            if (pGenre.toLowerCase() !== selectedGenre.toLowerCase()) return false;
+        }
 
         if (selectedAudience && selectedAudience !== "All") {
             const rawAudience = p.audienceSize ?? p.audience ?? 0;
@@ -444,7 +469,7 @@ const SwapPartner = () => {
             </div>
 
             {/* Filter Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                 {/* Search Input */}
                 <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white w-full lg:max-w-[250px]">
                     <FiSearch size={14} className="text-gray-400" />
@@ -511,7 +536,14 @@ const SwapPartner = () => {
                                     audience: partner.audienceSize || "0",
                                     partners: `${(partner.maxPartners || 0) - (partner.currentPartnersCount || 0)} Slot${((partner.maxPartners || 0) - (partner.currentPartnersCount || 0)) !== 1 ? 's' : ''} Available`,
                                     visibility: formatLabel(partner.visibility),
-                                    genre: formatLabel(partner.preferredGenre),
+                                    genre: (() => {
+                                        const pGenre = partner.preferredGenre || partner.genre || "";
+                                        const found = genres.find(g =>
+                                            (typeof g === 'string' ? g : g.value) === pGenre ||
+                                            (typeof g === 'string' ? g : g.label) === pGenre
+                                        );
+                                        return (typeof found === 'string' ? found : found?.label) || formatLabel(pGenre);
+                                    })(),
                                     paid: partner.price && partner.price !== "0.00",
                                     paidAmount: `$${partner.price || "0.00"}`,
                                     badge: formatLabel(partner.promotionType),
