@@ -488,7 +488,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
     "
         >
             {/* Cover */}
-            <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden">
+            <div className="relative h-[380px] w-full flex items-center justify-center overflow-hidden">
 
 
                 <img
