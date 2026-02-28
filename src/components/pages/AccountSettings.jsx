@@ -233,13 +233,13 @@ const AccountSettings = () => {
 
                 <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
 
-                <Input label="Email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Email (optional) " name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
 
-                <Input label="Location" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Location (optional)" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
 
                 <div className="space-y-1.5">
                     <label className="text-[12px] font-medium text-[#111827]">
-                        Primary Genre
+                        Primary Genre  (optional)
                     </label>
                     <select
                         name="genre"
@@ -257,14 +257,12 @@ const AccountSettings = () => {
                         ))}
                     </select>
                 </div>
-
-                <Input label="Website Link" name="website" value={formData.website} onChange={handleChange} disabled={!isEditing} />
-                <Input label="Instagram Link" name="instagram" value={formData.instagram} onChange={handleChange} disabled={!isEditing} />
-                <Input label="TikTok Link" name="tiktok" value={formData.tiktok} onChange={handleChange} disabled={!isEditing} />
-                <Input label="Facebook Link" name="facebook" value={formData.facebook} onChange={handleChange} disabled={!isEditing} />
-
+                <Input label="Website Link (optional) " name="website" value={formData.website} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Instagram Link (optional) " name="instagram" value={formData.instagram} onChange={handleChange} disabled={!isEditing} />
+                <Input label="TikTok Link (optional) " name="tiktok" value={formData.tiktok} onChange={handleChange} disabled={!isEditing} />
+                <Input label="Facebook Link (optional) " name="facebook" value={formData.facebook} onChange={handleChange} disabled={!isEditing} />
                 <div className="md:col-span-2 space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Bio</label>
+                    <label className="text-[12px] font-medium text-[#111827]">Bio (optional) </label>
                     <textarea
                         name="bio"
                         rows="4"
@@ -298,7 +296,6 @@ const AccountSettings = () => {
         </div>
     );
 };
-
 /* Reusable Input Component */
 const Input = ({ label, name, value, onChange, type = "text", disabled }) => (
     <div className="space-y-1.5">

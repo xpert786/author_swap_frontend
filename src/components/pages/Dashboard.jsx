@@ -29,6 +29,8 @@ const Dashboard = () => {
   const { notifications } = useNotifications();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activityPage, setActivityPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
   const stats = [
     { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]", path: "/books" },
@@ -36,6 +38,16 @@ const Dashboard = () => {
     { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]", path: "/swap-management" },
     { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]", path: "/reputation" },
   ];
+
+  const activities = useMemo(() => {
+    return dashboardData?.recent_activity || notifications || [];
+  }, [dashboardData, notifications]);
+
+  const totalActivityPages = Math.ceil(activities.length / ITEMS_PER_PAGE);
+  const currentActivities = activities.slice(
+    (activityPage - 1) * ITEMS_PER_PAGE,
+    activityPage * ITEMS_PER_PAGE
+  );
 
   const analytics = [
     { label: "AVG OPEN RATE", value: `${dashboardData?.campaign_analytics?.avg_open_rate || 0}%` },
@@ -153,8 +165,21 @@ const Dashboard = () => {
   const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
   const today = useMemo(() => dayjs(), []);
 
-  const handleCreateSlot = () => {
-    setShowAddSlot(false);
+  const handleActivityClick = (url) => {
+    if (!url) return;
+
+    let targetUrl = url;
+
+    // Normalize backend URLs to frontend routes if necessary
+    if (url.includes("/dashboard/swaps/track/")) {
+      const pathParts = url.split("/").filter(Boolean);
+      const id = pathParts[pathParts.length - 1];
+      targetUrl = `/track-swap/${id}`;
+    } else if (url === "/dashboard/swaps/manage/" || url === "/dashboard/swaps/") {
+      targetUrl = "/swap-management";
+    }
+
+    navigate(targetUrl);
   };
 
   return (
@@ -319,13 +344,14 @@ const Dashboard = () => {
         </div>
 
         {/* RECENT ACTIVITY */}
-        <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm">
+        <div className="lg:col-span-4 bg-white rounded-[12px] border border-[#B5B5B5] p-5 shadow-sm flex flex-col">
           <h3 className="text-sm md:text-base font-medium text-gray-900 mb-6 tracking-tight">Recent Activity</h3>
-          <div className="space-y-5">
-            {(dashboardData?.recent_activity || notifications || []).slice(0, 6).map((activity) => (
+          <div className="space-y-5 flex-1">
+            {currentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
+                onClick={() => handleActivityClick(activity.action_url)}
+                className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0 cursor-pointer"
               >
                 <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
                 <div className="w-full">
@@ -345,10 +371,33 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {(!dashboardData?.recent_activity || dashboardData.recent_activity.length === 0) && (!notifications || notifications.length === 0) && (
+            {activities.length === 0 && (
               <p className="text-xs text-center text-gray-400 italic py-4">No recent activity</p>
             )}
           </div>
+
+          {/* Activity Pagination */}
+          {totalActivityPages > 1 && (
+            <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#B5B5B5]">
+              <button
+                onClick={() => setActivityPage(prev => Math.max(1, prev - 1))}
+                disabled={activityPage === 1}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <IoChevronBack size={18} />
+              </button>
+              <span className="text-[11px] font-semibold text-gray-500">
+                Page {activityPage} of {totalActivityPages}
+              </span>
+              <button
+                onClick={() => setActivityPage(prev => Math.min(totalActivityPages, prev + 1))}
+                disabled={activityPage === totalActivityPages}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <IoChevronForward size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

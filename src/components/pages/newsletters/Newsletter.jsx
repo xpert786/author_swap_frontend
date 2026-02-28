@@ -21,7 +21,7 @@ import Edit from "../../../assets/edit.png";
 import Swap from "../../../assets/swap-bg.png";
 import dayjs from "dayjs";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
-import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
+import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot, exportNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
 
@@ -54,21 +54,55 @@ const Newsletter = () => {
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
     const [calendarData, setCalendarData] = useState([]);
 
-    const handleExportGoogle = () => {
-        // You can generate a Google Calendar URL dynamically here
-        console.log("Exporting to Google Calendar");
+    const handleSlotExport = async (slotId, format) => {
+        if (format === "ics") {
+            const url = `${import.meta.env.VITE_API_BASE_URL}newsletter-slot/${slotId}/export/?format=ics`;
+            window.open(url, "_blank");
+        } else {
+            try {
+                const response = await exportNewsSlot(slotId, format);
+                if (response.data?.url) {
+                    window.open(response.data.url, "_blank");
+                }
+            } catch (error) {
+                toast.error(`Failed to export to ${format === "google" ? "Google Calendar" : "Outlook"}`);
+            }
+        }
+        setOpenDropdown(null);
+    };
+
+
+    const handleExportGoogle = async () => {
+        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
+        if (daySlots.length === 0) {
+            toast.error("No slots available for this day");
+            return;
+        }
+        await handleSlotExport(daySlots[0].id, "google");
         setExportDropdownOpen(false);
     };
 
-    const handleExportOutlook = () => {
-        console.log("Exporting to Outlook");
+    const handleExportOutlook = async () => {
+        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
+        if (daySlots.length === 0) {
+            toast.error("No slots available for this day");
+            return;
+        }
+        await handleSlotExport(daySlots[0].id, "outlook");
         setExportDropdownOpen(false);
     };
 
-    const handleExportICS = () => {
-        console.log("Downloading ICS file");
+    const handleExportICS = async () => {
+        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
+        if (daySlots.length === 0) {
+            toast.error("No slots available for this day");
+            return;
+        }
+        await handleSlotExport(daySlots[0].id, "ics");
         setExportDropdownOpen(false);
     };
+
+
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -554,7 +588,46 @@ const Newsletter = () => {
                                                             </button>
                                                         </>
                                                     )}
+                                                    {/* Individual Slot Export Dropdown */}
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setOpenDropdown(openDropdown === `export_${slot.id}` ? null : `export_${slot.id}`);
+                                                            }}
+                                                            className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition"
+                                                            title="Export Slot"
+                                                        >
+                                                            <Download size={14} className="text-gray-600" />
+                                                        </button>
+                                                        {openDropdown === `export_${slot.id}` && (
+                                                            <>
+                                                                <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+                                                                <div className="absolute left-0 bottom-full mb-2 w-44 bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[9999]">
+                                                                    <button
+                                                                        onClick={() => handleSlotExport(slot.id, "google")}
+                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
+                                                                    >
+                                                                        Google Calendar
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleSlotExport(slot.id, "outlook")}
+                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
+                                                                    >
+                                                                        Outlook Calendar
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleSlotExport(slot.id, "ics")}
+                                                                        className="w-full text-left px-4 py-2 text-[12px] text-gray-600 hover:bg-gray-50 bg-white"
+                                                                    >
+                                                                        Download ICS File
+                                                                    </button>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
+
                                             </div>
                                         </div>
                                     ));
