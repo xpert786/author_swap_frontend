@@ -18,6 +18,12 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
     const [swapOpen, setSwapOpen] = useState(false);
     const [slotData, setSlotData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedPartner, setSelectedPartner] = useState(null);
+
+    const handlePartnerClick = (partner) => {
+        setSelectedPartner(partner);
+        setSwapOpen(true);
+    };
 
     const formatLabel = (value) => {
         if (!value) return "";
@@ -190,7 +196,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
                                         <div className="flex items-center gap-3">
                                             <button
-                                                onClick={() => setSwapOpen(true)}
+                                                onClick={() => handlePartnerClick(partner)}
                                                 className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                                             >
                                                 <Eye size={16} />
@@ -233,6 +239,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
             <SwapPartnerDetails
                 isOpen={swapOpen}
                 onClose={() => setSwapOpen(false)}
+                partnerData={selectedPartner}
             />
         </div>
     );

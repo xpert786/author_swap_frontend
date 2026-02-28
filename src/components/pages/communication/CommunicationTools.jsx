@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiSearch, FiPaperclip, FiFileText, FiChevronLeft, FiPlus, FiX } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SendIcon } from "../../icons";
 
 import { getConversations, getChatHistory, getComposePartners, sendMessage } from "../../../apis/chat";
@@ -9,6 +9,7 @@ import { useNotifications } from "../../../context/NotificationContext";
 const CommunicationTools = () => {
     const { refreshCounts } = useNotifications();
     const navigate = useNavigate();
+    const location = useLocation();
     const [conversations, setConversations] = useState([]);
     const [activeConv, setActiveConv] = useState(null);
     const [messageInput, setMessageInput] = useState("");
@@ -17,6 +18,7 @@ const CommunicationTools = () => {
     const [loading, setLoading] = useState(true);
     const [isComposeMode, setIsComposeMode] = useState(false);
     const [composePartners, setComposePartners] = useState([]);
+    const [transientPartner, setTransientPartner] = useState(null); // To handle new chat from SlotDetails
     const [selectedFile, setSelectedFile] = useState(null);
     const fileInputRef = useRef(null);
     const socketRef = useRef(null);
@@ -41,8 +43,32 @@ const CommunicationTools = () => {
     };
 
     useEffect(() => {
-        fetchConversations();
-    }, []);
+        const load = async () => {
+            await fetchConversations();
+
+            // Check for navigating from SlotDetails
+            if (location.state?.partnerId) {
+                const pId = location.state.partnerId;
+                const pName = location.state.partnerName || "Partner";
+                const pAvatar = location.state.partnerAvatar;
+
+                // If not in conversations, set transient partner
+                if (!conversations.find(c => c.id === pId)) {
+                    setTransientPartner({
+                        id: pId,
+                        name: pName,
+                        avatar: pAvatar,
+                        username: location.state.partnerUsername || ""
+                    });
+                }
+
+                handleSelectConv(pId);
+                // We DON'T clear window.history.state yet because we need it to persist on rerender 
+                // but only clear if desired or handled elsewhere. Actually, location.state is enough.
+            }
+        };
+        load();
+    }, [location.state]);
 
     const fetchComposePartners = async () => {
         try {
@@ -250,7 +276,10 @@ const CommunicationTools = () => {
         }
     };
 
-    const activeConversation = conversations.find(c => c.id === activeConv) || composePartners.find(c => c.id === activeConv);
+    const activeConversation =
+        conversations.find(c => c.id === activeConv) ||
+        composePartners.find(c => c.id === activeConv) ||
+        (transientPartner?.id === activeConv ? transientPartner : null);
 
     return (
         <div className="bg-white min-h-[calc(100vh-140px)] md:h-[calc(100vh-140px)] flex flex-col overflow-hidden">

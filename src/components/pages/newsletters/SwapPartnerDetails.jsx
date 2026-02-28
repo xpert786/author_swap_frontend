@@ -1,17 +1,37 @@
 import React from "react";
 import { X, Send, Repeat, MessageCircle } from "lucide-react";
 import { formatCamelCaseName } from "../../../utils/formatName";
+import { useNavigate } from "react-router-dom";
 
-const SwapPartnerDetails = ({ isOpen, onClose }) => {
+const SwapPartnerDetails = ({ isOpen, onClose, partnerData }) => {
+    const navigate = useNavigate();
     if (!isOpen) return null;
 
-    // Dummy data (replace with API later)
-    const partner = {
+    // Use passed partnerData or fallback to dummy
+    const partner = partnerData ? {
+        name: partnerData.author?.name || partnerData.sender_name || "Partner",
+        role: "Author", // Fallback role
+        swaps: `${partnerData.author?.swaps_completed || partnerData.swaps_completed || 0} swaps completed`,
+        badge: partnerData.status || "Active",
+        avatar: partnerData.author?.profile_picture || partnerData.sender_profile_picture || partnerData.avatar || `https://ui-avatars.com/api/?name=${partnerData.author?.name || partnerData.sender_name || 'User'}&background=random`,
+        id: partnerData.author?.id || partnerData.sender_id || partnerData.id
+    } : {
         name: "John Doe",
         role: "Fantasy Author",
         swaps: "4.2 swaps completed",
         badge: "Verified Pro",
         avatar: "https://i.pravatar.cc/40?img=3",
+    };
+
+    const handleMessageClick = () => {
+        navigate("/communication", {
+            state: {
+                partnerId: partner.id,
+                partnerName: partner.name,
+                partnerAvatar: partner.avatar
+            }
+        });
+        onClose();
     };
 
     return (
@@ -128,7 +148,10 @@ const SwapPartnerDetails = ({ isOpen, onClose }) => {
                             Cancel
                         </button>
 
-                        <button className="flex items-center gap-2 rounded-lg bg-[#2F6F6D] px-6 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 transition shadow-sm">
+                        <button
+                            onClick={handleMessageClick}
+                            className="flex items-center gap-2 rounded-lg bg-[#2F6F6D] px-6 py-1.5 text-[13px] font-semibold text-white hover:opacity-90 transition shadow-sm"
+                        >
                             <MessageCircle size={16} />
                             Message {formatCamelCaseName(partner.name)}
                         </button>
