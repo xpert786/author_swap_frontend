@@ -238,7 +238,7 @@ const Dashboard = () => {
                 <IoChevronForward size={18} />
               </button>
               <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight ml-1">
-                {currentMonth.format("MMMM YYYY")} Calendar
+                {currentMonth.format("MMMM YYYY")} 
               </h3>
             </div>
             <div className="flex flex-wrap gap-2">

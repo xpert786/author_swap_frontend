@@ -466,7 +466,7 @@ const Newsletter = () => {
                                 <IoChevronBack size={20} />
                             </button>
                             <h3 className="text-[17px] font-medium text-[#111827] tracking-tight">
-                                {currentMonth.format("MMMM YYYY")} Calendar
+                                {currentMonth.format("MMMM YYYY")}
                             </h3>
                             <button
                                 onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
