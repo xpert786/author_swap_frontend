@@ -406,7 +406,7 @@ const BooksPage = () => {
             ) : filteredBooks.length === 0 ? (
                 <div className="text-center py-10 text-gray-500">Add books to get started.</div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                     {filteredBooks.map((book) => (
                         <BookCard
                             key={book.id}
@@ -488,39 +488,16 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
     "
         >
             {/* Cover */}
-            <div className="relative h-[400px] w-full flex items-center justify-center overflow-hidden">
+            <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden">
 
 
                 <img
                     src={book.book_cover || "/placeholder.jpg"}
                     alt={book.title}
-                    className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105 shadow-[0_8px_20px_rgba(0,0,0,0.1)] rounded-sm"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
 
-                {(book.is_primary_promo || book.availability === "wide" || book.availability === "kindle_unlimited") && (
-                    <div className="absolute top-4 left-4 right-4 flex flex-row justify-between z-40">
-                        {book.is_primary_promo && (
-                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-normal text-[#F59E0B] px-3 py-1.5 rounded-full shadow-sm ">
-                                <Star size={11} className="fill-[#F59E0B]" />
-                                <span className="text-black">Primary</span>
-                            </span>
-                        )}
 
-                        {book.availability === "wide" && (
-                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-normal text-blue-500 px-3 py-1.5 rounded-full shadow-sm ">
-                                <Globe size={11} />
-                                <span className="text-black">Wide</span>
-                            </span>
-                        )}
-
-                        {book.availability === "kindle_unlimited" && (
-                            <span className="flex items-center gap-1.5 bg-white text-[10px] font-normal text-black px-3 py-1.5 rounded-full shadow-sm">
-                                <LuBookOpen size={11} />
-                                <span className="text-black">KU</span>
-                            </span>
-                        )}
-                    </div>
-                )}
             </div>
 
             {/* Content - Overlay on Hover */}
@@ -528,14 +505,14 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 absolute inset-x-0 bottom-0 
                 bg-white 
                 px-4 py-4 flex flex-col gap-4
-                translate-y-0 lg:translate-y-[calc(100%-12px)] lg:group-hover:translate-y-0
+                translate-y-[100%] group-hover:translate-y-0
                 transition-all duration-500 ease-out
                 border-t border-gray-100
                 z-30
                 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]
             ">
                 {/* Visual indicator/handle for hover */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-100 group-hover:hidden" />
+
 
                 <div className="flex justify-between items-start gap-3 mt-1">
                     <div className="min-w-0">
