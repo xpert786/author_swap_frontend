@@ -137,11 +137,13 @@ const Newsletter = () => {
 
             const formatted = dataArray.map(item => ({
                 id: item.id,
-                time: `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
+                time: item.send_date
+                    ? `${dayjs(item.send_date).format("MMM D, YYYY")} ${item.send_time ? `at ${item.send_time}` : ""}`
+                    : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
                 period: getPeriod(item.send_time) || formatLabel(item.time_period),
                 genre: formatLabel(item.preferred_genre),
                 rawGenre: (item.preferred_genre || "").toLowerCase(),
-                partners: `${item.partner_count || 0}/${item.max_partners} Partners`,
+                partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
                 visibility: formatLabel(item.visibility),
                 rawVisibility: (item.visibility || "").toLowerCase(),
                 audience: item.audience_size,
@@ -610,6 +612,10 @@ const Newsletter = () => {
                         isOpen={detailsOpen}
                         onClose={() => { setDetailsOpen(false); setSelectedSlot(null); }}
                         slotId={selectedSlot.id}
+                        onEdit={() => {
+                            setDetailsOpen(false);
+                            handleEditClick(selectedSlot);
+                        }}
                     />
                 </>
             )}

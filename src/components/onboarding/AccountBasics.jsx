@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { onboardingStep1, getProfile, editPenName } from "../../apis/onboarding";
 import { useState, useEffect, useRef } from "react";
 import { getGenres } from "../../apis/genre"; // adjust path
+import { formatCamelCaseName } from "../../utils/formatName";
 
 
 const AccountBasics = ({ next }) => {
@@ -20,6 +21,7 @@ const AccountBasics = ({ next }) => {
   const [newPenName, setNewPenName] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const genreRef = useRef(null);
 
   useEffect(() => {
@@ -163,6 +165,37 @@ const AccountBasics = ({ next }) => {
     if (fileInput) fileInput.value = "";
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith("image/")) {
+        // Create a fake event object to reuse the existing logic if possible, 
+        // but it's cleaner to just call setValue and setPreview directly
+        setValue("profilePhoto", files);
+        setPreview(URL.createObjectURL(file));
+      } else {
+        toast.error("Please drop an image file");
+      }
+    }
+  };
+
 
   const removePenName = async (nameToRemove) => {
     try {
@@ -209,19 +242,22 @@ const AccountBasics = ({ next }) => {
           {/* Pen Name */}
           <div className="mb-4">
             <label className="block text-sm mb-2">Pen Name *</label>
-            <input
-              type="text"
-              value={newPenName}
-              onChange={(e) => setNewPenName(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddPenName();
-                }
-              }}
-              placeholder="Enter Pen Name"
-              className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none mb-2"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newPenName}
+                onChange={(e) => setNewPenName(e.target.value)}
+                placeholder="Enter Pen Name"
+                className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddPenName}
+                className="bg-[#2F6F6D] text-white px-5 py-2 rounded-lg hover:bg-[#255856] transition-colors"
+              >
+                Add
+              </button>
+            </div>
 
 
             {/* Added Pen Names List */}
@@ -231,7 +267,7 @@ const AccountBasics = ({ next }) => {
                   key={index}
                   className="flex items-center gap-1.5 bg-[#E07A5F1A] text-black px-3 py-1.5 rounded-full border border-[#E07A5F33] text-sm"
                 >
-                  <span>{name}</span>
+                  <span>{formatCamelCaseName(name)}</span>
                   <button
                     type="button"
                     onClick={() => removePenName(name)}
@@ -271,11 +307,15 @@ const AccountBasics = ({ next }) => {
             )}
           </div>
 
-          {/* Profile Photo */}
           <div className="mb-4">
             <label className="block text-sm mb-2">Profile Photo</label>
 
-            <div className="border-2 border-dashed border-[#B5B5B5] rounded-lg h-40 flex flex-col items-center justify-center text-center text-gray-500">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-lg h-40 flex flex-col items-center justify-center text-center transition-colors ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-[#B5B5B5] text-gray-500"}`}
+            >
               <input
                 type="file"
                 id="profileUpload"
@@ -394,7 +434,7 @@ const AccountBasics = ({ next }) => {
                     key={index}
                     className="flex items-center gap-1.5 bg-[#2F6F6D1A] text-black px-3 py-1.5 rounded-full border border-[#2F6F6D33] text-sm"
                   >
-                    <span>{displayLabel}</span>
+                    <span>{formatCamelCaseName(displayLabel)}</span>
                     <button
                       type="button"
                       onClick={() => removeGenre(genreVal)}

@@ -12,6 +12,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
   const [allSubGenres, setAllSubGenres] = useState({});
   const [subGenres, setSubGenres] = useState([]);
   const [preview, setPreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -92,6 +93,35 @@ const AddBooks = ({ onClose, onBookAdded }) => {
     // Reset the file input value so same file can be selected again
     const fileInput = document.getElementsByName("coverImage")[0];
     if (fileInput) fileInput.value = "";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith("image/")) {
+        setPreview(URL.createObjectURL(file));
+        setFormData((prev) => ({ ...prev, coverImage: file }));
+      } else {
+        toast.error("Please drop an image file");
+      }
+    }
   };
 
   const handleChange = (e) => {
@@ -231,7 +261,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* Book Info Grid */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-2">
 
               {/* Book Title */}
               <div>
@@ -328,7 +358,12 @@ const AddBooks = ({ onClose, onBookAdded }) => {
                 Book Cover Image *
               </label>
 
-              <label className="mt-2 relative flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl h-44 cursor-pointer hover:border-[#2F6F6D] transition bg-gray-50/30 overflow-hidden">
+              <label
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`mt-2 relative flex items-center justify-center border-2 border-dashed rounded-xl h-44 cursor-pointer transition overflow-hidden ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-gray-300 hover:border-[#2F6F6D] bg-gray-50/30"}`}
+              >
 
 
                 <input
@@ -371,7 +406,7 @@ const AddBooks = ({ onClose, onBookAdded }) => {
             </div>
 
             {/* Availability + Publish Date */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Availability

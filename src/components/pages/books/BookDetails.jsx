@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Calendar } from "lucide-react";
+import { Calendar, Star, Globe } from "lucide-react";
 import { SiAmazon } from "react-icons/si";
 import { FaApple } from "react-icons/fa";
 import { FiBookOpen } from "react-icons/fi";
@@ -181,13 +181,22 @@ export default function BookDetails() {
             <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-stretch">
                     <div className="w-full lg:w-80 xl:w-96">
-                        <div className="h-full rounded-[10px] overflow-hidden shadow-md">
+                        <div
+                            className={`h-full rounded-[10px] overflow-hidden shadow-md ${book.amazonUrl ? "cursor-pointer group relative" : ""}`}
+                            onClick={() => book.amazonUrl && window.open(book.amazonUrl, "_blank")}
+                        >
                             <img
                                 src={book.coverImage || "/placeholder.jpg"}
                                 alt="Book Cover"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />
-
+                            {book.amazonUrl && (
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span className="bg-white/90 text-[#2F6F6D] px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                                        View on Amazon
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -226,10 +235,38 @@ export default function BookDetails() {
                                 Available ON
                             </h2>
 
-                            <div className="flex gap-6 pb-3">
-                                <PlatformCard name="Amazon" active={!!book.amazonUrl} />
-                                <PlatformCard name="Apple Books" active={!!book.appleUrl} />
-                                <PlatformCard name="Kobo" active={!!book.koboUrl} />
+                            <div className="flex flex-wrap gap-4 pb-3">
+                                {book.amazonUrl && (
+                                    <PlatformCard
+                                        name="Amazon"
+                                        url={book.amazonUrl}
+                                        active={true}
+                                    />
+                                )}
+                                {book.appleUrl && (
+                                    <PlatformCard
+                                        name="Apple Books"
+                                        url={book.appleUrl}
+                                        active={true}
+                                    />
+                                )}
+                                {book.koboUrl && (
+                                    <PlatformCard
+                                        name="Kobo"
+                                        url={book.koboUrl}
+                                        active={true}
+                                    />
+                                )}
+                                {book.barnesUrl && (
+                                    <PlatformCard
+                                        name="Barnes & Noble"
+                                        url={book.barnesUrl}
+                                        active={true}
+                                    />
+                                )}
+                                {!book.amazonUrl && !book.appleUrl && !book.koboUrl && !book.barnesUrl && (
+                                    <p className="text-gray-400 text-sm italic py-2">No retailer links provided.</p>
+                                )}
                             </div>
 
                         </div>
@@ -255,11 +292,12 @@ function MetaCard({ label, value }) {
 }
 
 
-function PlatformCard({ name, active = false }) {
+function PlatformCard({ name, url, active = false }) {
     return (
         <div
-            className={`w-44 rounded-[10px] border p-6 flex flex-col items-center gap-3 transition cursor-pointer ${active
-                ? "border-orange-400 bg-orange-50"
+            onClick={() => url && window.open(url, "_blank")}
+            className={`w-44 rounded-[10px] border p-6 flex flex-col items-center gap-3 transition cursor-pointer hover:shadow-md active:scale-95 ${active
+                ? "border-[#2F6F6D33] bg-[#2F6F6D05]"
                 : "border-[#B5B5B5] bg-white"
                 }`}
         >
@@ -270,8 +308,10 @@ function PlatformCard({ name, active = false }) {
                         : name === "Apple Books"
                             ? "bg-gradient-to-br from-black via-gray-900 to-gray-800"
                             : name === "Kobo"
-                                ? "bg-gradient-to-br from-[#B00020] via-[#D00000] to-[#8B0000]"
-                                : "bg-gray-100"
+                                ? "bg-gradient-to-br from-[#0079C1] via-[#005A8D] to-[#003B5C]"
+                                : name === "Barnes & Noble"
+                                    ? "bg-gradient-to-br from-[#004B33] via-[#003B28] to-[#002B1D]"
+                                    : "bg-gray-100"
                     }
   `}
             >
@@ -286,14 +326,16 @@ function PlatformCard({ name, active = false }) {
                 {name === "Kobo" && (
                     <FiBookOpen className="text-white w-5 h-5" />
                 )}
+
+                {name === "Barnes & Noble" && (
+                    <LuBookOpen className="text-white w-5 h-5" />
+                )}
             </div>
-
-
 
             <p className="font-medium text-gray-900">{name}</p>
 
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#16A34A1A] text-[#16A34A]">
-                Live
+                Available
             </span>
         </div>
     );

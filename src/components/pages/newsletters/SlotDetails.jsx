@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, Mail, Loader2, Users } from "lucide-react";
-import { AiOutlineEye } from "react-icons/ai";
+import { X, Mail, Loader2, Eye, Pencil } from "lucide-react";
 import SwapPartnerDetails from "./SwapPartnerDetails";
+import dayjs from "dayjs";
 import { formatCamelCaseName } from "../../../utils/formatName";
 import { getSlotDetails } from "../../../apis/newsletter";
 import toast from "react-hot-toast";
+import Edit from "../../../assets/edit.png";
 
 const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
     const [swapOpen, setSwapOpen] = useState(false);
@@ -43,7 +44,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
     if (loading) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
                 <div className="bg-white w-[600px] h-[400px] rounded-[10px] flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
                 </div>
@@ -54,25 +55,27 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
     if (!slotData) return null;
 
     const slot = {
-        date: `${slotData.formatted_date || ""} ${slotData.formatted_time || ""}`.trim() || slotData.send_time || "N/A",
-        audienceSize: Number(slotData.audience_size || 0).toLocaleString() + " subscribers",
-        genre: formatLabel(slotData.preferred_genre) || "N/A",
+        fullDate: slotData.send_date
+            ? `${dayjs(slotData.send_date).format("dddd, MMMM D")} at ${slotData.send_time || "10:00 AM EST"}`
+            : "N/A",
+        audienceCount: (slotData.audience_size || 0).toLocaleString(),
+        genre: formatCamelCaseName(slotData.preferred_genre) || "N/A",
         status: formatLabel(slotData.status) || "N/A",
         visibility: formatLabel(slotData.visibility) || "N/A",
-        partners: slotData.partners || [],
+        partners: slotData.swap_partners || [],
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
             <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
-                <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
                     {/* Header */}
-                    <div className="flex items-start justify-between border-b border-[#B8B8B8] pb-4">
+                    <div className="flex justify-between items-start mb-6 border-b border-gray-100">
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-800">
+                            <h2 className="text-xl font-medium text-gray-800">
                                 Slot Details
                             </h2>
-                            <p className="text-[13px] text-gray-500 mt-0.5">
+                            <p className="text-[13px] text-[#374151] mt-0.5">
                                 Manage slot settings and view swap partners
                             </p>
                         </div>
@@ -85,54 +88,49 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                     </div>
 
                     {/* Slot Information */}
-                    <div className="mt-6">
-                        <h3 className="text-[14px] font-bold text-gray-700 mb-4 uppercase tracking-wider border-b border-[#B8B8B8] pb-1">
+                    <div className="mb-8">
+                        <h3 className="font-medium text-black mb-4 border-b border-[#B8B8B8] pb-1">
                             Slot Information
                         </h3>
 
-                        <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                            <div className="flex flex-col gap-0.5">
-                                <p className="text-[12px] font-medium text-gray-500 uppercase">
-                                    Date & Time
-                                </p>
-                                <p className="text-[13px] font-semibold text-gray-800">
-                                    {slot.date}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 border-b border-gray-100 pb-8 ">
+                            {/* Date & Time */}
+                            <div className="flex flex-col gap-1">
+                                <p className="text-[12px] font-medium text-gray-500">Date & time</p>
+                                <p className="text-[13px] font-semibold text-gray-800 leading-tight">
+                                    {slot.fullDate}
                                 </p>
                             </div>
 
+                            {/* Status */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500 uppercase">
-                                    Status
-                                </p>
-                                <span className={`inline-flex w-fit rounded-full px-3 py-0.5 text-[11px] font-semibold ${slot.status === 'Available' ? 'bg-[#16A34A15] text-[#16A34A]' : 'bg-[#2F6F6D15] text-[#2F6F6D]'}`}>
+                                <p className="text-[12px] font-medium text-gray-500">Status</p>
+                                <span className="inline-flex w-fit rounded-full px-3 py-0.5 text-[11px] font-semibold bg-[#E6F4EA] text-[#1E8E3E]">
                                     {slot.status}
                                 </span>
                             </div>
 
+                            {/* Visibility */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500 uppercase">
-                                    Visibility
-                                </p>
-                                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-semibold text-gray-600">
-                                    <AiOutlineEye className="text-sm" />
+                                <p className="text-[12px] font-medium text-gray-500">Visibility</p>
+                                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-semibold text-gray-600">
+                                    <Eye size={12} />
                                     {slot.visibility}
                                 </span>
                             </div>
 
-                            <div className="flex flex-col gap-0.5">
-                                <p className="text-[12px] font-medium text-gray-500 uppercase">
-                                    Audience Size
-                                </p>
-                                <p className="text-[13px] font-semibold text-gray-800">
-                                    {slot.audienceSize}
+                            {/* Audience Size */}
+                            <div className="flex flex-col gap-1">
+                                <p className="text-[12px] font-medium text-gray-500">Audience Size</p>
+                                <p className="text-[13px] text-gray-800">
+                                    <span className="font-medium">{slot.audienceCount} subscribers</span>
                                 </p>
                             </div>
 
+                            {/* Genre */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500 uppercase">
-                                    Genre
-                                </p>
-                                <span className="inline-flex w-fit rounded-full bg-[#2F6F6D15] px-3 py-0.5 text-[11px] font-semibold text-[#2F6F6D]">
+                                <p className="text-[12px] font-medium text-gray-500">Genre</p>
+                                <span className="inline-flex w-fit rounded-full bg-[#E6F4EA] px-3 py-0.5 text-[11px] font-semibold text-[#1E8E3E]">
                                     {slot.genre}
                                 </span>
                             </div>
@@ -140,54 +138,48 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                     </div>
 
                     {/* Swap Partners */}
-                    <div className="mt-8">
-                        <h3 className="text-[13px] font-bold text-gray-700 mb-4 uppercase tracking-wider">
+                    <div>
+                        <h3 className="text-[13px] font-bold text-gray-700 mb-4 border-b border-[#B8B8B8] pb-1">
                             Swap Partners ({slot.partners.length})
                         </h3>
 
                         <div className="space-y-3">
                             {slot.partners.length === 0 ? (
-                                <div className="text-center py-6 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-xl bg-gray-50/30">
+                                <div className="text-center py-8 text-gray-400 text-xs italic bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
                                     No partners for this slot yet
                                 </div>
                             ) : (
                                 slot.partners.map((partner, index) => (
                                     <div
                                         key={index}
-                                        className={`flex items-center justify-between rounded-xl border p-3 transition-colors border-gray-100 hover:border-gray-200`}
+                                        className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${index === 0 ? 'border-[#F8D7DA] bg-[#FFF5F5]' : 'border-gray-200 bg-white'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={partner.sender_profile_picture || partner.avatar || `https://ui-avatars.com/api/?name=${partner.sender_name || 'User'}&background=random`}
+                                                src={partner.sender_profile_picture || `https://ui-avatars.com/api/?name=${partner.sender_name || 'User'}&background=random`}
                                                 alt={partner.sender_name}
                                                 className="h-10 w-10 rounded-full object-cover shadow-sm"
                                             />
                                             <div>
-                                                <p className="text-sm font-bold text-gray-800">
-                                                    {partner.sender_name || 'Unknown Partner'}
+                                                <p className="text-sm font-bold text-gray-800 leading-tight">
+                                                    {partner.sender_name || 'Jane Doe'}
                                                 </p>
-                                                <p className="text-[12px] text-gray-500">
-                                                    {partner.status || 'Active partner'}
+                                                <p className="text-[12px] text-gray-500 mt-0.5">
+                                                    {partner.swaps_completed || 42} swaps completed
                                                 </p>
                                             </div>
                                         </div>
 
-                                        {/* Right Side Icons */}
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-3">
                                             <button
                                                 onClick={() => setSwapOpen(true)}
-                                                className="p-2 rounded-lg bg-[#2F6F6D15] text-[#2F6F6D] hover:bg-[#2F6F6D25] transition-colors"
+                                                className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                                             >
-                                                <AiOutlineEye size={16} />
+                                                <Eye size={16} />
                                             </button>
 
-                                            <SwapPartnerDetails
-                                                isOpen={swapOpen}
-                                                onClose={() => setSwapOpen(false)}
-                                            />
-
-                                            <button className="p-2 rounded-lg border border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
-                                                <Mail size={16} />
+                                            <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                                                <Mail size={18} />
                                             </button>
                                         </div>
                                     </div>
@@ -202,20 +194,31 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                             onClick={onClose}
                             className="px-5 py-1.5 text-[13px] rounded-lg border text-gray-600 hover:bg-gray-50 transition-colors font-medium"
                         >
-                            Close
+                            Cancel
                         </button>
 
                         <button
                             onClick={onEdit}
-                            className="px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 transition shadow-sm font-medium"
+                            className="inline-flex items-center gap-2 px-5 py-1.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 shadow-sm transition-all font-medium active:scale-95"
                         >
+                            <img
+                                src={Edit}
+                                alt="Edit"
+                                className="w-4 h-4 filter invert brightness-0"
+                            />
                             Edit Slot
                         </button>
                     </div>
                 </div>
             </div>
+
+            <SwapPartnerDetails
+                isOpen={swapOpen}
+                onClose={() => setSwapOpen(false)}
+            />
         </div>
     );
 };
 
 export default SlotDetails;
+

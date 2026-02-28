@@ -33,7 +33,7 @@ const SignUp = () => {
 
       localStorage.setItem("token", response.token);
       toast.success("Account created successfully! Welcome to AuthorSwap.", { id: loadingToast });
-      navigate("/onboarding");
+      window.location.href = "/authorswap-frontend/onboarding";
     } catch (error) {
       console.error("Signup failed:", error);
 

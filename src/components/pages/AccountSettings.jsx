@@ -4,6 +4,7 @@ import { getProfile, updateProfile } from "../../apis/profile";
 import Edit from "../../assets/edit.png";
 import { getGenres } from "../../apis/genre";
 import { useProfile } from "../../context/ProfileContext";
+import { formatCamelCaseName } from "../../utils/formatName";
 
 const defaultProfile = {
     name: "",
@@ -218,10 +219,10 @@ const AccountSettings = () => {
                     </div>
                     <div className="space-y-1">
                         <h2 className="text-[20px] font-semibold text-black leading-none">
-                            {formData.name.split(",")[0].trim()}
+                            {formatCamelCaseName(formData.name)}
                         </h2>
                         <p className="text-[13px] text-gray-500">
-                            {formData.genre.split(",")[0].trim() || "Author"} Author
+                            {formatCamelCaseName(formData.genre) || "Author"} Author
                         </p>
 
                     </div>

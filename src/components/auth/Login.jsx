@@ -37,7 +37,7 @@ const Login = () => {
       );
 
       toast.success("Login successful! Welcome back.");
-      navigate("/dashboard");
+      window.location.href = "/authorswap-frontend/dashboard";
     } catch (error) {
       console.error("Login failed:", error);
 

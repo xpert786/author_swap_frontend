@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { getProfile } from "../../apis/onboarding";
 import Edit from "../../assets/edit.png"
+import { formatCamelCaseName } from "../../utils/formatName";
 
 
 const Confirmation = ({ prev, finish, goToStep }) => {
@@ -67,7 +68,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold">
-                {profile?.pen_name || "N/A"}
+                {formatCamelCaseName(profile?.pen_name) || "N/A"}
               </h4>
               <div className="max-h-24 overflow-y-auto custom-scrollbar pr-2">
                 <p className="text-sm text-gray-600 break-all">
@@ -84,7 +85,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
                       key={i}
                       className="inline-block text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full"
                     >
-                      {g.trim()}
+                      {formatCamelCaseName(g.trim())}
                     </span>
                   ))}
                 </div>
@@ -149,8 +150,8 @@ const Confirmation = ({ prev, finish, goToStep }) => {
             Go to Dashboard
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
