@@ -5,6 +5,7 @@ import Edit from "../../assets/edit.png";
 import { getGenres } from "../../apis/genre";
 import { useProfile } from "../../context/ProfileContext";
 import { formatCamelCaseName } from "../../utils/formatName";
+import { User } from "lucide-react";
 
 const defaultProfile = {
     name: "",
@@ -185,14 +186,17 @@ const AccountSettings = () => {
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-4">
                     <div className="relative">
-                        <img
-                            src={
-                                profileImage ||
-                                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150"
-                            }
-                            alt="Profile"
-                            className="w-[85px] h-[85px] rounded-full object-cover"
-                        />
+                        {profileImage ? (
+                            <img
+                                src={profileImage}
+                                alt="Profile"
+                                className="w-[85px] h-[85px] rounded-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-[85px] h-[85px] rounded-full bg-gray-100 flex items-center justify-center text-[#2F6F6D]">
+                                <User size={40} />
+                            </div>
+                        )}
 
                         {isEditing && (
                             <>

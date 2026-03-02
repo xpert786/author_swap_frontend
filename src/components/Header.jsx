@@ -147,15 +147,18 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         className="flex items-center gap-2 md:gap-3 cursor-pointer group"
                         onClick={toggleDropdown}
                     >
-                        <img
-                            src={
-                                profile?.profile_picture ||
-                                "https://ui-avatars.com/api/?name=" + (profile?.name || profile?.username || "User")
-                            }
-                            alt="profile"
-                            className="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-[#E07A5F33] transition-all shrink-0"
-                            onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + (profile?.name || profile?.username || "User"); }}
-                        />
+                        {profile?.profile_picture ? (
+                            <img
+                                src={profile.profile_picture}
+                                alt="profile"
+                                className="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-[#E07A5F33] transition-all shrink-0"
+                                onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<div class="w-10 h-10 rounded-full bg-[#2F6F6D33] flex items-center justify-center text-[#1F4F4D] shrink-0"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>'; }}
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#2F6F6D33] flex items-center justify-center text-[#1F4F4D] shrink-0 group-hover:bg-[#2F6F6D4d] transition-all">
+                                <FiUser size={20} />
+                            </div>
+                        )}
 
                         {/* Text + Arrow wrapper */}
                         <div className="flex items-center gap-2">
