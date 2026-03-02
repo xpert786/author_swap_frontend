@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useEffect } from "react";
 import { getGenres, getSubGenres } from "../../../apis/genre"; // adjust path
 
-const AddBooks = ({ onClose, onBookAdded }) => {
+const AddBooks = ({ onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
   const [loadingGenres, setLoadingGenres] = useState(true);
@@ -195,17 +195,12 @@ const AddBooks = ({ onClose, onBookAdded }) => {
         console.log(`Payload ${key}:`, value);
       }
 
-      const response = await createBook(payload);
-
-
-
-      const savedBook = response?.data;
-
-      if (onBookAdded && savedBook) {
-        onBookAdded(savedBook);
-      }
+      await createBook(payload);
 
       toast.success("Book added successfully!");
+      if (onSubmit) {
+        await onSubmit();
+      }
       onClose();
     } catch (error) {
       console.error("Book addition failed:", error);

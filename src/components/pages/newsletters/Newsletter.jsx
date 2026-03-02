@@ -656,18 +656,11 @@ const Newsletter = () => {
                         isOpen={editOpen}
                         slotData={selectedSlot}
                         onClose={() => { setEditOpen(false); setSelectedSlot(null); }}
-                        onSave={async (data) => {
-                            try {
-                                await updateNewsSlot(selectedSlot.id, data);
-                                await fetchSlots();
-                                await fetchStats();
-                                setEditOpen(false);
-                                setSelectedSlot(null);
-                                toast.success("Slot updated successfully");
-                            } catch (error) {
-                                console.error("Update failed", error);
-                                toast.error("Failed to update slot");
-                            }
+                        onSave={async () => {
+                            await fetchSlots();
+                            await fetchStats();
+                            setEditOpen(false);
+                            setSelectedSlot(null);
                         }}
                     />
 

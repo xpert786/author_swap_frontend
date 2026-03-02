@@ -11,3 +11,8 @@ export const getSubscriberAnalytics = async () => {
 export const connectMailerlite = async (data) => {
     return apiClient.post("connect-mailerlite/", data);
 }
+
+export const createCheckoutSession = async (data) => {
+    return apiClient.post("stripe/create-checkout-session/", data);
+}
+

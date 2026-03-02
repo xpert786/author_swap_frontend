@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getGenres, getSubGenres } from "../../../apis/genre";
-import { getBookById } from "../../../apis/bookManegment";
+import { getBookById, updateBook } from "../../../apis/bookManegment";
 import toast from "react-hot-toast";
 
-const EditBooks = ({ bookId, onClose, onSave }) => {
+const EditBooks = ({ bookId, onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [genres, setGenres] = useState([]);
@@ -202,11 +202,53 @@ const EditBooks = ({ bookId, onClose, onSave }) => {
     setLoading(true);
 
     try {
-      await onSave(formData);
+      const payload = new FormData();
+      payload.append("title", formData.title);
+      payload.append("primary_genre", formData.genre);
+      payload.append("subgenres", formData.subgenre);
+      payload.append("price_tier", formData.price);
+      payload.append("availability", formData.availability);
+      payload.append("publish_date", formData.publishDate);
+      payload.append("description", formData.description);
+      payload.append("amazon_url", formData.amazonUrl);
+      payload.append("apple_url", formData.appleUrl);
+      payload.append("kobo_url", formData.koboUrl);
+      payload.append("barnes_noble_url", formData.barnesUrl);
+      payload.append("is_primary_promo", formData.isPrimary);
+      payload.append("rating", formData.ratings || "");
+
+      if (formData.coverImage instanceof File) {
+        payload.append("book_cover", formData.coverImage);
+      }
+
+      await updateBook(formData.id, payload);
+
+      toast.success("Book updated successfully!");
+      if (onSubmit) {
+        await onSubmit();
+      }
       onClose();
     } catch (error) {
       console.error("Update failed:", error);
-      toast.error(error?.response?.data?.message || "Failed to update book");
+      const serverData = error?.response?.data;
+      let errorMessage = "Failed to update book";
+
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      } else {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

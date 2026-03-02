@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { updateNewsSlot } from "../../../apis/newsletter";
 import { getGenres, audienceSize } from "../../../apis/genre";
 import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
@@ -11,6 +12,7 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
     preferred_genre: "",
     max_partners: "",
     visibility: "Public",
+    price: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -65,6 +67,7 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
         preferred_genre: data.preferred_genre || "",
         max_partners: data.max_partners || "",
         visibility: data.visibility || "Public",
+        price: data.price || "",
       });
     }
   }, [slotData, isOpen]);
@@ -93,10 +96,37 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
     try {
       // Remove audience_size from the payload
       const { audience_size, ...payload } = formData;
-      await onSave(payload);
+      const slotId = slotData.raw_data?.id || slotData.id;
+
+      await updateNewsSlot(slotId, payload);
+
+      toast.success("Newsletter slot updated successfully!");
+      if (onSave) {
+        await onSave();
+      }
       onClose();
     } catch (err) {
-      toast.error("Failed to update slot.");
+      console.error("Update failed:", err);
+      const serverData = err?.response?.data;
+      let errorMessage = "Failed to update newsletter slot";
+
+      if (serverData) {
+        if (typeof serverData === 'string') {
+          errorMessage = serverData;
+        } else if (serverData.message || serverData.error || serverData.detail) {
+          errorMessage = serverData.message || serverData.error || serverData.detail;
+        } else {
+          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          if (fieldKeys.length > 0) {
+            const firstError = serverData[fieldKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          }
+        }
+      } else {
+        errorMessage = err.message;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -238,6 +268,22 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
                   <option value="single_use_private_link">Single-use private link</option>
                   <option value="hidden">Hidden</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-[13px] font-medium text-gray-600">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                />
               </div>
 
             </div>

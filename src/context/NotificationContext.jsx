@@ -20,15 +20,30 @@ export const NotificationProvider = ({ children }) => {
             if (!token) return;
 
             const response = await getUnreadCount();
-            setUnreadCount(response.data.total);
+            const rawNotificationCount = response.data.notifications;
+
+            // Get how many unread notifications the user has already "seen" on the notifications page
+            const seenCount = parseInt(localStorage.getItem("seen_notifications_count") || "0");
+
+            // Effective count is the difference. If they saw 5, and there are 5, effective is 0.
+            // If they saw 5, and now there are 6, effective is 1.
+            const effectiveCount = Math.max(0, rawNotificationCount - seenCount);
+
+            setUnreadCount(effectiveCount);
             setUnreadCounts({
-                notifications: response.data.notifications,
+                notifications: rawNotificationCount,
                 chat: response.data.chat,
                 email: response.data.email
             });
         } catch (error) {
             console.error("Failed to fetch initial unread counts:", error);
         }
+    };
+
+    const markAllAsSeen = () => {
+        // Store the CURRENT raw count as "seen"
+        localStorage.setItem("seen_notifications_count", unreadCounts.notifications.toString());
+        setUnreadCount(0);
     };
 
     useEffect(() => {
@@ -76,9 +91,13 @@ export const NotificationProvider = ({ children }) => {
                 if (payload.type === "notification") {
                     const newNotification = payload.data;
 
-                    // Add to list and update count
+                    // Add to list and update counts
                     setNotifications((prev) => [newNotification, ...prev]);
                     setUnreadCount((prev) => prev + 1);
+                    setUnreadCounts((prev) => ({
+                        ...prev,
+                        notifications: (prev.notifications || 0) + 1
+                    }));
 
                     // Show Toast
                     toast.custom((t) => (
@@ -152,7 +171,9 @@ export const NotificationProvider = ({ children }) => {
         unreadCount,
         unreadCounts,
         setUnreadCount,
+        setUnreadCounts,
         setNotifications,
+        markAllAsSeen,
         refreshConnection: connectWebSocket,
         refreshCounts: fetchInitialCounts
     };
@@ -163,3 +184,4 @@ export const NotificationProvider = ({ children }) => {
         </NotificationContext.Provider>
     );
 };
+

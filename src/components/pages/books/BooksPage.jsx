@@ -49,41 +49,61 @@ const BooksPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [bookToDelete, setBookToDelete] = useState(null);
 
-    /* ---------------- FETCH BOOKS ---------------- */
-    useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                setLoading(true);
+    const fetchBooks = async () => {
+        try {
+            setLoading(true);
 
-                const response = await getBooks();
-                const rawBooks = response?.data?.results || response?.data || [];
+            const response = await getBooks();
+            const rawBooks = response?.data?.results || response?.data || [];
 
-                const formattedBooks = rawBooks.map((book) => ({
-                    ...book,
+            const formattedBooks = rawBooks.map((book) => ({
+                ...book,
 
-                    // ✅ Fix cover (only if relative URL)
-                    book_cover: book.book_cover?.startsWith("http")
-                        ? book.book_cover
-                        : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`,
+                // ✅ Fix cover (only if relative URL)
+                book_cover: book.book_cover?.startsWith("http")
+                    ? book.book_cover
+                    : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`,
 
-                    // ✅ Fix date properly
-                    publish_date: book.publish_date || null,
+                // ✅ Fix date properly
+                publish_date: book.publish_date || null,
 
-                    // ✅ Ensure rating number
-                    rating: Number(book.rating) || 0,
-                }));
+                // ✅ Ensure rating number
+                rating: Number(book.rating) || 0,
+            }));
 
-                setBooks(formattedBooks);
+            setBooks(formattedBooks);
 
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load books");
-            } finally {
-                setLoading(false);
-            }
-        };
+        } catch (err) {
+            console.error(err);
+            setError("Failed to load books");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    const fetchStats = async () => {
+        try {
+            const response = await bookCardData();
+            const data = response?.data || {};
+
+            setStats({
+                total: data.total_books ?? 0,
+                activePromos: data.active_promotions ?? 0,
+                primaryPromo: data.primary_promo ?? 0,
+                avgOpenRate: data.avg_open_rate ?? "0%",
+            });
+        } catch (err) {
+            console.error("Failed to fetch stats:", err);
+        }
+    };
+
+    const fetchData = () => {
         fetchBooks();
+        fetchStats();
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     /* ---------------- FETCH GENRES ---------------- */
@@ -91,7 +111,6 @@ const BooksPage = () => {
         const loadGenres = async () => {
             try {
                 const data = await getGenres();
-                console.log("GENRES API:", data); // 👈 ADD THIS
                 setGenres(data);
             } catch (error) {
                 toast.error("Failed to load genres");
@@ -99,25 +118,6 @@ const BooksPage = () => {
         };
 
         loadGenres();
-    }, []);
-    /* ---------------- FETCH STATS ---------------- */
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await bookCardData();
-                const data = response?.data || {};
-
-                setStats({
-                    total: data.total_books ?? 0,
-                    activePromos: data.active_promotions ?? 0,
-                    primaryPromo: data.primary_promo ?? 0,
-                    avgOpenRate: data.avg_open_rate ?? "0%",
-                });
-            } catch (err) {
-                console.error("Failed to fetch stats:", err);
-            }
-        };
-        fetchStats();
     }, []);
 
     /* ---------------- FILTERING ---------------- */
@@ -157,58 +157,6 @@ const BooksPage = () => {
     const handleDeleteClick = (book) => {
         setBookToDelete(book);
         setShowDeleteModal(true);
-    };
-
-
-    const handleUpdateBook = async (updatedData) => {
-        console.log("UPDATING:", updatedData);
-
-        try {
-            const formData = new FormData();
-            formData.append("title", updatedData.title);
-            formData.append("primary_genre", updatedData.genre);
-            formData.append("subgenres", updatedData.subgenre);
-            formData.append("price_tier", updatedData.price);
-            formData.append("availability", updatedData.availability);
-            formData.append("publish_date", updatedData.publishDate);
-            formData.append("description", updatedData.description);
-            formData.append("amazon_url", updatedData.amazonUrl);
-            formData.append("apple_url", updatedData.appleUrl);
-            formData.append("kobo_url", updatedData.koboUrl);
-            formData.append("barnes_noble_url", updatedData.barnesUrl);
-            formData.append("is_primary_promo", updatedData.isPrimary);
-            formData.append("rating", updatedData.ratings || "");
-
-            // Only append coverImage if it's a File object (user selected a new one)
-            if (updatedData.coverImage instanceof File) {
-                formData.append("book_cover", updatedData.coverImage);
-            }
-
-            const response = await updateBook(updatedData.id, formData);
-            const savedBook = response.data;
-
-            // ✅ Format the saved book before updating state
-            const formattedBook = {
-                ...savedBook,
-                book_cover: savedBook.book_cover?.startsWith("http")
-                    ? savedBook.book_cover
-                    : `${import.meta.env.VITE_BACKEND_URL}${savedBook.book_cover}`,
-                publish_date: savedBook.publish_date || null,
-                rating: Number(savedBook.rating) || 0,
-            };
-
-            setBooks((prev) =>
-                prev.map((b) =>
-                    b.id === formattedBook.id ? formattedBook : b
-                )
-            );
-
-            toast.success("Book updated successfully!");
-        } catch (err) {
-            console.error("Update failed", err);
-            toast.error("Failed to update book");
-            throw err;
-        }
     };
 
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -315,17 +263,7 @@ const BooksPage = () => {
                 {isOpen && (
                     <AddBooks
                         onClose={() => setIsOpen(false)}
-                        onBookAdded={(newBook) => {
-                            const formattedBook = {
-                                ...newBook,
-                                book_cover: newBook.book_cover?.startsWith("http")
-                                    ? newBook.book_cover
-                                    : `${import.meta.env.VITE_BACKEND_URL}${newBook.book_cover}`,
-                                rating: Number(newBook.rating) || 0,
-                            };
-
-                            setBooks((prev) => [formattedBook, ...prev]);
-                        }}
+                        onSubmit={fetchData}
                     />
                 )}
             </div>
@@ -427,7 +365,7 @@ const BooksPage = () => {
                         setShowEditModal(false);
                         setSelectedBook(null);
                     }}
-                    onSave={handleUpdateBook}
+                    onSubmit={fetchData}
                 />
             )}
             {showDeleteModal && bookToDelete && (

@@ -3,77 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification } from "../../../apis/subscription";
+import { getSubscriberVerification, createCheckoutSession } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 
 
 
-// Dummy Data (API se replace hoga later)
-const currentPlan = {
-    name: "Tier 1",
-    price: 9.99,
-    renewalDate: "February 12, 2026",
-    activeUntil: "February 12, 2026",
-};
-
-const tiers = [
-    {
-        id: 1,
-        name: "TIER 1",
-        price: 9.99,
-        subtitle: "Swap Only",
-        description:
-            "Perfect for authors who only do newsletter swaps.",
-        popular: false,
-        placements: "No paid placements",
-        bestFor:
-            "Best for: Authors growing their audience or promoting their books through swaps only.",
-        primaryCta: "Get Started",
-        secondaryCta: null,
-    },
-    {
-        id: 2,
-        name: "TIER 2",
-        price: 28.99,
-        subtitle: "Starter",
-        description:
-            "For authors who sell occasional paid newsletter placements.",
-        popular: true,
-        placements: "Up to 10 paid placements/month",
-        bestFor:
-            "Best for: Authors selling a few paid spots per week.",
-        primaryCta: "Upgrade to Tier 2",
-        secondaryCta: "Buy Additional placements",
-    },
-    {
-        id: 3,
-        name: "TIER 3",
-        price: 48.99,
-        subtitle: "Growth",
-        description:
-            "For authors who sell paid placements consistently.",
-        popular: false,
-        placements: "Up to 30 paid placements/month",
-        bestFor:
-            "Best for: Authors monetizing their newsletter regularly.",
-        primaryCta: "Upgrade to Tier 3",
-        secondaryCta: "Buy Additional placements",
-    },
-    {
-        id: 4,
-        name: "TIER 4",
-        price: 78.99,
-        subtitle: "Professional",
-        description:
-            "For high-volume sellers running paid placements most days.",
-        popular: false,
-        placements: "Unlimited placements",
-        bestFor:
-            "Best for: Authors selling paid placements daily or near-daily.",
-        primaryCta: "Go Premium",
-        secondaryCta: null,
-    },
-];
+// Dummy data removed, using API response instead
 
 export default function SubscriptionPage() {
     const navigate = useNavigate();
@@ -81,6 +16,7 @@ export default function SubscriptionPage() {
     const [activeTab, setActiveTab] = useState("subscription");
     const [verification, setVerification] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [processingId, setProcessingId] = useState(null);
 
     const fetchVerification = async () => {
         try {
@@ -99,9 +35,38 @@ export default function SubscriptionPage() {
         fetchVerification();
     }, []);
 
+    const handleSubscribe = async (tier) => {
+        try {
+            setProcessingId(tier.id);
+            // Calling stripe/create-checkout-session/ with the selected tier
+            const res = await createCheckoutSession({ tier_id: tier.id.toString() });
+
+            if (res.data.url) {
+                // Redirecting to Stripe Checkout
+                window.location.href = res.data.url;
+            } else {
+                toast.error("Failed to initiate payment session. Please try again.");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            const errorMsg = error.response?.data?.error || "Something went wrong. Please try again later.";
+            toast.error(errorMsg);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
     const verifDetails = verification?.verification || {};
+    const subscription = verification?.subscription || null;
+    const tiers = verification?.available_tiers || [];
     const isConnected = verifDetails.is_connected_mailerlite || false;
     const lastSynced = verifDetails.last_verified_at || "Never";
+
+    const getPrimaryCta = (tier) => {
+        if (subscription?.tier_id === tier.id) return "Current Plan";
+        if (!subscription) return "Get Started";
+        return `Upgrade to ${tier.name}`;
+    };
 
     if (loading) {
         return (
@@ -167,25 +132,27 @@ export default function SubscriptionPage() {
 
 
                         {/* Current Plan */}
-                        <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-6">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-md font-medium text-[#111827]">Your Current Plan</p>
-                                    <p className="text-sm text-[#374151] mt-1">
-                                        Active until {currentPlan.activeUntil}
-                                    </p>
-                                    <p className="text-md font-medium mt-3">
-                                        ${currentPlan.price} / month
-                                    </p>
-                                    <p className="text-sm text-[#374151]">
-                                        Renews on {currentPlan.renewalDate}
-                                    </p>
+                        {subscription && (
+                            <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-6">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-md font-medium text-[#111827]">Your Current Plan</p>
+                                        <p className="text-sm text-[#374151] mt-1">
+                                            Status: <span className="capitalize">{subscription.status || "Active"}</span>
+                                        </p>
+                                        <p className="text-md font-medium mt-3">
+                                            ${subscription.tier?.price || "0.00"} / month
+                                        </p>
+                                        <p className="text-sm text-[#374151]">
+                                            Last verification: {lastSynced !== "Never" ? new Date(lastSynced).toLocaleDateString() : "Never"}
+                                        </p>
+                                    </div>
+                                    <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full">
+                                        {subscription.tier?.name || "Member"}
+                                    </span>
                                 </div>
-                                <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full">
-                                    {currentPlan.name}
-                                </span>
                             </div>
-                        </div>
+                        )}
 
                         {/* Info Box */}
                         <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-8">
@@ -207,100 +174,97 @@ export default function SubscriptionPage() {
 
                         {/* Pricing Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-                            {tiers.map((tier) => (
-                                <div
-                                    key={tier.id}
-                                    className={`bg-white rounded-xl border p-6 flex flex-col justify-between ${tier.popular
-                                        ? "border-[#2F6F6D] shadow-md"
-                                        : "border-gray-300"
-                                        }`}
-                                >
-                                    <div>
-                                        <div className="text-center mb-5">
-                                            <div className="relative flex items-center justify-center">
-                                                <h3 className="font-bold text-3xl tracking-wide mt-2">
-                                                    {tier.name}
-                                                </h3>
+                            {tiers.map((tier) => {
+                                const isCurrent = subscription?.tier_id === tier.id;
+                                return (
+                                    <div
+                                        key={tier.id}
+                                        className={`bg-white rounded-xl border p-6 flex flex-col justify-between ${tier.is_most_popular || isCurrent
+                                            ? "border-[#2F6F6D] shadow-md"
+                                            : "border-gray-300"
+                                            }`}
+                                    >
+                                        <div>
+                                            <div className="text-center mb-5">
+                                                <div className="relative flex items-center justify-center">
+                                                    <h3 className="font-bold text-3xl tracking-wide mt-2">
+                                                        {tier.name.toUpperCase()}
+                                                    </h3>
 
-                                                {tier.popular && (
-                                                    <span className="absolute right-0 -top-2 text-[9px] bg-[#2F6F6D] text-white px-3 py-1 right-[-18px] rounded-full">
-                                                        MOST POPULAR
+                                                    {tier.is_most_popular && (
+                                                        <span className="absolute right-[-18px] top-[-8px] text-[9px] bg-[#2F6F6D] text-white px-3 py-1 rounded-full">
+                                                            MOST POPULAR
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="mt-5 flex items-end justify-center gap-1">
+                                                    <span className="text-lg font-medium">$</span>
+                                                    <span className="text-3xl font-bold leading-none">
+                                                        {tier.price}
                                                     </span>
-                                                )}
-                                            </div>
-                                            <div className="mt-5 flex items-end justify-center gap-1">
-                                                <span className="text-lg font-medium">$</span>
-                                                <span className="text-3xl font-bold leading-none">
-                                                    {tier.price}
-                                                </span>
-                                                <span className="text-sm text-gray-500 mb-1">/ month</span>
+                                                    <span className="text-sm text-gray-500 mb-1">/ month</span>
+                                                </div>
+
+                                                <p className="text-base text-gray-600 mt-3">
+                                                    {tier.label}
+                                                </p>
                                             </div>
 
-                                            <p className="text-base text-gray-600 mt-3">
-                                                {tier.subtitle}
+
+                                            <hr className="text-[#B5B5B5] my-5" />
+
+                                            <p className="text-xs text-gray-600 mb-3">
+                                                {tier.best_for}
                                             </p>
+
+                                            <ul className="text-xs text-gray-700 space-y-3">
+                                                {tier.features.map((feature, index) => (
+                                                    <li key={index} className="flex items-start gap-2">
+                                                        <span className="mt-0.5">
+                                                            <Check className="w-4 h-4 text-green-600 stroke-[3]" />
+                                                        </span>
+                                                        <span>{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
 
-
-                                        <hr className="text-[#B5B5B5] my-5" />
-
-                                        <p className="text-xs text-gray-600 mb-3">
-                                            {tier.description}
-                                        </p>
-
-                                        <ul className="text-xs text-gray-700 space-y-3">
-                                            {[
-                                                "Unlimited newsletter swaps",
-                                                tier.placements,
-                                                "Automatic send verification",
-                                            ].map((item, index) => (
-                                                <li key={index} className="flex items-start gap-2">
-                                                    <span className="mt-0.5">
-                                                        <Check className="w-4 h-4 text-green-600 stroke-[3]" />
-                                                    </span>
-                                                    <span>{item}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-
-
-
-                                        <p className="text-[11px] text-gray-500 mt-4">
-                                            {tier.bestFor}
-                                        </p>
-                                    </div>
-
-                                    <div className="mt-6 space-y-2">
-                                        {tier.secondaryCta && (
-                                            <button className="w-full text-xs border border-gray-300 rounded-md py-2 bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
-                                                {tier.secondaryCta}
-                                            </button>
-                                        )}
-
                                         <button
+                                            disabled={isCurrent || processingId !== null}
+                                            onClick={() => handleSubscribe(tier)}
                                             className={`w-full text-xs rounded-md py-3 font-medium flex items-center justify-center gap-2
-    ${tier.popular
-                                                    ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] hover:opacity-90"
-                                                    : "bg-gray-100 hover:bg-gray-200 text-[#111827]"
+                                                    ${isCurrent
+                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                                                    : tier.is_most_popular
+                                                        ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] hover:opacity-90"
+                                                        : "bg-gray-100 hover:bg-gray-200 text-[#111827]"
                                                 }`}
                                         >
-                                            {/* Show Rocket for popular */}
-                                            {tier.popular && <Rocket size={14} className="opacity-90" />}
+                                            {processingId === tier.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    {/* Show Rocket for popular */}
+                                                    {(tier.is_most_popular && !isCurrent) && <Rocket size={14} className="opacity-90" />}
 
-                                            {/* Show Crown for Tier 4 */}
-                                            {tier.name === "TIER 4" && <Crown size={14} />}
+                                                    {/* Show Crown for Tier 4 */}
+                                                    {(tier.name.toUpperCase() === "TIER 4" && !isCurrent) && <Crown size={14} />}
 
-                                            {tier.primaryCta}
+                                                    {isCurrent ? "Active Plan" : getPrimaryCta(tier)}
 
-                                            <ArrowRight
-                                                size={14}
-                                                className={tier.popular ? "opacity-90" : "text-gray-600"}
-                                            />
+                                                    {!isCurrent && (
+                                                        <ArrowRight
+                                                            size={14}
+                                                            className={tier.is_most_popular ? "opacity-90" : "text-gray-600"}
+                                                        />
+                                                    )}
+                                                </>
+                                            )}
                                         </button>
-                                    </div>
 
-                                </div>
-                            ))}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* Footer */}

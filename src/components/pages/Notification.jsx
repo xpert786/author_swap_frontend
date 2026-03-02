@@ -48,7 +48,7 @@ const Badge = ({ type, text }) => {
 };
 
 const Notification = () => {
-    const { notifications: wsNotifications, setUnreadCount } = useNotifications();
+    const { notifications: wsNotifications, setUnreadCount, setUnreadCounts, markAllAsSeen } = useNotifications();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -56,8 +56,8 @@ const Notification = () => {
     const [testLoading, setTestLoading] = useState(false);
 
     useEffect(() => {
-        setUnreadCount(0);
-    }, [setUnreadCount]);
+        markAllAsSeen();
+    }, [markAllAsSeen]);
 
     const fetchNotifications = async () => {
         try {

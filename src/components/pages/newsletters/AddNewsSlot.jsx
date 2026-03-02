@@ -12,6 +12,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
     preferred_genre: "",
     max_partners: "",
     visibility: "Public",
+    price: "",
   });
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
@@ -99,6 +100,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
         preferred_genre: "Romance",
         max_partners: "",
         visibility: "Public",
+        price: "",
       });
     } catch (err) {
       console.error("Creation failed:", err);
@@ -259,6 +261,22 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                   <option value="single_use_private_link">Single-use private link</option>
                   <option value="hidden">Hidden</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-[13px] font-medium text-gray-600">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                />
               </div>
 
             </div>
