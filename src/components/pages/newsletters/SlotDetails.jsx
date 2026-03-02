@@ -83,7 +83,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
             <div className="bg-white w-[600px] rounded-[10px] shadow-xl overflow-hidden m-5">
                 <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar text-left">
                     {/* Header */}
-                    <div className="flex justify-between items-start mb-6 border-b border-gray-100">
+                    <div className="flex justify-between items-start pb-2 border-b border-[#B8B8B8]">
                         <div>
                             <h2 className="text-xl font-medium text-gray-800">
                                 Slot Details
@@ -103,31 +103,31 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
 
                     {/* Slot Information */}
-                    <div className="mb-8 mt-8">
-                        <h3 className="font-medium text-black mb-4 border-b border-[#B8B8B8] pb-1">
+                    <div className="my-4">
+                        <h3 className="font-medium text-black mb-4 border-b border-[#2F6F6D33] pb-1">
                             Slot Information
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 border-b border-gray-100 pb-8 ">
                             {/* Date & Time */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500">Date & time</p>
-                                <p className="text-[13px] font-semibold text-gray-800 leading-tight">
+                                <p className="text-[12px] font-normal text-[#374151]">Date & time</p>
+                                <p className="text-[13px] font-normal text-[#111827] leading-tight">
                                     {slot.fullDate}
                                 </p>
                             </div>
 
                             {/* Status */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500">Status</p>
-                                <span className="inline-flex w-fit rounded-full px-3 py-0.5 text-[11px] font-semibold bg-[#E6F4EA] text-[#1E8E3E]">
+                                <p className="text-[12px] font-normal text-[#374151]">Status</p>
+                                <span className="inline-flex w-fit rounded-full px-3 py-0.5 text-[11px] font-normal bg-[#E6F4EA] text-[#111827]">
                                     {slot.status}
                                 </span>
                             </div>
 
                             {/* Visibility */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500">Visibility</p>
+                                <p className="text-[12px] font-normal text-[#374151]">Visibility</p>
                                 <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-semibold text-gray-600">
                                     <Eye size={12} />
                                     {slot.visibility}
@@ -136,7 +136,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
                             {/* Audience Size */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500">Audience Size</p>
+                                <p className="text-[12px] font-normal text-[#374151]">Audience Size</p>
                                 <p className="text-[13px] text-gray-800">
                                     <span className="font-medium">{slot.audienceCount} subscribers</span>
                                 </p>
@@ -144,8 +144,8 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
                             {/* Genre */}
                             <div className="flex flex-col gap-1">
-                                <p className="text-[12px] font-medium text-gray-500">Genre</p>
-                                <span className="inline-flex w-fit rounded-full bg-[#E6F4EA] px-3 py-0.5 text-[11px] font-semibold text-[#1E8E3E]">
+                                <p className="text-[12px] font-normal text-[#374151]">Genre</p>
+                                <span className="inline-flex w-fit rounded-full bg-[#E6F4EA] px-3 py-0.5 text-[11px] font-normal text-[#111827]">
                                     {slot.genre}
                                 </span>
                             </div>
@@ -154,7 +154,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
 
                     {/* Swap Partners */}
                     <div>
-                        <h3 className="text-[13px] font-bold text-gray-700 mb-4 border-b border-[#B8B8B8] pb-1">
+                        <h3 className="text-[13px] font-medium text-[#000000] mb-4 border-b border-[#B8B8B8] pb-1">
                             Swap Partners ({slot.partners.length})
                         </h3>
 
@@ -167,7 +167,7 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                                 slot.partners.map((partner, index) => (
                                     <div
                                         key={index}
-                                        className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${index === 0 ? 'border-[#F8D7DA] bg-[#FFF5F5]' : 'border-gray-200 bg-white'}`}
+                                        className={`flex items-center justify-between rounded-xl border p-3 transition-colors ${index === 0 ? 'border-[#E07A5F] bg-[#E07A5F0D]' : 'border-gray-200 bg-white'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <img
@@ -176,18 +176,18 @@ const SlotDetails = ({ isOpen, onClose, onEdit, slotId }) => {
                                                 className="h-10 w-10 rounded-full object-cover shadow-sm border border-gray-100"
                                             />
                                             <div>
-                                                <p className="text-sm font-bold text-gray-800 leading-tight">
+                                                <p className="text-sm font-medium text-[#2D2F33] leading-tight">
                                                     {partner.author?.name || partner.sender_name || 'Unknown Partner'}
                                                 </p>
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${partner.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                                    {/* <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase ${partner.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                                                         partner.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
                                                         }`}>
                                                         {partner.status || 'active'}
-                                                    </span>
-                                                    {(partner.author?.swaps_completed || partner.swaps_completed) > 0 && (
-                                                        <span className="text-[10px] text-gray-400 font-medium">
-                                                            • {partner.author?.swaps_completed || partner.swaps_completed} Swaps
+                                                    </span> */}
+                                                    {(partner.author?.swaps_completed !== undefined || partner.swaps_completed !== undefined) && (
+                                                        <span className="text-[10px] text-gray-400 font-normal lowercase">
+                                                            {partner.author?.swaps_completed ?? partner.swaps_completed ?? 0} swaps completed
                                                         </span>
                                                     )}
                                                 </div>

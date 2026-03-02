@@ -350,8 +350,7 @@ const Dashboard = () => {
             {currentActivities.map((activity) => (
               <div
                 key={activity.id}
-                onClick={() => handleActivityClick(activity.action_url)}
-                className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0 cursor-pointer"
+                className="flex gap-3 pb-3 border-b border-[#B5B5B5] last:border-0 last:pb-0"
               >
                 <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#EA580C] shrink-0" />
                 <div className="w-full">

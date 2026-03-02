@@ -426,16 +426,33 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
     "
         >
             {/* Cover */}
-            <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden">
+            <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden rounded-xl">
+                {/* Badges */}
+                <div className="absolute top-4 left-0 right-0 px-4 flex justify-between items-start z-20">
+                    {book.is_primary_promo && (
+                        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md border border-gray-100">
+                            <Star size={14} className="text-[#F59E0B] fill-[#F59E0B]" />
+                            <span className="text-[11px] font-medium text-gray-800 whitespace-nowrap">Primary</span>
+                        </div>
+                    )}
 
+                    <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-2 py-1 rounded-full shadow-md border border-gray-100 ml-auto">
+                        {book.availability?.toLowerCase() === "wide" ? (
+                            <Globe size={14} className="text-gray-700" />
+                        ) : (
+                            <FiBookOpen size={14} className="text-[#2F6F6D]" />
+                        )}
+                        <span className="text-[11px] font-medium text-gray-800 capitalize">
+                            {book.availability?.replace(/_/g, " ") || "N/A"}
+                        </span>
+                    </div>
+                </div>
 
                 <img
                     src={book.book_cover || "/placeholder.jpg"}
                     alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-
-
             </div>
 
             {/* Content - Overlay on Hover */}
@@ -458,13 +475,26 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                             {book.title}
                         </h3>
 
-                        <div className="flex gap-1.5 mt-2.5">
-                            <span className="text-[10px] font-medium text-[#16A34A] bg-[#16A34A15] px-2.5 py-1 rounded-md">
+                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            <span className="text-[10px] font-medium text-[#111827] bg-[#16A34A15] px-2.5 py-1 rounded-full whitespace-nowrap">
                                 {book.primary_genre
                                     ?.replace(/_/g, " ")
                                     .replace(/\b\w/g, (char) => char.toUpperCase())}
                             </span>
+
+                            <span className="text-[10px] font-medium text-[#111827] bg-[#E07A5F33] px-2.5 py-1 rounded-full whitespace-nowrap">
+                                {book.availability
+                                    ?.replace(/_/g, " ")
+                                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+                            </span>
+
+                            <span className="text-[10px] font-medium text-[#111827] bg-[#E8E8E8] px-2.5 py-1 rounded-full whitespace-nowrap">
+                                {book.price_tier
+                                    ?.replace(/_/g, " ")
+                                    .replace(/\b\w/g, (char) => char.toUpperCase())}
+                            </span>
                         </div>
+
                     </div>
 
                     <div className="flex gap-2 shrink-0">
