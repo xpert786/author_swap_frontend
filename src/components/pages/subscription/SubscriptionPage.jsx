@@ -63,7 +63,7 @@ export default function SubscriptionPage() {
     const lastSynced = verifDetails.last_verified_at || "Never";
 
     const getPrimaryCta = (tier) => {
-        if (subscription?.tier_id === tier.id) return "Current Plan";
+        if (subscription?.tier === tier.id) return "Current Plan";
         if (!subscription) return "Get Started";
         return `Upgrade to ${tier.name}`;
     };
@@ -138,17 +138,24 @@ export default function SubscriptionPage() {
                                     <div>
                                         <p className="text-md font-medium text-[#111827]">Your Current Plan</p>
                                         <p className="text-sm text-[#374151] mt-1">
-                                            Status: <span className="capitalize">{subscription.status || "Active"}</span>
+                                            Status: <span className={`capitalize font-semibold ${subscription.is_active ? "text-green-600" : "text-amber-500"}`}>
+                                                {subscription.is_active ? "Active" : "Processing"}
+                                            </span>
                                         </p>
                                         <p className="text-md font-medium mt-3">
-                                            ${subscription.tier?.price || "0.00"} / month
+                                            ${subscription.tier_details?.price || "0.00"} / month
                                         </p>
-                                        <p className="text-sm text-[#374151]">
-                                            Last verification: {lastSynced !== "Never" ? new Date(lastSynced).toLocaleDateString() : "Never"}
-                                        </p>
+                                        <div className="space-y-0.5 mt-1">
+                                            <p className="text-xs text-[#374151]">
+                                                Next renewal: {subscription.renew_date ? new Date(subscription.renew_date).toLocaleDateString() : "N/A"}
+                                            </p>
+                                            <p className="text-xs text-[#374151]">
+                                                Last verification: {lastSynced !== "Never" ? new Date(lastSynced).toLocaleDateString() : "Never"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full">
-                                        {subscription.tier?.name || "Member"}
+                                    <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full font-medium">
+                                        {subscription.tier_details?.name || "Member"}
                                     </span>
                                 </div>
                             </div>
@@ -175,7 +182,7 @@ export default function SubscriptionPage() {
                         {/* Pricing Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                             {tiers.map((tier) => {
-                                const isCurrent = subscription?.tier_id === tier.id;
+                                const isCurrent = subscription?.tier === tier.id;
                                 return (
                                     <div
                                         key={tier.id}
@@ -232,11 +239,11 @@ export default function SubscriptionPage() {
                                         <button
                                             disabled={isCurrent || processingId !== null}
                                             onClick={() => handleSubscribe(tier)}
-                                            className={`w-full text-xs rounded-md py-3 font-medium flex items-center justify-center gap-2
+                                            className={`w-full text-xs rounded-md py-3 font-medium flex items-center justify-center gap-2 mt-5
                                                     ${isCurrent
-                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                                                    ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] cursor-not-allowed shadow-inner"
                                                     : tier.is_most_popular
-                                                        ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] hover:opacity-90"
+                                                        ? "text-white bg-gradient-to-b from-[#2F6F6D] to-[#16A34A] hover:opacity-90 shadow-md"
                                                         : "bg-gray-100 hover:bg-gray-200 text-[#111827]"
                                                 }`}
                                         >
