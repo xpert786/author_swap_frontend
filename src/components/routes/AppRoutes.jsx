@@ -25,6 +25,7 @@ import TrackSwap from "../pages/SwapManagement/TrackSwap";
 import Newsletter from "../pages/newsletters/Newsletter";
 import { Analytics } from "../pages/PlaceholderPages";
 import SubscriptionPage from "../pages/subscription/SubscriptionPage";
+import SubscriptionSuccess from "../pages/subscription/SubscriptionSuccess";
 import AnalyticsPage from "../pages/subscription/AnalyticsPage";
 import CommunicationList from "../pages/communication/CommunicationList";
 
@@ -67,6 +68,7 @@ const AppRoutes = () => {
           <Route path="/reputation" element={<AuthorReputationSystem />} />
           <Route path="/notifications" element={<Notification />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/subscription/success" element={<SubscriptionSuccess />} />
           <Route path="/analytics-page" element={<AnalyticsPage />} />
           <Route path="/communication-list" element={<CommunicationList />} />
         </Route >

@@ -24,3 +24,8 @@ export const resetPassword = async (data) => {
   const response = await apiClient.post("reset-password/", data);
   return response.data;
 };
+
+export const googleLogin = async (id_token) => {
+  const response = await apiClient.post("google/", { id_token });
+  return response.data;
+};

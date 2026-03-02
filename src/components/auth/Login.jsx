@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Logo from "../../assets/logo.png";
 import LoginBg from "../../assets/Login.png";
-import { FcGoogle } from "react-icons/fc";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../../apis/auth";
+import { login, googleLogin } from "../../apis/auth";
+import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -18,6 +18,36 @@ const Login = () => {
     setError,
     formState: { errors },
   } = useForm();
+
+  const handleGoogleSuccess = async (response) => {
+    const loadingToast = toast.loading("Connecting with Google...");
+    try {
+      // response.credential contains the ID Token
+      const data = await googleLogin(response.credential);
+
+      if (!data?.token) {
+        throw new Error("Login failed");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "isprofilecompleted",
+        data.isprofilecompleted?.toString() || "true"
+      );
+
+      toast.success("Login successful!", { id: loadingToast });
+
+      if (data.isprofilecompleted === false) {
+        window.location.href = "/authorswap-frontend/onboarding";
+      } else {
+        window.location.href = "/authorswap-frontend/dashboard";
+      }
+    } catch (error) {
+      console.error("Google login failed:", error);
+      toast.error(error?.response?.data?.message || "Google Authentication failed", { id: loadingToast });
+    }
+  };
+
 
   const onSubmit = async (data) => {
     try {
@@ -228,13 +258,17 @@ const Login = () => {
                 <div className="flex-1 h-px bg-[#E5E7EB]"></div>
               </div>
 
-              <button
-                type="button"
-                className="flex items-center justify-center border border-[#9CA3AF] rounded-[8px] px-6 py-2 mt-5 w-full md:w-auto min-w-[115px]"
-              >
-                <FcGoogle className="text-xl mr-2" />
-                <span className="text-xs font-bold text-gray-700">Google</span>
-              </button>
+              <div className="mt-5 w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error("Google Login Failed")}
+                  theme="outline"
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </div>
             </div>
 
           </div>
