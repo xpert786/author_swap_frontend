@@ -238,7 +238,12 @@ const AccountSettings = () => {
 
                 <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
 
-                <Input label="Email (optional) " name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
+                <div className="space-y-1.5">
+                    <label className="text-[12px] font-medium text-[#111827]">Email</label>
+                    <div className="w-full bg-gray-100/80 border border-gray-200 rounded-[6px] px-3 py-[9px] text-[13px] text-gray-600 font-medium">
+                        {formData.email}
+                    </div>
+                </div>
 
                 <Input label="Location (optional)" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
 
