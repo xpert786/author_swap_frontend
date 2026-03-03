@@ -16,3 +16,6 @@ export const createCheckoutSession = async (data) => {
     return apiClient.post("stripe/create-checkout-session/", data);
 }
 
+export const changePlan = async (data) => {
+    return apiClient.post("stripe/change-plan/", data);
+}

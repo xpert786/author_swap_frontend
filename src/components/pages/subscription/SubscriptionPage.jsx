@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification, createCheckoutSession } from "../../../apis/subscription";
+import { getSubscriberVerification, createCheckoutSession, changePlan } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 
 
@@ -38,17 +38,29 @@ export default function SubscriptionPage() {
     const handleSubscribe = async (tier) => {
         try {
             setProcessingId(tier.id);
-            // Calling stripe/create-checkout-session/ with the selected tier
-            const res = await createCheckoutSession({ tier_id: tier.id.toString() });
 
-            if (res.data.url) {
-                // Redirecting to Stripe Checkout
-                window.location.href = res.data.url;
+            if (subscription) {
+                // Change/Upgrade plan
+                const res = await changePlan({ tier_id: tier.id.toString() });
+
+                if (res.data.url) {
+                    window.location.href = res.data.url;
+                } else {
+                    toast.success(res.data.message || "Plan updated successfully!");
+                    fetchVerification();
+                }
             } else {
-                toast.error("Failed to initiate payment session. Please try again.");
+                // New subscription
+                const res = await createCheckoutSession({ tier_id: tier.id.toString() });
+
+                if (res.data.url) {
+                    window.location.href = res.data.url;
+                } else {
+                    toast.error("Failed to initiate payment session. Please try again.");
+                }
             }
         } catch (error) {
-            console.error("Checkout error:", error);
+            console.error("Subscription error:", error);
             const errorMsg = error.response?.data?.error || "Something went wrong. Please try again later.";
             toast.error(errorMsg);
         } finally {
