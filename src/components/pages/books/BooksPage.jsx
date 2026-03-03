@@ -530,7 +530,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
 
                     <div className="flex items-center gap-1.5">
                         <img src={Swap} alt="" className="w-3.5 h-3.5" />
-                        <span>0 Swaps</span>
+                        <span>{book?.swap_count || 0} Swaps</span>
                     </div>
                 </div>
 
