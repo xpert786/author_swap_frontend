@@ -215,26 +215,54 @@ const Newsletter = () => {
                 ? response.data
                 : (response.data?.data || response.data?.results || []);
 
-            const formatted = dataArray.map(item => ({
-                id: item.id,
-                time: item.send_date
-                    ? `${dayjs(item.send_date).format("MMM D, YYYY")} ${item.send_time ? `at ${item.send_time}` : ""}`
-                    : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
-                period: getPeriod(item.send_time) || formatLabel(item.time_period),
-                genre: formatLabel(item.preferred_genre),
-                rawGenre: (item.preferred_genre || "").toLowerCase(),
-                partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
-                visibility: formatLabel(item.visibility),
-                rawVisibility: (item.visibility || "").toLowerCase(),
-                audience: item.audience_size,
-                status: formatLabel(item.status),
-                rawStatus: (item.status || "").toLowerCase(),
-                statusColor:
-                    (item.status || "").toLowerCase() === "available"
-                        ? "bg-[#16A34A33]"
-                        : "bg-[#F59E0B33]",
-                raw_data: item,
-            }));
+            const formatted = dataArray.map(item => {
+                // Determine display status and color from flags
+                let status = "Available";
+                let statusColor = "bg-[#16A34A33]";
+
+                if (item.has_published) {
+                    status = "Published";
+                    statusColor = "bg-[#F1B9AA]";
+                } else if (item.has_verified) {
+                    status = "Verified";
+                    statusColor = "bg-[#9FB5B3]";
+                } else if (item.has_confirmed) {
+                    status = "Confirmed";
+                    statusColor = "bg-[#87D1A1]";
+                } else if (item.has_pending) {
+                    status = "Pending";
+                    statusColor = "bg-[#FDE7C4]";
+                } else if (item.has_booked) {
+                    status = "Booked";
+                    statusColor = "bg-[#F59E0B33]";
+                } else if (item.has_available) {
+                    status = "Available";
+                    statusColor = "bg-[#16A34A33]";
+                } else if (item.status) {
+                    status = formatLabel(item.status);
+                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
+                }
+
+                return {
+                    id: item.id,
+                    time: item.send_date
+                        ? `${dayjs(item.send_date).format("MMM D, YYYY")} ${item.send_time ? `at ${item.send_time}` : ""}`
+                        : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
+                    period: getPeriod(item.send_time) || formatLabel(item.time_period),
+                    genre: formatLabel(item.preferred_genre),
+                    rawGenre: (item.preferred_genre || "").toLowerCase(),
+                    partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
+                    visibility: formatLabel(item.visibility),
+                    rawVisibility: (item.visibility || "").toLowerCase(),
+                    audience: item.audience_size,
+                    status: status,
+                    rawStatus: status.toLowerCase(),
+                    statusColor: statusColor,
+                    has_available: item.has_available || (item.status || "").toLowerCase() === "available",
+                    has_booked: item.has_booked || item.has_confirmed || item.has_verified || item.has_pending,
+                    raw_data: item,
+                };
+            });
             setSlots(formatted);
         } catch (error) {
             console.error("Failed to fetch slots", error);
@@ -623,10 +651,12 @@ const Newsletter = () => {
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
-                                                        <Eye size={14} className="text-gray-600" />
-                                                    </button>
-                                                    {slot.status === "Available" && (
+                                                    {slot.has_booked && (
+                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+                                                            <Eye size={14} className="text-gray-600" />
+                                                        </button>
+                                                    )}
+                                                    {slot.has_available && (
                                                         <>
                                                             <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <img src={Edit} alt="Edit" className="w-5 h-5" />
