@@ -465,10 +465,9 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 border-t border-gray-100
                 z-30
                 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]
+                group-hover:border-[#E07A5F]
             ">
                 {/* Visual indicator/handle for hover */}
-
-
                 <div className="flex justify-between items-start gap-3 mt-1">
                     <div className="min-w-0">
                         <h3 className="font-medium text-[16px] text-gray-900 leading-tight line-clamp-2">
@@ -523,7 +522,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 </div>
 
                 {/* Meta */}
-                <div className="flex items-center gap-4 text-[11px] text-gray-500 font-medium">
+                <div className="flex flex-col items-start gap-2 text-[14px] text-[#374151] font-normal">
                     <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>{formattedDate}</span>

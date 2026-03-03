@@ -5,6 +5,7 @@ import { SendIcon } from "../../icons";
 
 import { getConversations, getChatHistory, getComposePartners, sendMessage } from "../../../apis/chat";
 import { useNotifications } from "../../../context/NotificationContext";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 const CommunicationTools = () => {
     const { refreshCounts } = useNotifications();
@@ -353,7 +354,7 @@ const CommunicationTools = () => {
                                         />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-0.5">
-                                                <h4 className="text-[13px] font-bold text-gray-900 truncate">{conv.name}</h4>
+                                                <h4 className="text-[13px] font-bold text-gray-900 truncate">{formatCamelCaseName(conv.name)}</h4>
                                                 <span className="text-[10px] text-gray-400 whitespace-nowrap">{conv.time}</span>
                                             </div>
                                             <div className="flex items-center justify-between gap-1">
@@ -399,7 +400,7 @@ const CommunicationTools = () => {
                                             onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + (partner.name || partner.username); }}
                                         />
                                         <div className="min-w-0">
-                                            <h4 className="text-[12px] font-bold text-gray-900 truncate">{partner.name}</h4>
+                                            <h4 className="text-[12px] font-bold text-gray-900 truncate">{formatCamelCaseName(partner.name)}</h4>
                                             <p className="text-[10px] text-gray-500 truncate flex items-center gap-1">
                                                 <span>@{partner.username}</span>
                                                 {partner.swap_status && (
@@ -439,7 +440,7 @@ const CommunicationTools = () => {
                                         onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + (activeConversation.name || activeConversation.username); }}
                                     />
                                     <div className="min-w-0">
-                                        <h4 className="text-[14px] font-bold text-gray-900 leading-tight">{activeConversation.name}</h4>
+                                        <h4 className="text-[14px] font-bold text-gray-900 leading-tight">{formatCamelCaseName(activeConversation.name)}</h4>
                                         <div className="flex items-center gap-2">
                                             <p className="text-[10px] text-gray-500 truncate">@{activeConversation.username}</p>
                                             {activeConversation.swap_status && (
@@ -501,7 +502,7 @@ const CommunicationTools = () => {
                                             <SendIcon size={32} />
                                         </div>
                                         <h5 className="font-bold text-gray-800 mb-1">Start your conversation</h5>
-                                        <p className="text-xs text-gray-500">Say hello to {activeConversation.name} to start coordinating your swap!</p>
+                                        <p className="text-xs text-gray-500">Say hello to {formatCamelCaseName(activeConversation.name)} to start coordinating your swap!</p>
                                     </div>
                                 )}
                             </div>

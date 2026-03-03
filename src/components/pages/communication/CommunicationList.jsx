@@ -104,6 +104,11 @@ const CommunicationList = () => {
     setIsComposeOpen(true);
   };
 
+  const stripHtml = (html) => {
+    if (!html) return "";
+    return html.replace(/<[^>]*>?/gm, "");
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       {/* Header */}
@@ -247,7 +252,7 @@ const CommunicationList = () => {
                         <div className="min-w-0">
                           <h4 className="font-medium text-sm truncate">{msg.sender_name || msg.name}</h4>
                           <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
-                            {msg.subject} <span className="text-gray-400 font-normal">- {msg.snippet || msg.message}</span>
+                            {msg.subject} <span className="text-gray-400 font-normal">- {stripHtml(msg.snippet || msg.message)}</span>
                           </p>
                         </div>
                       </div>
