@@ -19,3 +19,23 @@ export const createCheckoutSession = async (data) => {
 export const changePlan = async (data) => {
     return apiClient.post("stripe/change-plan/", data);
 }
+
+export const getSetupIntent = async () => {
+    return apiClient.post("stripe/setup-intent/");
+}
+
+export const getPaymentMethods = async () => {
+    return apiClient.get("stripe/payment-methods/");
+}
+
+export const deletePaymentMethod = async (pmId) => {
+    return apiClient.delete(`stripe/payment-methods/${pmId}/`);
+}
+
+export const setDefaultPaymentMethod = async (pmId) => {
+    return apiClient.post(`stripe/payment-methods/${pmId}/set-default/`);
+}
+
+export const changePlanPreview = async (data) => {
+    return apiClient.post("stripe/change-plan/preview/", data);
+}

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification, createCheckoutSession, changePlan } from "../../../apis/subscription";
+import { getSubscriberVerification, createCheckoutSession, changePlan, changePlanPreview, getPaymentMethods } from "../../../apis/subscription";
 import toast from "react-hot-toast";
+import { useProfile } from "../../../context/ProfileContext";
 
 
 
@@ -12,21 +13,27 @@ import toast from "react-hot-toast";
 
 export default function SubscriptionPage() {
     const navigate = useNavigate();
+    const { refreshProfile } = useProfile();
 
     const [activeTab, setActiveTab] = useState("subscription");
     const [verification, setVerification] = useState(null);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [previewData, setPreviewData] = useState(null);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [selectedTier, setSelectedTier] = useState(null);
 
-    const fetchVerification = async () => {
+    const fetchVerification = async (showLoader = true) => {
         try {
-            setLoading(true);
+            if (showLoader) setLoading(true);
             const res = await getSubscriberVerification();
+            console.log("Verification Data:", res.data);
             setVerification(res.data);
         } catch (error) {
             console.error("Failed to fetch verification status", error);
         } finally {
-            setLoading(false);
+            if (showLoader) setLoading(false);
         }
     };
 
@@ -38,33 +45,77 @@ export default function SubscriptionPage() {
     const handleSubscribe = async (tier) => {
         try {
             setProcessingId(tier.id);
+            setSelectedTier(tier);
+
+            // 1. Frontend Safety Check
+            const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
+            if (isCurrent) {
+                toast.error("You are already on this plan.");
+                return;
+            }
 
             if (subscription) {
-                // Change/Upgrade plan
-                const res = await changePlan({ tier_id: tier.id.toString() });
+                // Existing subscriber — check for saved payment methods
+                const pmRes = await getPaymentMethods();
+                const hasCard = Array.isArray(pmRes.data) && pmRes.data.length > 0;
 
-                if (res.data.url) {
-                    window.location.href = res.data.url;
-                } else {
-                    toast.success(res.data.message || "Plan updated successfully!");
-                    fetchVerification();
+                if (!hasCard) {
+                    // No card on file → redirect to Stripe Checkout (no plan change)
+                    const res = await createCheckoutSession({ tier_id: tier.id });
+                    if (res.data.url || res.data.checkout_url) {
+                        window.location.href = res.data.url || res.data.checkout_url;
+                    } else {
+                        toast.error("Failed to initiate payment session.");
+                    }
+                    return; // ← critical: stop here, don't show modal or change plan
                 }
-            } else {
-                // New subscription
-                const res = await createCheckoutSession({ tier_id: tier.id.toString() });
 
-                if (res.data.url) {
-                    window.location.href = res.data.url;
+                // Has card → fetch preview and show modal
+                const res = await changePlanPreview({ tier_id: tier.id });
+                setPreviewData(res.data);
+                setShowPreviewModal(true);
+                // changePlan is NOT called here — only called on modal confirm
+
+            } else {
+                // New subscriber (no subscription at all) → Stripe Checkout
+                const res = await createCheckoutSession({ tier_id: tier.id });
+                if (res.data.url || res.data.checkout_url) {
+                    window.location.href = res.data.url || res.data.checkout_url;
                 } else {
-                    toast.error("Failed to initiate payment session. Please try again.");
+                    toast.error("Failed to initiate payment session.");
                 }
             }
         } catch (error) {
-            console.error("Subscription error:", error);
-            const errorMsg = error.response?.data?.error || "Something went wrong. Please try again later.";
+            console.error("Subscription Action Error:", error);
+            const backendError = error.response?.data?.error || error.response?.data?.detail;
+            const errorMsg = backendError
+                ? `Server: ${backendError}`
+                : "Something went wrong. Please try again.";
             toast.error(errorMsg);
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    const handleConfirmChange = async () => {
+        if (!selectedTier) return;
+        try {
+            setConfirmLoading(true);
+            const res = await changePlan({ tier_id: selectedTier.id.toString() });
+
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            } else {
+                toast.success(res.data.message || "Plan updated successfully!");
+                setShowPreviewModal(false);
+                fetchVerification(false);
+                if (refreshProfile) refreshProfile();
+            }
+        } catch (error) {
+            console.error("Confirmation error:", error);
+            toast.error(error.response?.data?.error || "Failed to update plan.");
+        } finally {
+            setConfirmLoading(false);
         }
     };
 
@@ -75,7 +126,8 @@ export default function SubscriptionPage() {
     const lastSynced = verifDetails.last_verified_at || "Never";
 
     const getPrimaryCta = (tier) => {
-        if (subscription?.tier === tier.id) return "Current Plan";
+        const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
+        if (isCurrent) return "Current Plan";
         if (!subscription) return "Get Started";
         return `Upgrade to ${tier.name}`;
     };
@@ -194,7 +246,10 @@ export default function SubscriptionPage() {
                         {/* Pricing Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                             {tiers.map((tier) => {
-                                const isCurrent = subscription?.tier === tier.id;
+                                // Robust comparison (handling potential string/number mismatches)
+                                const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
+                                console.log(`Comparing sub.tier (${subscription?.tier}) with tier.id (${tier.id}) -> Result:`, isCurrent);
+
                                 return (
                                     <div
                                         key={tier.id}
@@ -299,6 +354,89 @@ export default function SubscriptionPage() {
                     <AnalyticsPage isChildView={true} />
                 )}
             </div>
+
+            {/* Plan Change Preview Modal */}
+            {showPreviewModal && previewData && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPreviewModal(false)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-in fade-in zoom-in duration-300">
+                        {/* Header */}
+                        <div className="bg-[#2F6F6D] px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-white font-bold text-lg">Confirm Plan Change</h3>
+                            <button onClick={() => setShowPreviewModal(false)} className="text-white/80 hover:text-white">
+                                <Rocket size={20} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Current Plan</label>
+                                    <p className="text-sm font-medium text-gray-900 border-l-4 border-gray-200 pl-3 py-1">
+                                        {previewData.current_plan}
+                                    </p>
+                                </div>
+                                <div className="flex justify-center">
+                                    <ArrowRight className="text-[#2F6F6D] animate-pulse" size={24} />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-[#2F6F6D] font-bold">New Plan</label>
+                                    <p className="text-sm font-bold text-[#2F6F6D] border-l-4 border-[#2F6F6D] pl-3 py-1">
+                                        {previewData.new_plan}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-600">Amount Due Now</span>
+                                    <span className="font-bold text-gray-900 text-lg">{previewData.amount_due_display}</span>
+                                </div>
+                                <div className="border-t border-gray-200 pt-3 space-y-1">
+                                    <div className="flex justify-between text-[11px]">
+                                        <span className="text-gray-500">Billing period end</span>
+                                        <span className="text-gray-700 font-medium">{new Date(previewData.billing_period_end).toLocaleDateString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px]">
+                                        <span className="text-gray-500">Proration date</span>
+                                        <span className="text-gray-700 font-medium">{new Date(previewData.proration_date).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+                                By clicking "Change Now," your new plan will be activated immediately.
+                                The amount due account for the remaining time on your current plan.
+                            </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-gray-50 flex gap-3">
+                            <button
+                                onClick={() => setShowPreviewModal(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-white transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmChange}
+                                disabled={confirmLoading}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-[#2F6F6D] text-white text-sm font-semibold hover:bg-[#255755] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#2F6F6D]/20 disabled:opacity-50"
+                            >
+                                {confirmLoading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <>
+                                        Change Now
+                                        <Rocket size={16} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
