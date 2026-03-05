@@ -25,3 +25,13 @@ export const sendMessage = async (userId, content, attachment = null) => {
     });
     return response.data;
 };
+
+export const editMessage = async (messageId, content) => {
+    const response = await apiClient.patch(`chat/message/${messageId}/`, { content });
+    return response.data;
+};
+
+export const deleteMessage = async (messageId) => {
+    const response = await apiClient.delete(`chat/message/${messageId}/`);
+    return response.data;
+};

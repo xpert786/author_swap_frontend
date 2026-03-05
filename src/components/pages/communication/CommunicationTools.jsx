@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FiSearch, FiPaperclip, FiFileText, FiChevronLeft, FiPlus, FiX } from "react-icons/fi";
+import { FiSearch, FiPaperclip, FiFileText, FiChevronLeft, FiPlus, FiX, FiEdit2, FiTrash2, FiMoreVertical, FiCheck } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SendIcon } from "../../icons";
 
-import { getConversations, getChatHistory, getComposePartners, sendMessage } from "../../../apis/chat";
+import { getConversations, getChatHistory, getComposePartners, sendMessage, editMessage, deleteMessage } from "../../../apis/chat";
 import { useNotifications } from "../../../context/NotificationContext";
 import { formatCamelCaseName } from "../../../utils/formatName";
 import toast from "react-hot-toast";
@@ -22,6 +22,8 @@ const CommunicationTools = () => {
     const [composePartners, setComposePartners] = useState([]);
     const [transientPartner, setTransientPartner] = useState(null); // To handle new chat from SlotDetails
     const [selectedFile, setSelectedFile] = useState(null);
+    const [editingMsgId, setEditingMsgId] = useState(null);
+    const [editInput, setEditInput] = useState("");
     const fileInputRef = useRef(null);
     const socketRef = useRef(null);
 
@@ -102,7 +104,8 @@ const CommunicationTools = () => {
                     text: msg.text,
                     attachment: msg.attachment,
                     time: msg.formatted_time || new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isFile: msg.is_file
+                    isFile: msg.is_file,
+                    isSeen: msg.is_seen
                 })).reverse();
                 setChatMessages(formattedMessages);
             } catch (error) {
@@ -162,7 +165,8 @@ const CommunicationTools = () => {
                         text: data.message || data.content,
                         attachment: data.attachment,
                         time: data.formatted_time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        isFile: !!data.is_file
+                        isFile: !!data.is_file,
+                        isSeen: data.is_seen
                     };
 
                     setChatMessages(prev => {
@@ -203,6 +207,34 @@ const CommunicationTools = () => {
         };
     }, [activeConv]);
 
+    const handleEditMessage = async (messageId) => {
+        if (!editInput.trim()) return;
+        try {
+            await editMessage(messageId, editInput);
+            setChatMessages(prev => prev.map(m =>
+                m.id === messageId ? { ...m, text: editInput } : m
+            ));
+            setEditingMsgId(null);
+            setEditInput("");
+            toast.success("Message updated");
+        } catch (error) {
+            console.error("Failed to edit message:", error);
+            toast.error("Failed to update message");
+        }
+    };
+
+    const handleDeleteMessage = async (messageId) => {
+        if (!window.confirm("Are you sure you want to delete this message?")) return;
+        try {
+            await deleteMessage(messageId);
+            setChatMessages(prev => prev.filter(m => m.id !== messageId));
+            toast.success("Message deleted");
+        } catch (error) {
+            console.error("Failed to delete message:", error);
+            toast.error("Failed to delete message");
+        }
+    };
+
     const handleSendMessage = async () => {
         const text = messageInput.trim();
         const file = selectedFile;
@@ -221,14 +253,13 @@ const CommunicationTools = () => {
                 sender: "me",
                 text: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isFile: false
+                isFile: false,
+                isSeen: false
             };
             setChatMessages(prev => [optimisticText, ...prev]);
 
             try {
                 await sendMessage(activeConv, text);
-                // Backend broadcasts via Redis → our WebSocket onmessage will receive it
-                // and the deduplication logic will replace this optimistic message
             } catch (error) {
                 console.error("DEBUG: Failed to send text:", error);
             }
@@ -244,7 +275,8 @@ const CommunicationTools = () => {
                 text: file.name,
                 attachment: URL.createObjectURL(file),
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                isFile: true
+                isFile: true,
+                isSeen: false
             };
             setChatMessages(prev => [optimisticFile, ...prev]);
 
@@ -458,41 +490,117 @@ const CommunicationTools = () => {
                             {/* Messages Area */}
                             <div className="flex-1 p-4 overflow-y-auto bg-white flex flex-col-reverse gap-4 scroll-smooth custom-scrollbar min-h-0">
                                 {chatMessages.map((msg) => (
-                                    <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}>
+                                    <div key={msg.id} className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} group`}>
                                         <div
                                             className={`text-[#2D2F33] text-[13px] px-4 py-2 rounded-xl max-w-[85%] sm:max-w-[75%] border relative shadow-sm transition-all ${msg.sender === "me"
                                                 ? "bg-[#DEE8E7]/30 border-[#1f4f4d1a] rounded-br-[4px]"
                                                 : "bg-[rgba(224,122,95,0.05)] border-[rgba(224,122,95,0.08)] rounded-bl-[4px]"
                                                 }`}
                                         >
-                                            {msg.isFile ? (
-                                                <div className="flex flex-col gap-2 mb-1 min-w-[120px]">
-                                                    <div className="flex items-center gap-2 pr-6">
-                                                        <div className="p-1.5 bg-[#1F4F4D]/10 rounded text-[#1F4F4D]">
-                                                            <FiFileText size={16} />
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[12px] font-medium truncate max-w-[150px]">{msg.text || "Attached File"}</span>
-                                                        </div>
-                                                    </div>
-                                                    {msg.attachment && (
-                                                        <a
-                                                            href={msg.attachment}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-[10px] text-[#1F4F4D] hover:underline flex items-center gap-1 font-bold"
+                                            {/* Edit/Delete Actions */}
+                                            {msg.sender === "me" && editingMsgId !== msg.id && (
+                                                <div className="absolute -top-3 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-20">
+                                                    {!msg.isFile && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingMsgId(msg.id);
+                                                                setEditInput(msg.text);
+                                                            }}
+                                                            className="p-1.5 bg-white border border-gray-100 rounded-full text-gray-600 hover:text-[#1F4F4D] shadow-sm hover:scale-110 transition-all"
+                                                            title="Edit message"
                                                         >
-                                                            Download File
-                                                        </a>
+                                                            <FiEdit2 size={12} />
+                                                        </button>
                                                     )}
+                                                    <button
+                                                        onClick={() => handleDeleteMessage(msg.id)}
+                                                        className="p-1.5 bg-white border border-gray-100 rounded-full text-red-400 hover:text-red-600 shadow-sm hover:scale-110 transition-all"
+                                                        title="Delete message"
+                                                    >
+                                                        <FiTrash2 size={12} />
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {editingMsgId === msg.id ? (
+                                                <div className="flex flex-col gap-2 min-w-[180px] py-1">
+                                                    <textarea
+                                                        className="w-full p-2 text-xs border border-[#1F4F4D]/20 rounded-md focus:ring-1 focus:ring-[#1F4F4D] outline-none bg-white font-normal"
+                                                        value={editInput}
+                                                        onChange={(e) => setEditInput(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                handleEditMessage(msg.id);
+                                                            }
+                                                            if (e.key === 'Escape') {
+                                                                setEditingMsgId(null);
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <div className="flex justify-end gap-3 items-center">
+                                                        <button
+                                                            onClick={() => setEditingMsgId(null)}
+                                                            className="text-[10px] text-gray-500 hover:text-gray-700 font-bold uppercase tracking-wider"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleEditMessage(msg.id)}
+                                                            className="text-[10px] text-[#1F4F4D] hover:underline font-bold uppercase tracking-wider"
+                                                        >
+                                                            Save Changes
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <p className="leading-normal mb-1">{msg.text}</p>
+                                                <>
+                                                    {msg.isFile ? (
+                                                        <div className="flex flex-col gap-2 mb-1 min-w-[120px]">
+                                                            <div className="flex items-center gap-2 pr-6">
+                                                                <div className="p-1.5 bg-[#1F4F4D]/10 rounded text-[#1F4F4D]">
+                                                                    <FiFileText size={16} />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-[12px] font-medium truncate max-w-[150px]">{msg.text || "Attached File"}</span>
+                                                                </div>
+                                                            </div>
+                                                            {msg.attachment && (
+                                                                <a
+                                                                    href={msg.attachment}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-[10px] text-[#1F4F4D] hover:underline flex items-center gap-1 font-bold"
+                                                                >
+                                                                    Download File
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="leading-normal mb-1 break-words">{msg.text}</p>
+                                                    )}
+                                                </>
                                             )}
-                                            <div className="flex justify-end">
+
+                                            <div className="flex justify-end items-center gap-1.5">
                                                 <span className="text-[9px] text-gray-400 font-medium">
                                                     {msg.time}
                                                 </span>
+                                                {msg.sender === "me" && (
+                                                    <span className="flex items-center" title={msg.isSeen ? "Seen" : "Sent"}>
+                                                        <FiCheck
+                                                            size={12}
+                                                            className={`${msg.isSeen ? "text-blue-500" : "text-gray-400"}`}
+                                                        />
+                                                        {msg.isSeen && (
+                                                            <FiCheck
+                                                                size={12}
+                                                                className="-ml-2 text-blue-500"
+                                                            />
+                                                        )}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

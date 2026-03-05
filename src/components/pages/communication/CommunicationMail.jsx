@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { getEmailDetails, updateEmail, deleteEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAll }) => {
     const [fullMail, setFullMail] = useState(mail);
@@ -68,13 +69,13 @@ const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAl
     }
 
     const displayName = isSentFolder
-        ? (fullMail.recipient_name || fullMail.recipient_username || 'Recipient')
-        : (fullMail.sender_name || fullMail.name || 'Unknown');
+        ? formatCamelCaseName(fullMail.recipient_name || fullMail.recipient_username || 'Recipient')
+        : formatCamelCaseName(fullMail.sender_name || fullMail.name || 'Unknown');
 
     const displayAvatar = isSentFolder
         ? (fullMail.recipient_profile_picture || fullMail.recipient_avatar || `https://ui-avatars.com/api/?name=${fullMail.recipient_username || 'Recipient'}&background=random`)
         : (fullMail.sender_profile_picture || fullMail.sender_avatar || fullMail.avatar || `https://ui-avatars.com/api/?name=${fullMail.sender_name || fullMail.name || 'User'}&background=random`);
-console.log("dkdjsjdsajdjasiojoisadjioas",displayAvatar);
+
     const displayEmail = isSentFolder
         ? (fullMail.recipient_email || fullMail.recipient_username || fullMail.email)
         : (fullMail.sender_email || fullMail.sender_username || fullMail.email);

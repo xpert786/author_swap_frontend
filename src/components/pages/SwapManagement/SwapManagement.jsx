@@ -173,13 +173,15 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
                                 {data.rejection_date || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleRestore(e); }}
-                            disabled={actionLoading === "restore"}
-                            className="px-6 py-2 border border-[#B5B5B5] text-black rounded-[6px] text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
-                        >
-                            Restore
-                        </button>
+                        {(data.can_restore || data.is_decliner) && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleRestore(e); }}
+                                disabled={actionLoading === "restore"}
+                                className="px-6 py-2 border border-[#B5B5B5] text-black rounded-[6px] text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                Restore
+                            </button>
+                        )}
                     </div>
                 )}
 

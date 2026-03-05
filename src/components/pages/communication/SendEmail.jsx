@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { composeEmail, getSwapPartners } from "../../../apis/email";
 import toast from "react-hot-toast";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 const EMOJI_LIST = ["😊", "👍", "❤️", "🎉", "🙏", "✅", "🚀", "😄", "🤝", "👏"];
 
@@ -30,6 +31,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
   const [bcc, setBcc] = useState("");
   const [showCc, setShowCc] = useState(!!initialCc);
   const [showBcc, setShowBcc] = useState(false);
+  const [activeSearchField, setActiveSearchField] = useState("to"); // "to", "cc", "bcc"
 
   const [subject, setSubject] = useState(initialSubject);
   const [body, setBody] = useState(initialBody);
@@ -47,6 +49,8 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
   const moreRef = useRef(null);
   const bodyRef = useRef(null);
   const searchInputRef = useRef(null);
+  const ccInputRef = useRef(null);
+  const bccInputRef = useRef(null);
 
   // Fetch swap partners
   useEffect(() => {
@@ -68,14 +72,32 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
 
   // Filter partners
   useEffect(() => {
+    let q = "";
+    if (activeSearchField === "to") {
+      q = searchQuery.toLowerCase().trim();
+    } else if (activeSearchField === "cc") {
+      const parts = cc.split(",");
+      q = parts[parts.length - 1].toLowerCase().trim();
+    } else if (activeSearchField === "bcc") {
+      const parts = bcc.split(",");
+      q = parts[parts.length - 1].toLowerCase().trim();
+    }
+
     const selectedIds = new Set(selectedRecipients.map((r) => r.id));
-    const q = searchQuery.toLowerCase().trim();
     const pool = swapPartners.filter((p) => !selectedIds.has(p.id));
+
     if (!q) {
       setFilteredPartners(pool);
-      setShowDropdown(pool.length > 0 && document.activeElement === searchInputRef.current);
+      // Only show dropdown automatically on focus
+      const isActive =
+        (activeSearchField === "to" && document.activeElement === searchInputRef.current) ||
+        (activeSearchField === "cc" && document.activeElement === ccInputRef.current) ||
+        (activeSearchField === "bcc" && document.activeElement === bccInputRef.current);
+
+      setShowDropdown(pool.length > 0 && isActive);
       return;
     }
+
     const matches = pool.filter(
       (p) =>
         (p.name && p.name.toLowerCase().includes(q)) ||
@@ -83,7 +105,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
     );
     setFilteredPartners(matches);
     setShowDropdown(matches.length > 0);
-  }, [searchQuery, swapPartners, selectedRecipients]);
+  }, [searchQuery, cc, bcc, swapPartners, selectedRecipients, activeSearchField]);
 
   // Close dropdowns
   useEffect(() => {
@@ -96,11 +118,23 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
   }, []);
 
   const addRecipient = (partner) => {
-    if (selectedRecipients.find((r) => r.id === partner.id)) return;
-    setSelectedRecipients((prev) => [...prev, partner]);
-    setSearchQuery("");
+    if (activeSearchField === "to") {
+      if (selectedRecipients.find((r) => r.id === partner.id)) return;
+      setSelectedRecipients((prev) => [...prev, partner]);
+      setSearchQuery("");
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    } else if (activeSearchField === "cc") {
+      const parts = cc.split(",");
+      parts[parts.length - 1] = partner.username;
+      setCc(parts.join(", ") + ", ");
+      setTimeout(() => ccInputRef.current?.focus(), 50);
+    } else if (activeSearchField === "bcc") {
+      const parts = bcc.split(",");
+      parts[parts.length - 1] = partner.username;
+      setBcc(parts.join(", ") + ", ");
+      setTimeout(() => bccInputRef.current?.focus(), 50);
+    }
     setShowDropdown(false);
-    setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 
   const removeRecipient = (id) => {
@@ -144,22 +178,28 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
 
       // Cc
       if (cc) {
-        allRecipientPromises.push(composeEmail({
-          recipient_username: cc,
-          subject,
-          body: content,
-          attachment: selectedFile
-        }));
+        const ccList = cc.split(",").map(s => s.trim()).filter(Boolean);
+        ccList.forEach(username => {
+          allRecipientPromises.push(composeEmail({
+            recipient_username: username,
+            subject,
+            body: content,
+            attachment: selectedFile
+          }));
+        });
       }
 
       // Bcc
       if (bcc) {
-        allRecipientPromises.push(composeEmail({
-          recipient_username: bcc,
-          subject,
-          body: content,
-          attachment: selectedFile
-        }));
+        const bccList = bcc.split(",").map(s => s.trim()).filter(Boolean);
+        bccList.forEach(username => {
+          allRecipientPromises.push(composeEmail({
+            recipient_username: username,
+            subject,
+            body: content,
+            attachment: selectedFile
+          }));
+        });
       }
 
       await Promise.all(allRecipientPromises);
@@ -277,7 +317,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                       alt={r.name}
                       className="w-4 h-4 rounded-full object-cover flex-shrink-0"
                     />
-                    <span className="truncate">{r.name || r.username}</span>
+                    <span className="truncate">{formatCamelCaseName(r.name || r.username)}</span>
                     <button
                       onMouseDown={(e) => { e.preventDefault(); removeRecipient(r.id); }}
                       className="text-[#1F4F4D]/60 hover:text-red-500 transition-colors flex-shrink-0 ml-0.5"
@@ -295,6 +335,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   onFocus={() => {
+                    setActiveSearchField("to");
                     const selectedIds = new Set(selectedRecipients.map((r) => r.id));
                     const pool = swapPartners.filter((p) => !selectedIds.has(p.id));
                     setFilteredPartners(pool);
@@ -307,13 +348,35 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                 />
 
                 <div className="flex gap-2 text-gray-500 text-[11px] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
-                  {!showCc && <span className="cursor-pointer hover:text-gray-900" onClick={() => setShowCc(true)}>Cc</span>}
-                  {!showBcc && <span className="cursor-pointer hover:text-gray-900" onClick={() => setShowBcc(true)}>Bcc</span>}
+                  {!showCc && (
+                    <span
+                      className="cursor-pointer hover:text-gray-900"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCc(true);
+                        setTimeout(() => ccInputRef.current?.focus(), 50);
+                      }}
+                    >
+                      Cc
+                    </span>
+                  )}
+                  {!showBcc && (
+                    <span
+                      className="cursor-pointer hover:text-gray-900"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowBcc(true);
+                        setTimeout(() => bccInputRef.current?.focus(), 50);
+                      }}
+                    >
+                      Bcc
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Dropdown */}
-              {showDropdown && filteredPartners.length > 0 && (
+              {/* Dropdown - Global placement logic could go here, but keeping it inside relative To field for now or moving it */}
+              {showDropdown && filteredPartners.length > 0 && activeSearchField === "to" && (
                 <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
                   {filteredPartners.map((partner) => (
                     <button
@@ -327,7 +390,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                         className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                       />
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium text-gray-800 truncate">{partner.name || partner.username}</p>
+                        <p className="text-[13px] font-medium text-gray-800 truncate">{formatCamelCaseName(partner.name || partner.username)}</p>
                         <p className="text-[11px] text-gray-400 truncate">@{partner.username}</p>
                       </div>
                     </button>
@@ -338,29 +401,91 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
 
             {/* Cc Field */}
             {showCc && (
-              <div className="flex items-center px-4 py-2 border-b border-gray-100 animate-in fade-in duration-300">
-                <span className="text-gray-500 text-[12px] w-12 flex-shrink-0">Cc</span>
-                <input
-                  type="text"
-                  value={cc}
-                  onChange={(e) => setCc(e.target.value)}
-                  className="flex-1 outline-none py-1 text-[13px] min-w-0"
-                />
-                <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowCc(false)} />
+              <div className="relative border-b border-gray-100 animate-in fade-in duration-300">
+                <div className="flex items-center px-4 py-2">
+                  <span className="text-gray-500 text-[12px] w-12 flex-shrink-0">Cc</span>
+                  <input
+                    ref={ccInputRef}
+                    type="text"
+                    value={cc}
+                    onChange={(e) => setCc(e.target.value)}
+                    onFocus={() => {
+                      setActiveSearchField("cc");
+                      setShowDropdown(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                    className="flex-1 outline-none py-1 text-[13px] min-w-0"
+                    placeholder="Recipient usernames separated by commas..."
+                    autoComplete="off"
+                  />
+                  <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowCc(false)} />
+                </div>
+                {showDropdown && filteredPartners.length > 0 && activeSearchField === "cc" && (
+                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
+                    {filteredPartners.map((partner) => (
+                      <button
+                        key={partner.id}
+                        onMouseDown={() => addRecipient(partner)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#EAF2F2] text-left transition-colors"
+                      >
+                        <img
+                          src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name || partner.username)}&size=32&background=1F4F4D&color=fff`}
+                          alt={partner.name}
+                          className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-medium text-gray-800 truncate">{formatCamelCaseName(partner.name || partner.username)}</p>
+                          <p className="text-[11px] text-gray-400 truncate">@{partner.username}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Bcc Field */}
             {showBcc && (
-              <div className="flex items-center px-4 py-2 border-b border-gray-100 animate-in fade-in duration-300">
-                <span className="text-gray-500 text-[12px] w-12 flex-shrink-0">Bcc</span>
-                <input
-                  type="text"
-                  value={bcc}
-                  onChange={(e) => setBcc(e.target.value)}
-                  className="flex-1 outline-none py-1 text-[13px] min-w-0"
-                />
-                <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowBcc(false)} />
+              <div className="relative border-b border-gray-100 animate-in fade-in duration-300">
+                <div className="flex items-center px-4 py-2">
+                  <span className="text-gray-500 text-[12px] w-12 flex-shrink-0">Bcc</span>
+                  <input
+                    ref={bccInputRef}
+                    type="text"
+                    value={bcc}
+                    onChange={(e) => setBcc(e.target.value)}
+                    onFocus={() => {
+                      setActiveSearchField("bcc");
+                      setShowDropdown(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                    className="flex-1 outline-none py-1 text-[13px] min-w-0"
+                    placeholder="Recipient usernames separated by commas..."
+                    autoComplete="off"
+                  />
+                  <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowBcc(false)} />
+                </div>
+                {showDropdown && filteredPartners.length > 0 && activeSearchField === "bcc" && (
+                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
+                    {filteredPartners.map((partner) => (
+                      <button
+                        key={partner.id}
+                        onMouseDown={() => addRecipient(partner)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#EAF2F2] text-left transition-colors"
+                      >
+                        <img
+                          src={partner.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name || partner.username)}&size=32&background=1F4F4D&color=fff`}
+                          alt={partner.name}
+                          className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-medium text-gray-800 truncate">{formatCamelCaseName(partner.name || partner.username)}</p>
+                          <p className="text-[11px] text-gray-400 truncate">@{partner.username}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

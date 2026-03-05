@@ -15,6 +15,7 @@ import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
 import { getEmails } from "../../../apis/email";
 import toast from "react-hot-toast";
+import { formatCamelCaseName } from "../../../utils/formatName";
 
 const CommunicationList = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const CommunicationList = () => {
   const getSenderIdentifier = (mail) => mail.sender_username || mail.sender_email || mail.sender_name || "";
 
   const handleReply = (mail, quickReplyText = "") => {
-    let newBody = `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${mail.sender_name || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`;
+    let newBody = `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${formatCamelCaseName(mail.sender_name) || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`;
     if (quickReplyText) newBody = `${quickReplyText}${newBody}`;
 
     setComposeData({
@@ -88,7 +89,7 @@ const CommunicationList = () => {
     setComposeData({
       recipient: getSenderIdentifier(mail),
       subject: mail.subject.toLowerCase().startsWith("re:") ? mail.subject : `Re: ${mail.subject}`,
-      body: `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${mail.sender_name || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
+      body: `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${formatCamelCaseName(mail.sender_name) || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
       cc: mail.recipient_email || mail.recipient_username || "",
     });
     setIsComposeOpen(true);
@@ -98,7 +99,7 @@ const CommunicationList = () => {
     setComposeData({
       recipient: "", // Requires user to fill in
       subject: mail.subject.toLowerCase().startsWith("fwd:") ? mail.subject : `Fwd: ${mail.subject}`,
-      body: `<br/><br/><blockquote><strong>From:</strong> ${mail.sender_name} &lt;${getSenderIdentifier(mail)}&gt;<br/><strong>Date:</strong> ${mail.formatted_date || mail.date}<br/><strong>Subject:</strong> ${mail.subject}<br/><br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
+      body: `<br/><br/><blockquote><strong>From:</strong> ${formatCamelCaseName(mail.sender_name)} &lt;${getSenderIdentifier(mail)}&gt;<br/><strong>Date:</strong> ${mail.formatted_date || mail.date}<br/><strong>Subject:</strong> ${mail.subject}<br/><br/>${mail.body || mail.message || mail.snippet}</blockquote>`,
       cc: "",
     });
     setIsComposeOpen(true);
@@ -250,14 +251,14 @@ const CommunicationList = () => {
                             ? (msg.recipient_profile_picture || msg.recipient_avatar || "https://ui-avatars.com/api/?name=" + (msg.recipient_username || 'Recipient'))
                             : (msg.sender_profile_picture || msg.sender_avatar || msg.avatar || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User'))
                           }
-                          alt={currentFolder === "sent" ? msg.recipient_username : msg.sender_name}
+                          alt={currentFolder === "sent" ? formatCamelCaseName(msg.recipient_username || 'Recipient') : formatCamelCaseName(msg.sender_name || 'User')}
                           className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                         />
                         <div className="min-w-0">
                           <h4 className="font-medium text-sm truncate">
                             {currentFolder === "sent"
-                              ? (msg.recipient_name || msg.recipient_username || 'Recipient')
-                              : (msg.sender_name || msg.name || 'User')
+                              ? formatCamelCaseName(msg.recipient_name || msg.recipient_username || 'Recipient')
+                              : formatCamelCaseName(msg.sender_name || msg.name || 'User')
                             }
                           </h4>
                           <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
