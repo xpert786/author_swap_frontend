@@ -36,6 +36,10 @@ export const setDefaultPaymentMethod = async (pmId) => {
     return apiClient.post(`stripe/payment-methods/${pmId}/set-default/`);
 }
 
+export const attachPaymentMethod = async (data) => {
+    return apiClient.post("stripe/payment-methods/", data);
+}
+
 export const changePlanPreview = async (data) => {
     return apiClient.post("stripe/change-plan/preview/", data);
 }
