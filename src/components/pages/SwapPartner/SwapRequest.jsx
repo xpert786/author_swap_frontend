@@ -101,7 +101,13 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
             onClose();
         } catch (error) {
             console.error("Failed to send swap request:", error);
-            toast.error(error.response?.data?.message || "Failed to send swap request");
+            const errData = error.response?.data;
+            const errMsg =
+                errData?.detail ||
+                errData?.message ||
+                (Array.isArray(errData?.non_field_errors) ? errData.non_field_errors[0] : null) ||
+                "Failed to send swap request";
+            toast.error(errMsg);
         } finally {
             setSubmitting(false);
         }

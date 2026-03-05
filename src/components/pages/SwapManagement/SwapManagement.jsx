@@ -6,6 +6,7 @@ import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
 import SwapDetailsModal from './SwapDetailsModal';
+import { useProfile } from '../../../context/ProfileContext';
 
 const tabs = [
     { label: "All Swaps", key: "all" },
@@ -27,13 +28,18 @@ const formatLabel = (str) => {
 };
 
 
-const SwapCard = ({ data, onRefresh, onViewDetails }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
     const isCompleted = data.status === "completed" || data.status === "complete";
     const isRejected = data.status === "rejected" || data.status === "reject";
     const isPending = data.status === "pending" || data.status === "incoming";
     const isSending = data.status === "sending";
+
+    // author_name is the REQUESTER. If requester != current user → current user is the decliner.
+    const requesterName = (data.author_name || "").toLowerCase().trim();
+    const myName = (currentUserName || "").toLowerCase().trim();
+    const isCurrentUserDecliner = isRejected && myName && requesterName !== myName;
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -145,7 +151,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
 
             {/* Action logic per design */}
             <div className="mt-auto pt-2 space-y-3">
-                {isPending && (
+                {/* Only show Accept/Decline to the person who RECEIVED the request, not the decliner */}
+                {isPending && !isCurrentUserDecliner && (
                     <div className="flex gap-2">
                         <button
                             onClick={(e) => { e.stopPropagation(); handleDecline(e); }}
@@ -164,6 +171,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
                     </div>
                 )}
 
+                {/* Rejected section — show Restore ONLY to the person who declined */}
                 {isRejected && (
                     <div className="space-y-3">
                         <div className="bg-[#FEF2F2] p-3 rounded-[8px] border border-[#FEE2E2]">
@@ -173,7 +181,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
                                 {data.rejection_date || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
-                        {(data.can_restore || data.is_decliner) && (
+                        {/* Restore only visible to the decliner */}
+                        {isCurrentUserDecliner && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRestore(e); }}
                                 disabled={actionLoading === "restore"}
@@ -226,6 +235,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails }) => {
 };
 
 const SwapManagement = () => {
+    const { profile } = useProfile();
+    // Build current user's full name to compare against swap's author_name (the requester)
+    const currentUserName = profile
+        ? `${profile.first_name || ""} , ${profile.last_name || ""}`.toLowerCase().trim()
+        : "";
+
     const [swaps, setSwaps] = useState([]);
     const [tabCounts, setTabCounts] = useState({});
     const [loading, setLoading] = useState(true);
@@ -348,6 +363,7 @@ const SwapManagement = () => {
                                 <SwapCard
                                     key={swap.id}
                                     data={swap}
+                                    currentUserName={currentUserName}
                                     onRefresh={() => fetchSwaps(activeTab.key)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);

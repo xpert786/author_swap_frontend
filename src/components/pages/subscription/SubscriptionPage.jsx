@@ -48,6 +48,7 @@ export default function SubscriptionPage() {
             setSelectedTier(tier);
 
             // 1. Frontend Safety Check
+            console.log("Current Subscription Object:", subscription);
             const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
             if (isCurrent) {
                 toast.error("You are already on this plan.");
@@ -57,17 +58,30 @@ export default function SubscriptionPage() {
             if (subscription) {
                 // Existing subscriber — check for saved payment methods
                 const pmRes = await getPaymentMethods();
-                const hasCard = Array.isArray(pmRes.data) && pmRes.data.length > 0;
+
+                // Handle different response shapes for payment methods
+                const methods = Array.isArray(pmRes.data)
+                    ? pmRes.data
+                    : Array.isArray(pmRes.data?.data)
+                        ? pmRes.data.data
+                        : [];
+
+                const hasCard = methods.length > 0;
 
                 if (!hasCard) {
-                    // No card on file → redirect to Stripe Checkout (no plan change)
+                    // No card on file → MUST redirect to Stripe Checkout to collect payment
                     const res = await createCheckoutSession({ tier_id: tier.id });
+
                     if (res.data.url || res.data.checkout_url) {
+                        // Good: backend gave us a payment page URL
                         window.location.href = res.data.url || res.data.checkout_url;
-                    } else {
-                        toast.error("Failed to initiate payment session.");
+                        return;
                     }
-                    return; // ← critical: stop here, don't show modal or change plan
+
+                    // Backend upgraded without a checkout URL — send user to add card first
+                    toast("Please add a payment card to upgrade your plan.", { icon: "💳" });
+                    navigate("/account-settings");
+                    return;
                 }
 
                 // Has card → fetch preview and show modal
@@ -82,7 +96,9 @@ export default function SubscriptionPage() {
                 if (res.data.url || res.data.checkout_url) {
                     window.location.href = res.data.url || res.data.checkout_url;
                 } else {
-                    toast.error("Failed to initiate payment session.");
+                    // Same safeguard: send user to add card
+                    toast("Please add a payment card to upgrade your plan.", { icon: "💳" });
+                    navigate("/account-settings");
                 }
             }
         } catch (error) {

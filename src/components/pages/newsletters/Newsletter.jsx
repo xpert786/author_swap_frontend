@@ -651,7 +651,7 @@ const Newsletter = () => {
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    {slot.has_booked && (
+                                                    {slot.status !== "Available" && (
                                                         <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
                                                             <Eye size={14} className="text-gray-600" />
                                                         </button>
