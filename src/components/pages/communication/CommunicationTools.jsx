@@ -6,6 +6,7 @@ import { SendIcon } from "../../icons";
 import { getConversations, getChatHistory, getComposePartners, sendMessage } from "../../../apis/chat";
 import { useNotifications } from "../../../context/NotificationContext";
 import { formatCamelCaseName } from "../../../utils/formatName";
+import toast from "react-hot-toast";
 
 const CommunicationTools = () => {
     const { refreshCounts } = useNotifications();
@@ -251,7 +252,7 @@ const CommunicationTools = () => {
                 await sendMessage(activeConv, "", file);
             } catch (error) {
                 console.error("DEBUG: Failed to send file:", error);
-                alert("Failed to send file. Please check your connection.");
+                toast.error("Failed to send file. Please check your connection.");
             }
         }
     };

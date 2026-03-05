@@ -12,9 +12,11 @@ import {
 import { getEmailDetails, updateEmail, deleteEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
 
-const CommunicationMail = ({ mail, onBack, onReply, onForward, onReplyAll }) => {
+const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAll }) => {
     const [fullMail, setFullMail] = useState(mail);
     const [loading, setLoading] = useState(true);
+
+    const isSentFolder = folder === "sent";
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -65,6 +67,18 @@ const CommunicationMail = ({ mail, onBack, onReply, onForward, onReplyAll }) => 
         );
     }
 
+    const displayName = isSentFolder
+        ? (fullMail.recipient_name || fullMail.recipient_username || 'Recipient')
+        : (fullMail.sender_name || fullMail.name || 'Unknown');
+
+    const displayAvatar = isSentFolder
+        ? (fullMail.recipient_profile_picture || fullMail.recipient_avatar || `https://ui-avatars.com/api/?name=${fullMail.recipient_username || 'Recipient'}&background=random`)
+        : (fullMail.sender_profile_picture || fullMail.sender_avatar || fullMail.avatar || `https://ui-avatars.com/api/?name=${fullMail.sender_name || fullMail.name || 'User'}&background=random`);
+console.log("dkdjsjdsajdjasiojoisadjioas",displayAvatar);
+    const displayEmail = isSentFolder
+        ? (fullMail.recipient_email || fullMail.recipient_username || fullMail.email)
+        : (fullMail.sender_email || fullMail.sender_username || fullMail.email);
+
     return (
         <div className="bg-white rounded-2xl border border-[#B5B5B5] shadow-sm overflow-hidden min-h-[500px]">
             {/* Back Button */}
@@ -73,7 +87,7 @@ const CommunicationMail = ({ mail, onBack, onReply, onForward, onReplyAll }) => 
                     onClick={onBack}
                     className="text-sm text-[#2F6F6D] hover:underline flex items-center gap-1"
                 >
-                    ← Back to Inbox
+                    ← Back to {isSentFolder ? 'Sent' : 'Inbox'}
                 </button>
             </div>
 
@@ -82,17 +96,17 @@ const CommunicationMail = ({ mail, onBack, onReply, onForward, onReplyAll }) => 
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 md:mb-8">
                     <div className="flex items-start gap-3 md:gap-4">
                         <img
-                            src={fullMail.sender_profile_picture || fullMail.sender_avatar || fullMail.avatar || `https://ui-avatars.com/api/?name=${fullMail.sender_name || fullMail.name || 'User'}&background=random`}
-                            alt={fullMail.sender_name || fullMail.name}
+                            src={displayAvatar}
+                            alt={displayName}
                             className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-sm"
                         />
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-baseline gap-x-2">
                                 <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">
-                                    {fullMail.sender_name || fullMail.name || 'Unknown'}
+                                    {isSentFolder && "To: "}{displayName}
                                 </h2>
                                 <span className="text-gray-400 text-xs md:text-sm truncate">
-                                    &lt;{fullMail.sender_email || fullMail.sender_username || fullMail.email}&gt;
+                                    &lt;{displayEmail}&gt;
                                 </span>
                             </div>
                             <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mt-1">

@@ -220,6 +220,7 @@ const CommunicationList = () => {
             {selectedMail ? (
               <CommunicationMail
                 mail={selectedMail}
+                folder={currentFolder}
                 onBack={() => {
                   setSelectedMail(null);
                   fetchEmails(currentFolder);
@@ -245,12 +246,20 @@ const CommunicationList = () => {
                     >
                       <div className="flex items-center gap-4 min-w-0">
                         <img
-                          src={msg.sender_profile_picture || msg.sender_avatar || msg.avatar || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User')}
-                          alt={msg.sender_name}
+                          src={currentFolder === "sent"
+                            ? (msg.recipient_profile_picture || msg.recipient_avatar || "https://ui-avatars.com/api/?name=" + (msg.recipient_username || 'Recipient'))
+                            : (msg.sender_profile_picture || msg.sender_avatar || msg.avatar || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User'))
+                          }
+                          alt={currentFolder === "sent" ? msg.recipient_username : msg.sender_name}
                           className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                         />
                         <div className="min-w-0">
-                          <h4 className="font-medium text-sm truncate">{msg.sender_name || msg.name}</h4>
+                          <h4 className="font-medium text-sm truncate">
+                            {currentFolder === "sent"
+                              ? (msg.recipient_name || msg.recipient_username || 'Recipient')
+                              : (msg.sender_name || msg.name || 'User')
+                            }
+                          </h4>
                           <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
                             {msg.subject} <span className="text-gray-400 font-normal">- {stripHtml(msg.snippet || msg.message)}</span>
                           </p>
