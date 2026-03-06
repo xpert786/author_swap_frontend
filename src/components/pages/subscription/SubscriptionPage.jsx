@@ -48,7 +48,7 @@ export default function SubscriptionPage() {
             setSelectedTier(tier);
 
             // 1. Frontend Safety Check
-            console.log("Current Subscription Object:", subscription);
+
             const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
             if (isCurrent) {
                 toast.error("You are already on this plan.");
@@ -58,14 +58,18 @@ export default function SubscriptionPage() {
             if (subscription) {
                 // Existing subscriber — check for saved payment methods
                 const pmRes = await getPaymentMethods();
+                console.log("PaymentMethods API response:", pmRes.data);
 
                 // Handle different response shapes for payment methods
-                const methods = Array.isArray(pmRes.data)
-                    ? pmRes.data
-                    : Array.isArray(pmRes.data?.data)
-                        ? pmRes.data.data
-                        : [];
+                // const methods = Array.isArray(pmRes.data)
+                //     ? pmRes.data
+                //     : Array.isArray(pmRes.data?.data)
+                //         ? pmRes.data.data
+                //         : [];
 
+                // const hasCard = methods.length > 0;
+
+                const methods = pmRes.data?.data || pmRes.data || [];
                 const hasCard = methods.length > 0;
 
                 if (!hasCard) {
@@ -140,7 +144,7 @@ export default function SubscriptionPage() {
     const tiers = verification?.available_tiers || [];
     const isConnected = verifDetails.is_connected_mailerlite || false;
     const lastSynced = verifDetails.last_verified_at || "Never";
-
+    console.log("Current Subscription Object:", subscription);
     const getPrimaryCta = (tier) => {
         const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
         if (isCurrent) return "Current Plan";
@@ -206,11 +210,6 @@ export default function SubscriptionPage() {
 
                 {activeTab === "subscription" ? (
                     <>
-                        {/* MailerLite Connection Section */}
-
-
-
-
                         {/* Current Plan */}
                         {subscription && (
                             <div className="bg-white border border-[#B5B5B5] rounded-lg p-4 mb-6">
