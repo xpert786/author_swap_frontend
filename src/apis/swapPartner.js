@@ -12,6 +12,7 @@ export const sendSwapRequest = (slotId, data) => {
     return apiClient.post(`slots/${slotId}/request/`, data);
 };
 
-export const getSlotRequestData = (slotId) => {
-    return apiClient.get(`slots/${slotId}/request/`);
+export const getSlotRequestData = (slotId, bookId = null) => {
+    const url = bookId ? `slots/${slotId}/request/?book_id=${bookId}` : `slots/${slotId}/request/`;
+    return apiClient.get(url);
 };

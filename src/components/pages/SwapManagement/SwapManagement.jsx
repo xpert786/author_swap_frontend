@@ -6,6 +6,7 @@ import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
 import SwapDetailsModal from './SwapDetailsModal';
+import DeclineReasonModal from './DeclineReasonModal';
 import { useProfile } from '../../../context/ProfileContext';
 
 const tabs = [
@@ -17,7 +18,6 @@ const tabs = [
     { label: "Completed Swaps", key: "completed" }
 ];
 
-
 const formatLabel = (str) => {
     if (!str) return "";
     return str
@@ -27,19 +27,20 @@ const formatLabel = (str) => {
         .join(" ");
 };
 
-
-const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }) => {
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
+
     const isCompleted = data.status === "completed" || data.status === "complete";
     const isRejected = data.status === "rejected" || data.status === "reject";
     const isPending = data.status === "pending" || data.status === "incoming";
     const isSending = data.status === "sending";
-
-    // author_name is the REQUESTER. If requester != current user → current user is the decliner.
     const requesterName = (data.author_name || "").toLowerCase().trim();
     const myName = (currentUserName || "").toLowerCase().trim();
-    const isCurrentUserDecliner = isRejected && myName && requesterName !== myName;
+    const isRequester = !!(myName && requesterName && myName === requesterName);
+    const isRecipient = !!(myName && requesterName && myName !== requesterName);
+    const isPartner = isRecipient;
+    const isCurrentUserDecliner = isRejected && isRecipient;
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -60,19 +61,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
         }
     };
 
-    const handleDecline = async (e) => {
+    const handleDecline = (e) => {
         e.stopPropagation();
-        try {
-            setActionLoading("decline");
-            await declineSwap(data.id);
-            toast.success("Swap declined.");
-            onRefresh?.();
-        } catch (error) {
-            console.error("Failed to decline swap:", error);
-            toast.error(error?.response?.data?.message || "Failed to decline swap");
-        } finally {
-            setActionLoading(null);
-        }
+        onDecline(data.id);
     };
 
     const handleRestore = async (e) => {
@@ -103,7 +94,6 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
                     <img src={authorImage} alt={authorName} className="w-10 h-10 rounded-full object-cover shrink-0" />
                     <div>
                         <h3 className="text-[13px] font-medium text-black leading-tight">{formatCamelCaseName(authorName)}</h3>
-
                         <p className="text-[13px] font-medium text-black">{authorRole}</p>
                     </div>
                 </div>
@@ -115,7 +105,6 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
                     >
                         {formatLabel(data.badge || data.status)}
                     </span>
-
                 )}
             </div>
 
@@ -131,15 +120,28 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
                 </div>
                 <div>
                     <p className="text-[10px] text-[#374151] font-normal mb-1">Requesting Book</p>
-                    <p className="text-[13px] font-medium text-black truncate">
-                        {typeof data.requesting_book === "object"
-                            ? data.requesting_book?.title
-                            : data.requesting_book ||
-                            (typeof data.requestingBook === "object"
-                                ? data.requestingBook?.title
-                                : data.requestingBook) ||
-                            "N/A"}
-                    </p>
+                    <div className="flex items-center gap-1.5 overflow-hidden">
+                        <p className="text-[13px] font-medium text-black truncate">
+                            {typeof data.requesting_book === "object"
+                                ? data.requesting_book?.title
+                                : data.requesting_book ||
+                                (typeof data.requestingBook === "object"
+                                    ? data.requestingBook?.title
+                                    : data.requestingBook) ||
+                                "N/A"}
+                        </p>
+                        {typeof data.requesting_book === "object" && data.requesting_book?.compatibility && (
+                            <div
+                                className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${data.requesting_book.compatibility.genre_match
+                                    ? "bg-green-100 text-green-600"
+                                    : "bg-red-100 text-red-600"
+                                    }`}
+                                title={data.requesting_book.compatibility.genre_match ? "Genre Match" : "Genre Mismatch"}
+                            >
+                                {data.requesting_book.compatibility.genre_match ? "✓" : "✕"}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -151,8 +153,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
 
             {/* Action logic per design */}
             <div className="mt-auto pt-2 space-y-3">
-                {/* Only show Accept/Decline to the person who RECEIVED the request, not the decliner */}
-                {isPending && !isCurrentUserDecliner && (
+                {/* Only show Accept/Decline to the person who RECEIVED the request */}
+                {isPending && isPartner && (
                     <div className="flex gap-2">
                         <button
                             onClick={(e) => { e.stopPropagation(); handleDecline(e); }}
@@ -181,7 +183,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
                                 {data.rejection_date || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
-                        {/* Restore only visible to the decliner */}
+                        {/* Restore only visible to the decliner (recipient) */}
                         {isCurrentUserDecliner && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleRestore(e); }}
@@ -206,7 +208,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
                     </button>
                 )}
 
-                {isSending && (
+                {/* "Waiting" banner — only show to the person who SENT the request */}
+                {(isSending || (isPending && isRequester)) && (
                     <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                         Waiting for partner response
                     </div>
@@ -236,9 +239,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, currentUserName }) => {
 
 const SwapManagement = () => {
     const { profile } = useProfile();
-    // Build current user's full name to compare against swap's author_name (the requester)
     const currentUserName = profile
-        ? `${profile.first_name || ""} , ${profile.last_name || ""}`.toLowerCase().trim()
+        ? (profile.name || `${profile.first_name || ""} ${profile.last_name || ""}`).toLowerCase().trim()
         : "";
 
     const [swaps, setSwaps] = useState([]);
@@ -248,6 +250,30 @@ const SwapManagement = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
+    const [isDeclineOpen, setIsDeclineOpen] = useState(false);
+    const [declineId, setDeclineId] = useState(null);
+    const [declineLoading, setDeclineLoading] = useState(false);
+
+    const handleDeclineRequest = (id) => {
+        setDeclineId(id);
+        setIsDeclineOpen(true);
+    };
+
+    const handleConfirmDecline = async (reason) => {
+        try {
+            setDeclineLoading(true);
+            await declineSwap(declineId, { rejection_reason: reason });
+            toast.success("Swap declined.");
+            setIsDeclineOpen(false);
+            setDeclineId(null);
+            fetchSwaps(activeTab.key);
+        } catch (error) {
+            console.error("Failed to decline swap:", error);
+            toast.error(error?.response?.data?.message || "Failed to decline swap");
+        } finally {
+            setDeclineLoading(false);
+        }
+    };
 
     const fetchSwaps = async (tabKey = "all") => {
         try {
@@ -278,21 +304,16 @@ const SwapManagement = () => {
         const sCategory = (s.category || "").toLowerCase();
         const tKey = activeTab.key.toLowerCase();
 
-        // Since we fetch per tab, we should trust the API if it's not the "all" tab.
-        // But we keep some filtering for robustness and for the "all" tab.
         let isTabMatch = tKey === "all";
 
         if (!isTabMatch) {
-            // Check exact match
             if (sStatus === tKey || sCategory === tKey) {
                 isTabMatch = true;
             }
-            // Check common variations
             else if (tKey === "completed" && sStatus === "complete") isTabMatch = true;
             else if (tKey === "pending" && sStatus === "incoming") isTabMatch = true;
             else if (tKey === "rejected" && sStatus === "reject") isTabMatch = true;
             else if (tKey === "sending" && sStatus === "active") isTabMatch = true;
-            // Robustness: If the API returned it for a specific tab, it's likely meant to be there
             else if (activeTab.key !== "all") isTabMatch = true;
         }
 
@@ -307,7 +328,6 @@ const SwapManagement = () => {
         const isSearchMatch = authorName.includes(searchTerm.toLowerCase()) || bookName.includes(searchTerm.toLowerCase());
         return isTabMatch && isSearchMatch;
     });
-
 
     return (
         <div className="min-h-screen bg-white pb-10">
@@ -330,7 +350,6 @@ const SwapManagement = () => {
                         {tab.label} {tabCounts[tab.key] !== undefined ? `(${tabCounts[tab.key]})` : ""}
                     </button>
                 ))}
-
             </div>
 
             {/* Content Header */}
@@ -369,6 +388,7 @@ const SwapManagement = () => {
                                         setDetailsId(swap.id);
                                         setIsDetailsOpen(true);
                                     }}
+                                    onDecline={handleDeclineRequest}
                                 />
                             ))}
                         </div>
@@ -388,6 +408,16 @@ const SwapManagement = () => {
                     setIsDetailsOpen(false);
                     setDetailsId(null);
                 }}
+            />
+
+            <DeclineReasonModal
+                isOpen={isDeclineOpen}
+                onClose={() => {
+                    setIsDeclineOpen(false);
+                    setDeclineId(null);
+                }}
+                onConfirm={handleConfirmDecline}
+                loading={declineLoading}
             />
         </div>
     );

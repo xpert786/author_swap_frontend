@@ -35,8 +35,14 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
             koboUrl: book.kobo_url || "",
             barnesNobleUrl: book.barnes_noble_url || ""
         });
+
+        // Use embedded compatibility data if available
+        if (book.compatibility) {
+            setCompatibility(book.compatibility);
+        }
+
         // Auto-fill message with book description if available
-        if (book.description && !message) {
+        if (book.description) {
             setMessage(book.description.slice(0, 250));
         }
     };

@@ -12,8 +12,8 @@ export const acceptSwap = (id) => {
     return apiClient.post(`accept-swap/${id}/`);
 };
 
-export const declineSwap = (id) => {
-    return apiClient.post(`reject-swap/${id}/`);
+export const declineSwap = (id, data) => {
+    return apiClient.post(`reject-swap/${id}/`, data);
 };
 
 export const restoreSwap = (id) => {

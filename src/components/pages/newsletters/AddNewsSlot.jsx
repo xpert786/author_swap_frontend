@@ -265,7 +265,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
 
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
-                  Price ($)
+                  Price ($) (optional)
                 </label>
                 <input
                   type="number"

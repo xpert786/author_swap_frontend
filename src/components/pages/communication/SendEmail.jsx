@@ -348,7 +348,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                   autoComplete="off"
                 />
 
-                <div className="flex gap-2 text-gray-500 text-[11px] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                {/* <div className="flex gap-2 text-gray-500 text-[11px] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
                   {!showCc && (
                     <span
                       className="cursor-pointer hover:text-gray-900"
@@ -373,7 +373,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                       Bcc
                     </span>
                   )}
-                </div>
+                </div> */}
               </div>
 
               {/* Dropdown - Global placement logic could go here, but keeping it inside relative To field for now or moving it */}

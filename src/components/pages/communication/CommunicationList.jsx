@@ -10,10 +10,13 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
+  Star,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import CommunicationMail from "./CommunicationMail";
 import SendEmail from "./SendEmail";
-import { getEmails } from "../../../apis/email";
+import { getEmails, updateEmail, deleteEmail as apiDeleteEmail } from "../../../apis/email";
 import toast from "react-hot-toast";
 import { formatCamelCaseName } from "../../../utils/formatName";
 
@@ -31,6 +34,8 @@ const CommunicationList = () => {
     drafts: 0,
     spam: 0,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchEmails = async (folder = currentFolder, search = searchQuery) => {
     try {
@@ -52,6 +57,7 @@ const CommunicationList = () => {
   };
 
   useEffect(() => {
+    setCurrentPage(1);
     fetchEmails(currentFolder);
   }, [currentFolder, isComposeOpen]);
 
@@ -71,6 +77,41 @@ const CommunicationList = () => {
   ];
 
   const getSenderIdentifier = (mail) => mail.sender_username || mail.sender_email || mail.sender_name || "";
+
+  const handleToggleStar = async (e, mail) => {
+    e.stopPropagation();
+    try {
+      const newStarredStatus = !mail.is_starred;
+      await updateEmail(mail.id, { is_starred: newStarredStatus });
+
+      // Update local state for immediate feedback
+      setEmails(prev =>
+        prev.map(item =>
+          item.id === mail.id ? { ...item, is_starred: newStarredStatus } : item
+        )
+      );
+
+      toast.success(newStarredStatus ? "Message starred" : "Message unstarred");
+    } catch (error) {
+      console.error("Failed to star email:", error);
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleDeleteEmail = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await apiDeleteEmail(id);
+      setEmails(prev => prev.filter(item => item.id !== id));
+      toast.success("Message deleted");
+      if (selectedMail && selectedMail.id === id) {
+        setSelectedMail(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete email:", error);
+      toast.error("Failed to delete message");
+    }
+  };
 
   const handleReply = (mail, quickReplyText = "") => {
     let newBody = `<br/><br/><blockquote>On ${mail.formatted_date || mail.date || "recent"}, ${formatCamelCaseName(mail.sender_name) || "Unknown"} wrote:<br/>${mail.body || mail.message || mail.snippet}</blockquote>`;
@@ -211,7 +252,7 @@ const CommunicationList = () => {
           </div>
 
           {/* RIGHT SIDE (Message List OR Mail View) */}
-          <div className="flex-1 p-4 bg-white relative">
+          <div className="flex-1 min-w-0 p-4 bg-white relative">
             {loading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
                 <Loader2 className="w-8 h-8 text-[#2F6F6D] animate-spin" />
@@ -231,50 +272,131 @@ const CommunicationList = () => {
                 onReplyAll={handleReplyAll}
               />
             ) : (
-              <div className="space-y-3">
-                {loading && emails.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">Loading emails...</div>
-                ) : emails.length === 0 ? (
-                  <div className="text-center py-20 text-gray-500">
-                    No emails found in this folder.
-                  </div>
-                ) : (
-                  emails.map((msg) => (
-                    <div
-                      key={msg.id}
-                      onClick={() => setSelectedMail(msg)}
-                      className={`flex flex-row items-center justify-between gap-4 p-3 border rounded-lg cursor-pointer transition-colors ${!msg.is_read && currentFolder === 'inbox' ? 'bg-blue-50/40 border-blue-200 font-semibold shadow-sm' : 'border-[#B5B5B5] hover:bg-[#E07A5F0D]'}`}
-                    >
-                      <div className="flex items-center gap-4 min-w-0">
-                        <img
-                          src={currentFolder === "sent"
-                            ? (msg.recipient_profile_picture || msg.recipient_avatar || "https://ui-avatars.com/api/?name=" + (msg.recipient_username || 'Recipient'))
-                            : (msg.sender_profile_picture || msg.sender_avatar || msg.avatar || "https://ui-avatars.com/api/?name=" + (msg.sender_name || 'User'))
-                          }
-                          alt={currentFolder === "sent" ? formatCamelCaseName(msg.recipient_username || 'Recipient') : formatCamelCaseName(msg.sender_name || 'User')}
-                          className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
-                        />
-                        <div className="min-w-0">
-                          <h4 className="font-medium text-sm truncate">
-                            {currentFolder === "sent"
-                              ? formatCamelCaseName(msg.recipient_name || msg.recipient_username || 'Recipient')
-                              : formatCamelCaseName(msg.sender_name || msg.name || 'User')
-                            }
-                          </h4>
-                          <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? 'font-medium' : 'font-normal'}`}>
-                            {msg.subject} <span className="text-gray-400 font-normal">- {stripHtml(msg.snippet || msg.message)}</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex-shrink-0 text-right">
-                        <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
-                          {msg.formatted_date || msg.created_at || msg.date || msg.time}
-                        </span>
-                      </div>
+              <div className="flex flex-col h-full">
+                <div className="space-y-3 flex-1 min-w-0">
+                  {loading && emails.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">Loading emails...</div>
+                  ) : emails.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">
+                      No emails found in this folder.
                     </div>
-                  ))
-                )}
+                  ) : (() => {
+                    const sorted = [...emails].sort((a, b) => (b.is_starred ? 1 : 0) - (a.is_starred ? 1 : 0));
+                    const totalPages = Math.ceil(sorted.length / itemsPerPage);
+                    const paginatedEmails = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+                    return (
+                      <>
+                        <div className="space-y-3 min-w-0">
+                          {paginatedEmails.map((msg) => (
+                            <div
+                              key={msg.id}
+                              onClick={() => setSelectedMail(msg)}
+                              className={`group flex items-center justify-between gap-4 p-3 border rounded-lg cursor-pointer transition-all ${!msg.is_read && currentFolder === "inbox"
+                                ? "bg-blue-50/40 border-blue-200 font-semibold shadow-sm"
+                                : "border-[#B5B5B5] hover:bg-[#E07A5F0D]"
+                                }`}
+                            >
+                              <div className="flex items-center gap-4 min-w-0 flex-1">
+                                {/* Indicator for starred email - Left side */}
+                                <div
+                                  onClick={(e) => handleToggleStar(e, msg)}
+                                  className={`flex-shrink-0 transition-colors ${msg.is_starred
+                                    ? "text-amber-400"
+                                    : "text-gray-300 hover:text-amber-400 opacity-0 group-hover:opacity-100"
+                                    }`}
+                                >
+                                  <Star size={18} fill={msg.is_starred ? "currentColor" : "none"} />
+                                </div>
+
+                                <img
+                                  src={
+                                    currentFolder === "sent"
+                                      ? msg.recipient_profile_picture ||
+                                      msg.recipient_avatar ||
+                                      "https://ui-avatars.com/api/?name=" + (msg.recipient_username || "Recipient")
+                                      : msg.sender_profile_picture ||
+                                      msg.sender_avatar ||
+                                      msg.avatar ||
+                                      "https://ui-avatars.com/api/?name=" + (msg.sender_name || "User")
+                                  }
+                                  alt="avatar"
+                                  className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium text-sm truncate">
+                                    {currentFolder === "sent"
+                                      ? formatCamelCaseName(msg.recipient_name || msg.recipient_username || "Recipient")
+                                      : formatCamelCaseName(msg.sender_name || msg.name || "User")}
+                                  </h4>
+                                  <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? "font-medium" : "font-normal"}`}>
+                                    {msg.subject} <span className="text-gray-400 font-normal truncate inline-block max-w-full">- {stripHtml(msg.snippet || msg.message)}</span>
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 flex-shrink-0">
+                                {/* Trash on the right side - visible on hover */}
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => handleDeleteEmail(e, msg.id)}
+                                    className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500"
+                                    title="Delete"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+
+                                <div className="text-right">
+                                  <span className="text-[10px] md:text-xs text-[#374151] font-normal whitespace-nowrap">
+                                    {msg.formatted_date || msg.created_at || msg.date || msg.time}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-between mt-6 px-2 border-t pt-4">
+                            <span className="text-sm text-gray-500">
+                              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, sorted.length)} of {sorted.length}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronLeft size={16} />
+                              </button>
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                  key={page}
+                                  onClick={() => setCurrentPage(page)}
+                                  className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${currentPage === page
+                                    ? "bg-[#2F6F6D] text-white"
+                                    : "border text-gray-600 hover:bg-gray-50"
+                                    }`}
+                                >
+                                  {page}
+                                </button>
+                              ))}
+                              <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronRight size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>

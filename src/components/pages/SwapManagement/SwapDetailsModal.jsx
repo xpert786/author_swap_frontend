@@ -177,6 +177,18 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                     </div>
                                 </div>
 
+                                {/* Rejection Reason */}
+                                {(data?.status === "rejected" || data?.status === "reject") && (
+                                    <div>
+                                        <p className="text-md font-medium text-[#DC2626] mb-3">Rejection Reason</p>
+                                        <div className="bg-red-50 p-3 rounded-xl border border-red-100">
+                                            <p className="text-[12px] font-medium text-[#374151] leading-relaxed">
+                                                {data?.rejection_reason || data?.rejectionReason || "No reason specified."}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Response Notes */}
                                 <div>
                                     <p className="text-md font-medium text-[#111827] mb-3">Response Notes</p>
