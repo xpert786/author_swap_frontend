@@ -16,6 +16,7 @@ import { formatCamelCaseName } from "../../../utils/formatName";
 const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAll }) => {
     const [fullMail, setFullMail] = useState(mail);
     const [loading, setLoading] = useState(true);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     const isSentFolder = folder === "sent";
 
@@ -49,14 +50,19 @@ const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAl
         }
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm("Move this email to trash?")) return;
+    const handleDelete = () => {
+        setIsConfirmModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
         try {
             await deleteEmail(fullMail.id);
             toast.success("Email moved to trash");
             onBack();
         } catch (error) {
             toast.error("Failed to delete email");
+        } finally {
+            setIsConfirmModalOpen(false);
         }
     };
 
@@ -182,6 +188,34 @@ const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAl
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {isConfirmModalOpen && (
+                <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-[2px]">
+                    <div className="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Email?</h3>
+                            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                                Are you sure you want to move this email to trash? You can restore it later from the trash folder.
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => setIsConfirmModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+                                >
+                                    Move to Trash
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

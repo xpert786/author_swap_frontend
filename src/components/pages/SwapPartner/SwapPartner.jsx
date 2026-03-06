@@ -10,96 +10,6 @@ import { formatCamelCaseName } from "../../../utils/formatName";
 import "./SwapPartner.css";
 import dayjs from "dayjs";
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const partners = [
-    {
-        id: 1,
-        name: "Jane Doe",
-        swaps: 42,
-        status: "Available",
-        genre: "Fantasy",
-        partners: "2/3 Partners",
-        visibility: "Public",
-        date: "26 Jan 2026",
-        time: "10:50 EST",
-        audience: "15,000",
-        paid: false,
-        photo: "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    {
-        id: 2,
-        name: "John Smith",
-        swaps: 30,
-        status: "Available",
-        genre: "Romance",
-        partners: "1/2 Partners",
-        visibility: "Private",
-        date: "15 Feb 2026",
-        time: "11:30 EST",
-        audience: "12,000",
-        paid: true,
-        paidAmount: "$20.00",
-        photo: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    {
-        id: 3,
-        name: "Alice Johnson",
-        swaps: 25,
-        status: "Available",
-        badge: "Genre-Specific",
-        genre: "Romance",
-        partners: "1/1 Partners",
-        visibility: "Public",
-        date: "12 Mar 2026",
-        time: "09:15 EST",
-        audience: "10,000",
-        paid: false,
-        photo: "https://randomuser.me/api/portraits/women/68.jpg",
-    },
-    {
-        id: 4,
-        name: "Jane Doe",
-        swaps: 42,
-        status: "Available",
-        genre: "Fantasy",
-        partners: "2/3 Partners",
-        visibility: "Public",
-        date: "26 Jan 2026",
-        time: "10:50 EST",
-        audience: "15,000",
-        paid: false,
-        photo: "https://randomuser.me/api/portraits/men/45.jpg",
-    },
-    {
-        id: 5,
-        name: "Emily White",
-        swaps: 50,
-        status: "Available",
-        genre: "Mystery",
-        partners: "3/4 Partners",
-        visibility: "Public",
-        date: "5 Mar 2026",
-        time: "14:00 EST",
-        audience: "20,000",
-        paid: false,
-        photo: "https://randomuser.me/api/portraits/women/22.jpg",
-    },
-    {
-        id: 6,
-        name: "Alice Johnson",
-        swaps: 25,
-        status: "Available",
-        genre: "Romance",
-        partners: "1/4 Partners",
-        visibility: "Public",
-        date: "12 Mar 2026",
-        time: "09:15 EST",
-        audience: "10,000",
-        paid: false,
-        photo: "https://randomuser.me/api/portraits/women/55.jpg",
-    },
-];
-
 // ─── Partner Card ─────────────────────────────────────────────────────────────
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const navigate = useNavigate();
@@ -385,17 +295,11 @@ const SwapPartner = () => {
             // Handle camelCase conversion
             data = toCamel(data);
 
-            // Fallback to static data if API returns empty list
-            if (data.length === 0) {
-                console.log("No dynamic partners found, showing static fallback data.");
-                data = partners;
-            }
             setSlots(data);
             if (data.length > 0) setSelectedId(data[0].id);
         } catch (error) {
-            console.error("Failed to fetch explore slots, showing static fallback data:", error);
-            setSlots(partners);
-            if (partners.length > 0) setSelectedId(partners[0].id);
+            console.error("Failed to fetch explore slots:", error);
+            setSlots([]);
         } finally {
             setLoading(false);
         }

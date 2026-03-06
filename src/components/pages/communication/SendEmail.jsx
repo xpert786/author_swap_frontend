@@ -43,6 +43,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
   const [isMaximized, setIsMaximized] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const emojiRef = useRef(null);
@@ -593,10 +594,36 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                   </div>
                 )}
               </div>
-              <button onClick={() => { if (window.confirm("Discard draft?")) onClose(); }} className="hover:text-red-500"><Trash2 size={17} /></button>
+              <button onClick={() => setIsDiscardModalOpen(true)} className="hover:text-red-500"><Trash2 size={17} /></button>
             </div>
           </div>
         </>
+      )}
+
+      {/* Discard Confirmation Modal */}
+      {isDiscardModalOpen && (
+        <div className="fixed inset-0 bg-black/40 z-[10000] flex items-center justify-center p-4 backdrop-blur-[2px]">
+          <div className="bg-white rounded-2xl w-full max-w-xs p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Discard Email?</h3>
+              <p className="text-xs text-gray-500 mb-6">Are you sure you want to discard this draft? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsDiscardModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Keep Writing
+                </button>
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors shadow-sm"
+                >
+                  Discard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

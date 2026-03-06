@@ -43,3 +43,6 @@ export const attachPaymentMethod = async (data) => {
 export const changePlanPreview = async (data) => {
     return apiClient.post("stripe/change-plan/preview/", data);
 }
+export const manualUpgrade = async (data) => {
+    return apiClient.post("subscription/upgrade/", data);
+}

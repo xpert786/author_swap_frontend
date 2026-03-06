@@ -17,82 +17,15 @@ const AuthorReputationSystem = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const mockData = {
-        reputation_score: 96,
-        platform_ranking: {
-            rank: 47,
-            top_percentage: 15
-        },
-        badges: [
-            {
-                title: "Verified Sender",
-                desc: "Complete 10+ swaps with verification",
-                status: "Earned"
-            },
-            {
-                title: "100% Reliability",
-                desc: "Perfect send record for 30 days",
-                status: "Active"
-            },
-            {
-                title: "Top Swap Partner",
-                desc: "Top 10% of all authors in reliability",
-                status: "Earned"
-            },
-            {
-                title: "Fast Communicator",
-                desc: "Average response time under 3 hours",
-                status: "Locked"
-            }
-        ],
-        breakdown: [
-            {
-                title: "Confirmed Sends",
-                score: "45/50",
-                percentage: 90,
-                subtext: "90% success rate",
-                points: "+45 points",
-                color: "bg-green-600"
-            },
-            {
-                title: "Timeliness",
-                score: "28/30",
-                percentage: 94,
-                subtext: "94% success rate",
-                points: "+28 points",
-                color: "bg-orange-200"
-            },
-            {
-                title: "Missed Sends",
-                score: "10/30",
-                percentage: 33,
-                subtext: "5 missed sends",
-                points: "-8 points",
-                color: "bg-red-600"
-            },
-            {
-                title: "Communication",
-                score: "10/30",
-                percentage: 85,
-                subtext: "4.2h avg response",
-                points: "+28 points",
-                color: "bg-[#94B3B1]"
-            }
-        ]
-    };
-
     useEffect(() => {
         const fetchReputation = async () => {
             try {
                 setLoading(true);
                 const response = await getAuthorReputation();
-                console.log(response);
                 setData(response.data);
             } catch (error) {
                 console.error("Failed to fetch reputation data:", error);
-                // Fallback to mock data if API fails (500 error)
-                setData(mockData);
-                toast.error("Bakend error (500). Using demo data for now.");
+                toast.error("Failed to load reputation data.");
             } finally {
                 setLoading(false);
             }
@@ -117,14 +50,9 @@ const AuthorReputationSystem = () => {
 
     const getBreakdown = () => {
         const breakdownData = data?.reputation_score_breakdown;
-        
-        // If no dynamic breakdown, return mock items with their icons
+
         if (!breakdownData || Object.keys(breakdownData).length === 0) {
-            return mockData.breakdown.map(item => ({
-                ...item,
-                icon: breakdownIcons[item.title] || <CommunicationIcon size={32} />,
-                // Convert percentage string/number if needed, but mockData has it as number
-            }));
+            return [];
         }
 
         const mapping = {

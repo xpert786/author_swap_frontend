@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification, createCheckoutSession, changePlan, changePlanPreview, getPaymentMethods } from "../../../apis/subscription";
+import { getSubscriberVerification, createCheckoutSession, changePlanPreview, getPaymentMethods, manualUpgrade } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { useProfile } from "../../../context/ProfileContext";
 
@@ -47,63 +47,27 @@ export default function SubscriptionPage() {
             setProcessingId(tier.id);
             setSelectedTier(tier);
 
-            // 1. Frontend Safety Check
-
             const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
             if (isCurrent) {
                 toast.error("You are already on this plan.");
                 return;
             }
 
+            // IF it is an upgrade (subscription exists), use preview first as requested
             if (subscription) {
-                // Existing subscriber — check for saved payment methods
-                const pmRes = await getPaymentMethods();
-                console.log("PaymentMethods API response:", pmRes.data);
-
-                // Handle different response shapes for payment methods
-                // const methods = Array.isArray(pmRes.data)
-                //     ? pmRes.data
-                //     : Array.isArray(pmRes.data?.data)
-                //         ? pmRes.data.data
-                //         : [];
-
-                // const hasCard = methods.length > 0;
-
-                const methods = pmRes.data?.data || pmRes.data || [];
-                const hasCard = methods.length > 0;
-
-                if (!hasCard) {
-                    // No card on file → MUST redirect to Stripe Checkout to collect payment
-                    const res = await createCheckoutSession({ tier_id: tier.id });
-
-                    if (res.data.url || res.data.checkout_url) {
-                        // Good: backend gave us a payment page URL
-                        window.location.href = res.data.url || res.data.checkout_url;
-                        return;
-                    }
-
-                    // Backend upgraded without a checkout URL — send user to add card first
-                    toast("Please add a payment card to upgrade your plan.", { icon: "💳" });
-                    navigate("/account-settings");
-                    return;
-                }
-
-                // Has card → fetch preview and show modal
                 const res = await changePlanPreview({ tier_id: tier.id });
                 setPreviewData(res.data);
                 setShowPreviewModal(true);
-                // changePlan is NOT called here — only called on modal confirm
+                return;
+            }
 
+            // New subscriber logic
+            const res = await createCheckoutSession({ tier_id: tier.id });
+            if (res.data.url || res.data.checkout_url) {
+                window.location.href = res.data.url || res.data.checkout_url;
             } else {
-                // New subscriber (no subscription at all) → Stripe Checkout
-                const res = await createCheckoutSession({ tier_id: tier.id });
-                if (res.data.url || res.data.checkout_url) {
-                    window.location.href = res.data.url || res.data.checkout_url;
-                } else {
-                    // Same safeguard: send user to add card
-                    toast("Please add a payment card to upgrade your plan.", { icon: "💳" });
-                    navigate("/account-settings");
-                }
+                toast("Please add a payment card to upgrade your plan.", { icon: "💳" });
+                navigate("/account-settings");
             }
         } catch (error) {
             console.error("Subscription Action Error:", error);
@@ -121,10 +85,10 @@ export default function SubscriptionPage() {
         if (!selectedTier) return;
         try {
             setConfirmLoading(true);
-            const res = await changePlan({ tier_id: selectedTier.id.toString() });
+            const res = await manualUpgrade({ tier_id: selectedTier.id.toString() });
 
-            if (res.data.url) {
-                window.location.href = res.data.url;
+            if (res.data.url || res.data.checkout_url) {
+                window.location.href = res.data.url || res.data.checkout_url;
             } else {
                 toast.success(res.data.message || "Plan updated successfully!");
                 setShowPreviewModal(false);
@@ -133,9 +97,17 @@ export default function SubscriptionPage() {
             }
         } catch (error) {
             console.error("Confirmation error:", error);
-            toast.error(error.response?.data?.error || "Failed to update plan.");
+            const errMsg = error.response?.data?.error || error.response?.data?.detail || "Failed to update plan.";
+            toast.error(errMsg);
         } finally {
             setConfirmLoading(false);
+        }
+    };
+
+    const handleManualUpgrade = () => {
+        const tiersSection = document.getElementById("membership-tiers");
+        if (tiersSection) {
+            tiersSection.scrollIntoView({ behavior: "smooth" });
         }
     };
 
@@ -233,9 +205,18 @@ export default function SubscriptionPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full font-medium">
-                                        {subscription.tier_details?.name || "Member"}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-3">
+                                        <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full font-medium">
+                                            {subscription.tier_details?.name || "Member"}
+                                        </span>
+                                        <button
+                                            onClick={handleManualUpgrade}
+                                            className="text-xs bg-white border border-[#2F6F6D] text-[#2F6F6D] px-4 py-2 rounded-lg font-semibold hover:bg-[#2F6F6D] hover:text-white transition-all shadow-sm flex items-center gap-2 group"
+                                        >
+                                            Upgrade Plan
+                                            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -254,7 +235,7 @@ export default function SubscriptionPage() {
                             </p>
                         </div>
 
-                        <h2 className="text-center text-[#111827] text-[25px] font-semibold mb-8">
+                        <h2 id="membership-tiers" className="text-center text-[#111827] text-[25px] font-semibold mb-8">
                             Choose Your Membership
                         </h2>
 

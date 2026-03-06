@@ -5,7 +5,7 @@ import Edit from "../../assets/edit.png";
 import { getGenres } from "../../apis/genre";
 import { useProfile } from "../../context/ProfileContext";
 import { formatCamelCaseName } from "../../utils/formatName";
-import { User, CreditCard, Trash2, Star, Plus } from "lucide-react";
+import { User, CreditCard, Trash2, Star, Plus, X, AlertTriangle } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import AddCardForm from "./subscription/AddCardForm";
@@ -39,6 +39,8 @@ const AccountSettings = () => {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [loadingCards, setLoadingCards] = useState(false);
+    const [pmToDelete, setPmToDelete] = useState(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     const fetchProfile = async () => {
         try {
@@ -136,14 +138,22 @@ const AccountSettings = () => {
         }
     };
 
-    const handleDeletePm = async (pmId) => {
-        if (!window.confirm("Are you sure you want to remove this card?")) return;
+    const handleDeletePm = (pmId) => {
+        setPmToDelete(pmId);
+        setIsConfirmModalOpen(true);
+    };
+
+    const confirmDeletePm = async () => {
+        if (!pmToDelete) return;
         try {
-            await deletePaymentMethod(pmId);
+            await deletePaymentMethod(pmToDelete);
             toast.success("Card removed");
             fetchPaymentMethods();
         } catch (err) {
             toast.error("Failed to remove card");
+        } finally {
+            setIsConfirmModalOpen(false);
+            setPmToDelete(null);
         }
     };
 
@@ -343,8 +353,14 @@ const AccountSettings = () => {
 
             {/* Add Card Modal */}
             {isAddingCard && (
-                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+                        <button
+                            onClick={() => setIsAddingCard(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
                         <div className="mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Add New Card</h3>
                             <p className="text-sm text-gray-500">Enter your card details securely via Stripe</p>
@@ -358,6 +374,37 @@ const AccountSettings = () => {
                                 onCancel={() => setIsAddingCard(false)}
                             />
                         </Elements>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {isConfirmModalOpen && (
+                <div className="fixed inset-0 bg-black/40 z-[110] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
+                        <div className="flex flex-col items-center text-center">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Remove Card</h3>
+                            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                                Are you sure you want to remove this card? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => {
+                                        setIsConfirmModalOpen(false);
+                                        setPmToDelete(null);
+                                    }}
+                                    className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDeletePm}
+                                    className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm shadow-red-200"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
