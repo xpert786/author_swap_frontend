@@ -21,6 +21,7 @@ const AccountBasics = ({ next }) => {
   const [newPenName, setNewPenName] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [dropdownDirection, setDropdownDirection] = useState("down");
   const [isDragging, setIsDragging] = useState(false);
   const genreRef = useRef(null);
 
@@ -228,6 +229,22 @@ const AccountBasics = ({ next }) => {
     setSelectedGenres(selectedGenres.filter(g => g !== genreToRemove));
   };
 
+  const handleDropdownToggle = () => {
+    if (!isGenreOpen && genreRef.current) {
+      const rect = genreRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      // If there is very little space below (e.g., less than 250px) 
+      // but there is more space above, open the dropdown upwards
+      if (spaceBelow < 250 && rect.top > spaceBelow) {
+        setDropdownDirection("up");
+      } else {
+        setDropdownDirection("down");
+      }
+    }
+    setIsGenreOpen(!isGenreOpen);
+  };
+
 
 
 
@@ -385,7 +402,7 @@ const AccountBasics = ({ next }) => {
             <div className="relative mb-3" ref={genreRef}>
               <button
                 type="button"
-                onClick={() => setIsGenreOpen(!isGenreOpen)}
+                onClick={handleDropdownToggle}
                 disabled={loadingGenres}
                 className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 bg-white text-left flex items-center justify-between text-sm focus:outline-none"
               >
@@ -399,7 +416,7 @@ const AccountBasics = ({ next }) => {
               </button>
 
               {isGenreOpen && !loadingGenres && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                <div className={`absolute left-0 right-0 ${dropdownDirection === "up" ? "bottom-full mb-1" : "top-full mt-1"} bg-white border-2 border-gray-100 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-[100] pt-1 pb-3 max-h-[45vh] sm:max-h-[40vh] md:max-h-[280px] overflow-y-auto overscroll-contain touch-pan-y custom-scrollbar`}>
                   {genres.map((genre) => {
                     const val = genre.value || genre.id || genre;
                     const label = genre.label || genre.name || genre;
