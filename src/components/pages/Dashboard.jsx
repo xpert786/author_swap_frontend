@@ -190,7 +190,7 @@ const Dashboard = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               {dashboardData?.welcome?.name
-                ? `Welcome back, ${dashboardData.welcome.name.split(/[\\s,]+/)[0]}!`
+                ? `Welcome back, ${formatCamelCaseName(dashboardData.welcome.name).split(/[\s,]+/)[0]}!`
                 : "Welcome back, Author!"}
             </h1>
             <p className="text-[12px] md:text-[13px] text-gray-500 font-medium mt-0.5">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import { FiX, FiRefreshCw } from "react-icons/fi";
 import { trackSwap } from "../../../apis/swap";
 import { formatCamelCaseName } from "../../../utils/formatName";
@@ -29,31 +30,42 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
     useEffect(() => {
         if (!data || !data.deadline) return;
 
-        // Parse deadline string: "09 Mar, 2026 10:45AM"
-        const deadlineStr = data.deadline.replace(',', '');
-        const targetDate = new Date(deadlineStr);
-
         const updateTimer = () => {
-            if (isNaN(targetDate.getTime())) {
+            const now = dayjs();
+            let deadlineStr = data.deadline;
+            if (!deadlineStr) return;
+
+            // Reformat "DD MMM, YYYY hh:mmAM/PM" to "MMM DD YYYY hh:mm AM/PM" for standard parsing
+            // Example: "16 Mar, 2026 05:16AM" -> "Mar 16 2026 05:16 AM"
+            let formattedStr = deadlineStr
+                .replace(/([0-9]{1,2})\s+([a-zA-Z]{3}),\s+([0-9]{4})/, '$2 $1 $3')
+                .replace(/([0-9]{2}:[0-9]{2})(AM|PM)/i, '$1 $2');
+
+            const rawDate = new Date(formattedStr);
+            const deadline = dayjs(rawDate);
+
+            if (!deadline.isValid() || isNaN(rawDate.getTime())) {
                 setTimeLeft("00:00:00");
                 return;
             }
 
-            const now = new Date();
-            const difference = targetDate - now;
+            const diffMs = deadline.diff(now);
 
-            if (difference <= 0) {
+            if (diffMs <= 0) {
                 setTimeLeft("00:00:00");
                 return;
             }
 
-            const h = Math.floor(difference / (1000 * 60 * 60));
-            const m = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((difference % (1000 * 60)) / 1000);
+            const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-            setTimeLeft(
-                `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-            );
+            let display = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            if (d > 0) {
+                display = `${d}d ${display}`;
+            }
+            setTimeLeft(display);
         };
 
         const timer = setInterval(updateTimer, 1000);
@@ -88,7 +100,8 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                 </h1>
                                 <button
                                     onClick={onClose}
-                                    className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 transition-colors w-8 h-8 rounded-full text-gray-600"
+                                    className="flex items-center justify-center bg-gray-200 w-6 h-6 rounded-full text-gray-600 cursor-pointer"
+                                    type="button"
                                 >
                                     <FiX size={18} />
                                 </button>
@@ -138,7 +151,7 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                 >
                                     <p className="text-xl font-medium tracking-wide">{data?.countdown_label?.title || book.title}</p>
                                     <div className="space-y-1">
-                                        <p className="text-sm opacity-90 font-normal">{data?.countdown_label?.date || data.deadline || "N/A"}</p>
+                                        <p className="text-sm opacity-90 font-normal">{data?.deadline || "N/A"}</p>
                                         <p className="text-3xl font-semibold tracking-[0.2em]">{timeLeft || "10:53:45"}</p>
                                     </div>
                                 </div>
@@ -176,7 +189,8 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                 <div className="flex justify-end pt-6 border-t border-gray-100">
                                     <button
                                         onClick={onClose}
-                                        className="px-4 py-2.5 bg-white border border-gray-300 rounded-[8px] text-sm font-semibold text-[#374151]"
+                                        className="px-4 py-2.5 bg-white border border-gray-300 rounded-[8px] text-sm font-semibold text-[#374151] cursor-pointer"
+                                        type="button"
                                     >
                                         Cancel
                                     </button>

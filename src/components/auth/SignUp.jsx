@@ -9,9 +9,12 @@ import { signup, googleLogin } from "../../apis/auth";
 import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
 
+import { useProfile } from "../../context/ProfileContext";
+
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { refreshProfile } = useProfile();
 
   const {
     register,
@@ -35,10 +38,12 @@ const SignUp = () => {
 
       toast.success("Google login successful!", { id: loadingToast });
 
+      await refreshProfile();
+
       if (data.isprofilecompleted === false) {
-        window.location.href = "/authorswap-frontend/onboarding";
+        navigate("/onboarding");
       } else {
-        window.location.href = "/authorswap-frontend/dashboard";
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Google login failed:", error);
@@ -60,7 +65,9 @@ const SignUp = () => {
 
       localStorage.setItem("token", response.token);
       toast.success("Account created successfully! Welcome to AuthorSwap.", { id: loadingToast });
-      window.location.href = "/authorswap-frontend/onboarding";
+
+      await refreshProfile();
+      navigate("/onboarding");
     } catch (error) {
       console.error("Signup failed:", error);
 

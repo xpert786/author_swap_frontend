@@ -271,6 +271,13 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
       ? "fixed bottom-0 right-10 w-[320px] bg-white rounded-t-xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden z-[9999] font-sans"
       : "fixed inset-0 sm:inset-auto sm:bottom-0 sm:right-10 w-full sm:w-[560px] h-full sm:h-auto bg-white sm:rounded-t-xl shadow-2xl border border-gray-300 flex flex-col overflow-hidden z-[9999] font-sans";
 
+  // Initialize content on mount
+  useEffect(() => {
+    if (bodyRef.current && initialBody) {
+      bodyRef.current.innerHTML = initialBody;
+    }
+  }, [initialBody]);
+
   return (
     <div className={containerClass}>
       {/* HEADER */}
@@ -297,7 +304,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
 
       {!isMinimized && (
         <>
-          <div className="flex flex-col flex-1 overflow-y-auto min-h-0">
+          <div className="flex flex-col flex-1 overflow-y-auto min-h-0 bg-white">
 
             {/* To Recipient */}
             <div className="relative border-b border-gray-100 group">
@@ -378,7 +385,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
 
               {/* Dropdown - Global placement logic could go here, but keeping it inside relative To field for now or moving it */}
               {showDropdown && filteredPartners.length > 0 && activeSearchField === "to" && (
-                <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
+                <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-[10000] max-h-52 overflow-y-auto">
                   {filteredPartners.map((partner) => (
                     <button
                       key={partner.id}
@@ -422,7 +429,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                   <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowCc(false)} />
                 </div>
                 {showDropdown && filteredPartners.length > 0 && activeSearchField === "cc" && (
-                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-[10000] max-h-52 overflow-y-auto">
                     {filteredPartners.map((partner) => (
                       <button
                         key={partner.id}
@@ -467,7 +474,7 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
                   <X size={14} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setShowBcc(false)} />
                 </div>
                 {showDropdown && filteredPartners.length > 0 && activeSearchField === "bcc" && (
-                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-52 overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-full bg-white border border-gray-200 rounded-b-lg shadow-lg z-[10000] max-h-52 overflow-y-auto">
                     {filteredPartners.map((partner) => (
                       <button
                         key={partner.id}
@@ -502,16 +509,22 @@ const SendEmail = ({ onClose, onSuccess, defaultRecipient = "", initialSubject =
             </div>
 
             {/* Body */}
-            <div className="bg-white flex-1 flex flex-col relative">
+            <div
+              className="bg-white flex-1 flex flex-col relative min-h-[300px] cursor-text"
+              onClick={() => bodyRef.current?.focus()}
+            >
               <div
                 ref={bodyRef}
                 contentEditable
                 suppressContentEditableWarning={true}
                 onInput={(e) => setBody(e.currentTarget.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: initialBody ? initialBody : undefined }}
-                className="flex-1 w-full px-4 py-3 outline-none text-[13px] min-h-[150px] sm:min-h-[250px] overflow-y-auto whitespace-pre-wrap"
+                className="flex-1 w-full px-4 py-3 outline-none text-[13px] min-h-[200px] overflow-y-auto whitespace-pre-wrap relative z-10"
               />
-              {!body && <div className="pointer-events-none absolute text-[13px] text-gray-400 px-4 py-3 top-0">Body Text</div>}
+              {!body && (
+                <div className="pointer-events-none absolute text-[13px] text-gray-400 px-4 py-3 top-0 z-0">
+                  Body Text
+                </div>
+              )}
 
               {selectedFile && (
                 <div className="flex items-center gap-2 px-4 pb-2">

@@ -348,14 +348,15 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                             </div>
 
                             <div>
-                                <h3 className="text-[13px] font-medium text-[#111827] mb-3">
-                                    Message
+                                <h3 className="text-[13px] font-medium text-[#111827] mb-3 flex items-center gap-1">
+                                    Message <span className="text-red-500">*</span>
                                 </h3>
                                 <textarea
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value.slice(0, 250))}
                                     placeholder="Write your message to author"
                                     className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D] h-28 resize-none"
+                                    required
                                 />
                                 <div className="flex justify-end mt-1">
                                     <span className="text-[10px] text-gray-400 font-medium">

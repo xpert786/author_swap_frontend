@@ -397,13 +397,13 @@ const SwapPartner = () => {
                         selected={selectedGenre}
                         onSelect={setSelectedGenre}
                     />
-
+                    {/* 
                     <FilterDropdown
                         label="Audience Size"
                         options={["All", "0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
                         selected={selectedAudience}
                         onSelect={setSelectedAudience}
-                    />
+                    /> */}
                     <FilterDropdown
                         label="Date"
                         options={["All", "Today", "This Week", "Next Week", "This Month"]}

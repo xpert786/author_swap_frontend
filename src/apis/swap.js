@@ -23,3 +23,7 @@ export const restoreSwap = (id) => {
 export const trackSwap = (id) => {
     return apiClient.get(`track-swap/${id}/`);
 };
+
+export const payForSwap = (id) => {
+    return apiClient.post(`stripe/create-swap-checkout-session/`, { swap_id: id });
+};

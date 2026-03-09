@@ -323,6 +323,7 @@ const AccountBasics = ({ next }) => {
                 className="hidden"
                 {...register("profilePhoto", {
                   validate: (files) =>
+                    !files ||
                     !files[0] ||
                     files[0].size <= 10 * 1024 * 1024 ||
                     "Max file size is 10MB",

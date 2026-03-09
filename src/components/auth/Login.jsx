@@ -8,9 +8,12 @@ import { login, googleLogin } from "../../apis/auth";
 import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
 
+import { useProfile } from "../../context/ProfileContext";
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { refreshProfile } = useProfile();
 
   const {
     register,
@@ -37,10 +40,12 @@ const Login = () => {
 
       toast.success("Login successful!", { id: loadingToast });
 
+      await refreshProfile();
+
       if (data.isprofilecompleted === false) {
-        window.location.href = "/authorswap-frontend/onboarding";
+        navigate("/onboarding");
       } else {
-        window.location.href = "/authorswap-frontend/dashboard";
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Google login failed:", error);
@@ -67,7 +72,14 @@ const Login = () => {
       );
 
       toast.success("Login successful! Welcome back.");
-      window.location.href = "/authorswap-frontend/dashboard";
+
+      await refreshProfile();
+
+      if (response.isprofilecompleted === false) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Login failed:", error);
 

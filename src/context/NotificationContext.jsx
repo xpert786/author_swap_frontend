@@ -120,10 +120,14 @@ export const NotificationProvider = ({ children }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex border-l border-white/20">
+                            <div className="flex shrink-0 border-l border-white/20">
                                 <button
-                                    onClick={() => toast.dismiss(t.id)}
-                                    className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold hover:bg-white/10 transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toast.dismiss(t.id);
+                                    }}
+                                    className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-xs font-bold hover:bg-white/10 transition-colors cursor-pointer"
+                                    type="button"
                                 >
                                     Close
                                 </button>
