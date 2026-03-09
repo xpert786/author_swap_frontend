@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FiSearch, FiChevronDown, FiRefreshCw } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
+import PaidSwapRequest from "./PaidSwapRequest";
 import { getExploreSlots } from "../../../apis/swapPartner";
 import { getGenres } from "../../../apis/genre";
 import { formatCamelCaseName } from "../../../utils/formatName";
@@ -279,6 +280,8 @@ const SwapPartner = () => {
         { value: "comics_graphic", label: "Comics & Graphic Novels" }
     ]);
     const [isRequestOpen, setIsRequestOpen] = useState(false);
+    const [isPaidRequestOpen, setIsPaidRequestOpen] = useState(false);
+    const [requestingPrice, setRequestingPrice] = useState(0);
 
     const [selectedGenre, setSelectedGenre] = useState(null);
     const [selectedAudience, setSelectedAudience] = useState(null);
@@ -456,7 +459,12 @@ const SwapPartner = () => {
                                 onClick={() => setSelectedId(partner.id)}
                                 onSendRequest={() => {
                                     setRequestingId(partner.id);
-                                    setIsRequestOpen(true);
+                                    if (parseFloat(partner.price || 0) > 0) {
+                                        setRequestingPrice(partner.price);
+                                        setIsPaidRequestOpen(true);
+                                    } else {
+                                        setIsRequestOpen(true);
+                                    }
                                 }}
                             />
                         ))}
@@ -476,6 +484,17 @@ const SwapPartner = () => {
                 onClose={() => {
                     setIsRequestOpen(false);
                     setRequestingId(null);
+                }}
+            />
+
+            <PaidSwapRequest
+                isOpen={isPaidRequestOpen}
+                id={requestingId}
+                price={requestingPrice}
+                onClose={() => {
+                    setIsPaidRequestOpen(false);
+                    setRequestingId(null);
+                    setRequestingPrice(0);
                 }}
             />
 

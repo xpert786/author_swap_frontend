@@ -6,6 +6,7 @@ import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
 import SwapDetailsModal from './SwapDetailsModal';
+import TrackSwapModal from './TrackSwapModal';
 import DeclineReasonModal from './DeclineReasonModal';
 import { useProfile } from '../../../context/ProfileContext';
 
@@ -31,16 +32,23 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
 
-    const isCompleted = data.status === "completed" || data.status === "complete";
-    const isRejected = data.status === "rejected" || data.status === "reject";
-    const isPending = data.status === "pending" || data.status === "incoming";
-    const isSending = data.status === "sending";
-    const requesterName = (data.author_name || "").toLowerCase().trim();
+    const status = (data.status || "").toLowerCase();
+    const isCompleted = status === "completed" || status === "complete";
+    const isRejected = status === "rejected" || status === "reject";
+    const isPending = status === "pending" || status === "incoming";
+    const isSending = status === "sending";
+
     const myName = (currentUserName || "").toLowerCase().trim();
-    const isRequester = !!(myName && requesterName && myName === requesterName);
-    const isRecipient = !!(myName && requesterName && myName !== requesterName);
-    const isPartner = isRecipient;
-    const isCurrentUserDecliner = isRejected && isRecipient;
+    const authorNameField = (data.author_name || "").toLowerCase().trim();
+    const senderNameField = (data.sender_name || "").toLowerCase().trim();
+
+    // Role identification
+    const isAuthor = !!(myName && authorNameField && (myName === authorNameField || authorNameField.includes(myName) || myName.includes(authorNameField)));
+    const isSender = !!(myName && senderNameField && (myName === senderNameField || senderNameField.includes(myName) || myName.includes(senderNameField)));
+
+    const isCurrentUserDecliner = isRejected && !isSender;
+    const isPartner = isAuthor || (!!myName && !!senderNameField && myName !== senderNameField); // Recipient is anyone who isn't the sender
+    const isRequester = isSender;
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -180,7 +188,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                             <h4 className="text-[12px] font-bold text-[#DC2626] mb-1">Rejection Reason</h4>
                             <p className="text-[12px] text-[#374151] leading-tight">{data.rejection_reason || data.rejectionReason || "No reason specified"}</p>
                             <p className="text-[10px] text-[#374151] opacity-70 mt-2">
-                                {data.rejection_date || data.rejectionDate || "Unknown date"}
+                                {data?.rejection_info?.rejected_on || data.rejectionDate || "Unknown date"}
                             </p>
                         </div>
                         {/* Restore only visible to the decliner (recipient) */}
@@ -216,8 +224,19 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 )}
 
                 {data.status === "scheduled" && (
-                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                        Scheduled for {data.scheduled_date || data.send_date || "N/A"}
+                    <div className="flex flex-col gap-2">
+                        <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Scheduled for {data.scheduled_date || data.send_date || "N/A"}
+                        </div>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onViewDetails();
+                            }}
+                            className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                        >
+                            View Details
+                        </button>
                     </div>
                 )}
 
@@ -249,6 +268,7 @@ const SwapManagement = () => {
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isTrackOpen, setIsTrackOpen] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
     const [isDeclineOpen, setIsDeclineOpen] = useState(false);
     const [declineId, setDeclineId] = useState(null);
@@ -386,7 +406,11 @@ const SwapManagement = () => {
                                     onRefresh={() => fetchSwaps(activeTab.key)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);
-                                        setIsDetailsOpen(true);
+                                        if (swap.status === "scheduled") {
+                                            setIsTrackOpen(true);
+                                        } else {
+                                            setIsDetailsOpen(true);
+                                        }
                                     }}
                                     onDecline={handleDeclineRequest}
                                 />
@@ -406,6 +430,15 @@ const SwapManagement = () => {
                 swapId={detailsId}
                 onClose={() => {
                     setIsDetailsOpen(false);
+                    setDetailsId(null);
+                }}
+            />
+
+            <TrackSwapModal
+                isOpen={isTrackOpen}
+                swapId={detailsId}
+                onClose={() => {
+                    setIsTrackOpen(false);
                     setDetailsId(null);
                 }}
             />
