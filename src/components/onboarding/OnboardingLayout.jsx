@@ -7,6 +7,7 @@ import Confirmation from "./Confirmation";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getProfile } from "../../apis/onboarding";
+import { useProfile } from "../../context/ProfileContext";
 
 const OnboardingLayout = () => {
   const [step, setStep] = useState(1);
@@ -55,8 +56,11 @@ const OnboardingLayout = () => {
     setStep(stepNumber);
   };
 
+  const { refreshProfile } = useProfile();
+
   const finish = async () => {
-    localStorage.setItem("isProfileComplete", "true");
+    localStorage.setItem("isprofilecompleted", "true");
+    await refreshProfile();
     console.log("Final Data:", formData);
     navigate("/dashboard");
   };
