@@ -111,7 +111,7 @@ const Mailerlite = ({ next, prev }) => {
                             <button
                                 type="button"
                                 onClick={() => setShowGuide(true)}
-                                className="text-[11px] text-[#2F6F6D] font-medium hover:underline flex items-center gap-1"
+                                className="text-sm text-[#2F6F6D] font-medium hover:underline flex items-center gap-1"
                             >
                                 🔑 How to Create API Key
                             </button>
