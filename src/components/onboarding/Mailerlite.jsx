@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { connectMailerlite, getProfile } from "../../apis/onboarding";
+import mailerliteGuideImg from "../../assets/mailerlite_api_guide.png";
 
 const Mailerlite = ({ next, prev }) => {
     const {
@@ -14,6 +15,7 @@ const Mailerlite = ({ next, prev }) => {
     const [loading, setLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [existingKey, setExistingKey] = useState("");
+    const [showGuide, setShowGuide] = useState(false);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -104,9 +106,16 @@ const Mailerlite = ({ next, prev }) => {
                         {errors.apiKey && (
                             <p className="text-red-500 text-sm mt-1">{errors.apiKey.message}</p>
                         )}
-                        <p className="text-[11px] text-gray-400 mt-2 italic">
-                            You can find your API key in your Mailerlite account under Integrations {">"} API.
-                        </p>
+                        <div className="flex items-center justify-between mt-2">
+
+                            <button
+                                type="button"
+                                onClick={() => setShowGuide(true)}
+                                className="text-[11px] text-[#2F6F6D] font-medium hover:underline flex items-center gap-1"
+                            >
+                                🔑 How to Create API Key
+                            </button>
+                        </div>
                     </div>
 
                     {existingKey && (
@@ -137,6 +146,107 @@ const Mailerlite = ({ next, prev }) => {
                     </button>
                 </div>
             </form>
+
+            {/* API Key Guide Modal */}
+            {showGuide && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-[#F9FBFA]">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-[#2F6F6D1A] rounded-xl flex items-center justify-center text-[#2F6F6D]">
+                                    <span className="text-xl">🔑</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 leading-tight">Create MailerLite API Key</h3>
+                                    <p className="text-sm text-gray-500">Follow these steps to generate your token</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowGuide(false)}
+                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400 transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
+                            {/* Infographic Image */}
+                            {/* <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                                <img
+                                    src={mailerliteGuideImg}
+                                    alt="MailerLite API Key Guide"
+                                    className="w-full h-auto object-cover"
+                                />
+                            </div> */}
+
+                            {/* Detailed Steps */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <h4 className="font-semibold text-[#2F6F6D] text-sm uppercase tracking-wider flex items-center gap-2">
+                                        <span className="w-5 h-5 bg-[#2F6F6D1A] rounded-full flex items-center justify-center text-[10px]">1</span>
+                                        Initialization
+                                    </h4>
+                                    <ul className="space-y-3">
+                                        {[
+                                            "Log in to your MailerLite account.",
+                                            "Click on the 'Integrations' tab in the sidebar.",
+                                            "Find the 'MailerLite API' section and click 'Use'."
+                                        ].map((text, i) => (
+                                            <li key={i} className="flex gap-3 text-sm text-gray-600">
+                                                <span className="text-green-500 mt-0.5 mt-1">•</span>
+                                                {text}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h4 className="font-semibold text-[#2F6F6D] text-sm uppercase tracking-wider flex items-center gap-2">
+                                        <span className="w-5 h-5 bg-[#2F6F6D1A] rounded-full flex items-center justify-center text-[10px]">2</span>
+                                        Generation
+                                    </h4>
+                                    <ul className="space-y-3">
+                                        {[
+                                            "Click the orange 'Generate new token' button.",
+                                            "Name your token (e.g., 'Author Swap').",
+                                            "Agree to the Terms of Use.",
+                                            "Click 'Create token' to see your key."
+                                        ].map((text, i) => (
+                                            <li key={i} className="flex gap-3 text-sm text-gray-600">
+                                                <span className="text-green-500 mt-1">•</span>
+                                                {text}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Security Notice */}
+                            <div className="bg-[#FFF8F1] border border-[#FFE7CC] p-4 rounded-xl flex gap-3 items-start">
+                                <div className="text-[#B45309] mt-0.5 text-lg">⚠️</div>
+                                <div>
+                                    <p className="text-sm font-semibold text-[#92400E]">Important Security Note</p>
+                                    <p className="text-sm text-[#B45309] leading-relaxed mt-1">
+                                        MailerLite will only show this key <strong>once</strong> for security reasons. Copy it immediately and save it in a safe place.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                            <button
+                                onClick={() => setShowGuide(false)}
+                                className="px-6 py-2 bg-[#2F6F6D] text-white rounded-lg font-medium hover:bg-[#245957] transition-all shadow-lg hover:shadow-xl active:scale-95"
+                            >
+                                I've Got My Key
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

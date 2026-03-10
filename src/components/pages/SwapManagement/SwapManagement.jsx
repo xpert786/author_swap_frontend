@@ -33,7 +33,7 @@ const formatLabel = (str) => {
  * author_name  = user who RECEIVED the swap request
  */
 const getSwapRole = (data, currentUserName) => {
-    const myName     = (currentUserName || "").toLowerCase().trim();
+    const myName = (currentUserName || "").toLowerCase().trim();
     const senderName = (data.sender_name || "").toLowerCase().trim();
 
     const isSender =
@@ -52,24 +52,24 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
     const { isSender, isReceiver } = getSwapRole(data, currentUserName);
 
-    const status      = (data.status || "").toLowerCase();
-    const isPending   = status === "pending" || status === "incoming";
-    const isSending   = status === "sending";
-    const isAccepted  = status === "accepted" || status === "confirmed" || status === "active";
-    const isRejected  = status === "rejected"  || status === "reject";
+    const status = (data.status || "").toLowerCase();
+    const isPending = status === "pending" || status === "incoming";
+    const isSending = status === "sending";
+    const isAccepted = status === "accepted" || status === "confirmed" || status === "active";
+    const isRejected = status === "rejected" || status === "reject";
     const isCompleted = status === "completed" || status === "complete";
     const isScheduled = status === "scheduled";
 
     // ── Payment flags (from API, not derived from status) ──
-    const isPaidSwap    = data.eligible_for_pay === true;
+    const isPaidSwap = data.eligible_for_pay === true;
     const isPaymentDone = data.payment_done === true;
 
     // A paid swap where payment hasn't been made yet —
     // this can happen on ANY status where the swap is "active/progressing"
     const paymentPending = isPaidSwap && !isPaymentDone;
 
-    const authorName  = data.author_name || data.author || "Unknown Author";
-    const authorRole  = data.author_genre_label || data.author_role || data.role || "Author";
+    const authorName = data.author_name || data.author || "Unknown Author";
+    const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
     const authorImage =
         data.profile_picture ||
         data.author_image ||
@@ -314,7 +314,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                             {formatCamelCaseName(authorName)}
                         </h3>
                         <p className="text-[12px] font-medium text-gray-500 truncate mt-0.5">
-                            {typeof authorRole === 'string' 
+                            {typeof authorRole === 'string'
                                 ? authorRole.split(',').map(str => str.trim().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')
                                 : authorRole}
                         </p>
@@ -333,8 +333,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                     )}
                     {isPaidSwap && data.price != null && (
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border 
-                            ${isPaymentDone 
-                                ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" 
+                            ${isPaymentDone
+                                ? "bg-[#2F6F6D] text-white border-[#2F6F6D]"
                                 : "bg-green-50 text-green-700 border-green-200"
                             }`}
                         >
@@ -365,19 +365,18 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                             {typeof data.requesting_book === "object"
                                 ? data.requesting_book?.title
                                 : data.requesting_book ||
-                                  (typeof data.requestingBook === "object"
-                                      ? data.requestingBook?.title
-                                      : data.requestingBook) ||
-                                  "N/A"}
+                                (typeof data.requestingBook === "object"
+                                    ? data.requestingBook?.title
+                                    : data.requestingBook) ||
+                                "N/A"}
                         </p>
                         {typeof data.requesting_book === "object" &&
                             data.requesting_book?.compatibility && (
                                 <div
-                                    className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${
-                                        data.requesting_book.compatibility.genre_match
-                                            ? "bg-green-100 text-green-600"
-                                            : "bg-red-100 text-red-600"
-                                    }`}
+                                    className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${data.requesting_book.compatibility.genre_match
+                                        ? "bg-green-100 text-green-600"
+                                        : "bg-red-100 text-red-600"
+                                        }`}
                                     title={
                                         data.requesting_book.compatibility.genre_match
                                             ? "Genre Match"
@@ -466,23 +465,23 @@ const SwapManagement = () => {
     }, [activeTab]);
 
     const filtered = (Array.isArray(swaps) ? swaps : []).filter((s) => {
-        const sStatus   = (s.status || "").toLowerCase();
+        const sStatus = (s.status || "").toLowerCase();
         const sCategory = (s.category || "").toLowerCase();
-        const tKey      = activeTab.key.toLowerCase();
+        const tKey = activeTab.key.toLowerCase();
 
         let isTabMatch = tKey === "all";
         if (!isTabMatch) {
-            if (sStatus === tKey || sCategory === tKey)              isTabMatch = true;
+            if (sStatus === tKey || sCategory === tKey) isTabMatch = true;
             else if (tKey === "completed" && sStatus === "complete") isTabMatch = true;
-            else if (tKey === "pending"   && sStatus === "incoming") isTabMatch = true;
-            else if (tKey === "rejected"  && sStatus === "reject")   isTabMatch = true;
-            else if (tKey === "sending"   && sStatus === "active")   isTabMatch = true;
-            else if (activeTab.key !== "all")                        isTabMatch = true;
+            else if (tKey === "pending" && sStatus === "incoming") isTabMatch = true;
+            else if (tKey === "rejected" && sStatus === "reject") isTabMatch = true;
+            else if (tKey === "sending" && sStatus === "active") isTabMatch = true;
+            else if (activeTab.key !== "all") isTabMatch = true;
         }
 
         const authorName = (s.author_name || s.author || "").toLowerCase();
-        const rawBook    = s.requesting_book || s.requestingBook;
-        const bookName   =
+        const rawBook = s.requesting_book || s.requestingBook;
+        const bookName =
             typeof rawBook === "string"
                 ? rawBook.toLowerCase()
                 : typeof rawBook === "object" && rawBook !== null
@@ -521,7 +520,7 @@ const SwapManagement = () => {
                 ))}
             </div>
 
-            <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                 <h2 className="text-xl md:text-[24px] font-medium text-black">{activeTab.label}</h2>
                 <div className="relative w-full max-w-[320px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
