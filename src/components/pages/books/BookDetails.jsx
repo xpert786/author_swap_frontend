@@ -120,12 +120,12 @@ export default function BookDetails() {
         <div className="min-h-screen">
 
             {/* Header */}
-            <div className="flex items-start justify-between mb-8">
-                <div>
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 mb-8">
+                <div className="w-full sm:w-auto min-w-0">
                     {/* Title + Badges Row */}
                     <div className="flex items-center gap-4 flex-wrap">
 
-                        <h1 className="text-3xl font-semibold text-gray-900">
+                        <h1 className="text-3xl font-semibold text-gray-900 break-words w-full sm:w-auto">
                             {book.title}
                         </h1>
 
@@ -143,7 +143,7 @@ export default function BookDetails() {
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex items-center gap-6 mt-3 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 text-sm text-gray-500">
                         <div className="flex items-center gap-2 text-[#374151]">
                             <Calendar size={16} />
                             <span>Published {formattedDate}</span>
@@ -157,7 +157,7 @@ export default function BookDetails() {
 
                 <button
                     onClick={() => setIsEditOpen(true)}
-                    className="flex items-center gap-2 bg-[#2F6F6D] text-white px-5 py-2.5 rounded-[8px] font-medium hover:opacity-90 transition-all duration-200 active:scale-95"
+                    className="flex shrink-0 whitespace-nowrap items-center gap-2 bg-[#2F6F6D] text-white px-5 py-2.5 rounded-[8px] font-medium hover:opacity-90 transition-all duration-200 active:scale-95 sm:ml-auto mt-2 sm:mt-0"
                 >
                     <img
                         src={edit}
@@ -192,11 +192,11 @@ export default function BookDetails() {
 
 
                     {/* RIGHT SIDE */}
-                    <div className="flex-1 space-y-8">
+                    <div className="flex-1 flex flex-col gap-6 sm:gap-8">
 
                         {/* Description */}
-                        <div className="mb-2">
-                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
+                        <div>
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 sm:mb-4 border-b pb-1 sm:pb-2 border-[#2F6F6D33]">
                                 Book Description
                             </h2>
                             <p className="text-[#374151] leading-relaxed text-sm font-normal">
@@ -206,12 +206,12 @@ export default function BookDetails() {
                         </div>
 
                         {/* Metadata */}
-                        <div className="mb-2">
-                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
+                        <div>
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 sm:mb-4 border-b pb-1 sm:pb-2 border-[#2F6F6D33]">
                                 Book Metadata
                             </h2>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 <MetaCard label="Primary Genre" value={book.genre?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} />
                                 <MetaCard label="Subgenre" value={book.subgenre?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "N/A"} />
                                 <MetaCard label="Rating" value={`${book.ratings} / 5`} />
@@ -221,7 +221,7 @@ export default function BookDetails() {
 
                         {/* Platforms */}
                         <div>
-                            <h2 className="text-xl font-medium text-gray-900 mb-3 border-b pb-1 border-[#2F6F6D33]">
+                            <h2 className="text-xl font-medium text-gray-900 mb-3 sm:mb-4 border-b pb-1 sm:pb-2 border-[#2F6F6D33]">
                                 Available ON
                             </h2>
 
@@ -272,9 +272,9 @@ export default function BookDetails() {
 
 function MetaCard({ label, value }) {
     return (
-        <div className="py-5 pt-1">
-            <p className="text-sm text-[#374151]">{label}</p>
-            <p className="text-lg font-medium text-[#111827] mt-1">
+        <div className="flex flex-col gap-0.5 sm:gap-1 w-full relative sm:before:absolute sm:before:inset-y-0 sm:before:-left-3 lg:before:-left-4 sm:before:w-px sm:first:before:w-0 sm:before:bg-gray-200">
+            <p className="text-[11px] sm:text-[13px] text-[#374151] uppercase tracking-wide font-semibold sm:font-medium">{label}</p>
+            <p className="text-[14px] sm:text-[15px] font-semibold text-[#111827]">
                 {value}
             </p>
         </div>
@@ -286,7 +286,7 @@ function PlatformCard({ name, url, active = false }) {
     return (
         <div
             onClick={() => url && window.open(url, "_blank")}
-            className={`w-44 rounded-[10px] border p-6 flex flex-col items-center gap-3 transition cursor-pointer hover:shadow-md active:scale-95 ${active
+            className={`w-full sm:w-44 rounded-[10px] border p-4 sm:p-6 flex flex-row sm:flex-col items-center gap-4 sm:gap-3 transition cursor-pointer hover:shadow-md active:scale-95 ${active
                 ? "border-[#2F6F6D33] bg-[#2F6F6D05]"
                 : "border-[#B5B5B5] bg-white"
                 }`}

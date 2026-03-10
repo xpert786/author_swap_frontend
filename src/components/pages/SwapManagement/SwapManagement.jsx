@@ -302,34 +302,38 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 }`}
         >
             {/* ── Header ── */}
-            <div className="flex justify-between items-start">
-                <div className="flex gap-2.5">
+            <div className="flex justify-between items-start gap-3">
+                <div className="flex gap-2.5 min-w-0">
                     <img
                         src={authorImage}
                         alt={authorName}
                         className="w-10 h-10 rounded-full object-cover shrink-0"
                     />
-                    <div>
-                        <h3 className="text-[13px] font-medium text-black leading-tight">
+                    <div className="min-w-0 pt-0.5">
+                        <h3 className="text-[13px] font-medium text-black leading-tight truncate">
                             {formatCamelCaseName(authorName)}
                         </h3>
-                        <p className="text-[13px] font-medium text-black">{authorRole}</p>
+                        <p className="text-[12px] font-medium text-gray-500 truncate mt-0.5">
+                            {typeof authorRole === 'string' 
+                                ? authorRole.split(',').map(str => str.trim().replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')
+                                : authorRole}
+                        </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-end gap-1.5 shrink-0">
                     {(data.badge || data.status) && (
-                        <span className={`text-[9px] font-normal px-2.5 py-0.5 rounded-full border
+                        <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
                             ${isCompleted && !paymentPending
-                                ? "bg-[#16A34A33] text-black border-[#16A34A33]"
-                                : "bg-[#F3F4F6] text-[#374151] border-gray-200"
+                                ? "bg-[#16A34A1A] text-[#166534] border-[#16A34A33]"
+                                : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
                             {formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
-                        <span className="text-[9px] font-normal px-2.5 py-0.5 rounded-full border bg-[#DCFCE7] text-[#166534] border-[#86EFAC]">
-                            Pricing ${typeof data.price === "number" ? data.price.toFixed(0) : data.price}
+                        <span className="whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border bg-green-50 text-green-700 border-green-200">
+                            Pricing: ${typeof data.price === "number" ? data.price.toFixed(0) : data.price}
                         </span>
                     )}
                 </div>

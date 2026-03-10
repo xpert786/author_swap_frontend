@@ -27,19 +27,55 @@ const steps = [
 const OnboardingSidebar = ({ currentStep, maxStep = 1 }) => {
     return (
         <div
-            className="h-full w-full bg-cover bg-center bg-no-repeat flex flex-col relative"
+            className="h-full w-full bg-cover bg-center bg-no-repeat flex flex-col justify-center lg:justify-start relative min-h-[160px] lg:min-h-screen border-b lg:border-r border-gray-200"
             style={{ backgroundImage: `url(${OnboardingBg})` }}
         >
             {/* Overlay for readability */}
             <div className="absolute inset-0 bg-white/5 pointer-events-none" />
 
             {/* Logo area */}
-            <div className="relative z-10 p-6 md:p-10 lg:pl-12 lg:pt-12">
+            <div className="relative z-10 p-6 pt-8 pb-4 md:p-10 lg:pl-12 lg:pt-12 flex justify-center lg:justify-start">
                 <img src={Logo} alt="AuthorSwap Logo" className="w-[140px] md:w-[160px] h-auto drop-shadow-sm" />
             </div>
 
-            {/* Centered navigation menu */}
-            <div className="relative z-10 flex-1 flex flex-col justify-center px-6 md:px-10 lg:pl-20 -mt-10">
+            {/* Mobile Navigation Menu (hidden on desktop) */}
+            <div className="relative z-10 flex lg:hidden flex-wrap items-center justify-center pb-8 px-4 w-full">
+                <div className="flex items-center justify-center">
+                    {steps.map((step, index) => {
+                        const isActive = currentStep === step.id;
+                        const isCompleted = maxStep > step.id;
+                        const isGreen = isActive || isCompleted;
+
+                        return (
+                            <div key={`mobile-${step.id}`} className="flex items-center">
+                                {/* Circle Indicator */}
+                                <div
+                                    className={`relative z-10 shrink-0 w-[24px] h-[24px] rounded-full flex items-center justify-center transition-all duration-300 border
+                                        ${isGreen
+                                            ? "bg-[#34A853] border-[#34A853]"
+                                            : "bg-[#BCBCBC] border-[#BCBCBC]"
+                                        }`}
+                                >
+                                    {isCompleted ? (
+                                        <svg width="10" height="8" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1.5 5.5L5 9L12.5 1.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-white leading-none">{step.id}</span>
+                                    )}
+                                </div>
+                                {/* Connector Line */}
+                                {index !== steps.length - 1 && (
+                                    <div className={`w-8 sm:w-16 mx-1 sm:mx-2 h-[2px] transition-colors duration-300 ${isCompleted ? "bg-[#34A853]" : "bg-[#D1D5DB]"}`} />
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Desktop Navigation menu (hidden on mobile) */}
+            <div className="hidden lg:flex relative z-10 flex-1 flex-col justify-center px-6 md:px-10 lg:pl-20 -mt-10">
                 <div className="max-w-[360px]">
                     <h2 className="text-[#374151] text-[18px] md:text-[20px] font-medium mb-12 leading-relaxed tracking-tight">
                         Complete the following steps to set up your profile.

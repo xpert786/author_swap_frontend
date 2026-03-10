@@ -244,7 +244,7 @@ const BooksPage = () => {
         <div className="min-h-screen">
 
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-semibold">Book Management</h1>
                     <p className="text-[13px] text-[#374151] font-medium mt-0.5">
@@ -254,7 +254,7 @@ const BooksPage = () => {
 
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center gap-2 bg-[#2F6F6D] text-white px-3 py-[10px] rounded-[8px] shadow-sm font-semibold text-[15px]"
+                    className="flex shrink-0 whitespace-nowrap items-center gap-2 bg-[#2F6F6D] text-white px-4 py-[10px] rounded-[8px] shadow-sm font-semibold text-[15px]"
                 >
                     <Plus size={18} />
                     Add New Book
