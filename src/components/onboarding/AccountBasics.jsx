@@ -186,13 +186,13 @@ const AccountBasics = ({ next }) => {
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.type.startsWith("image/")) {
+      if (file.type === "image/jpeg" || file.type === "image/png") {
         // Create a fake event object to reuse the existing logic if possible, 
         // but it's cleaner to just call setValue and setPreview directly
         setValue("profilePhoto", files);
         setPreview(URL.createObjectURL(file));
       } else {
-        toast.error("Please drop an image file");
+        toast.error("Please drop a JPG, JPEG, or PNG image file");
       }
     }
   };
@@ -336,17 +336,24 @@ const AccountBasics = ({ next }) => {
               <input
                 type="file"
                 id="profileUpload"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png"
                 className="hidden"
                 {...register("profilePhoto", {
-                  validate: (files) =>
-                    !files ||
-                    !files[0] ||
-                    files[0].size <= 10 * 1024 * 1024 ||
-                    "Max file size is 10MB",
+                  validate: (files) => {
+                    if (!files || !files[0]) return true;
+                    if (files[0].size > 10 * 1024 * 1024) return "Max file size is 10MB";
+                    if (!["image/jpeg", "image/png"].includes(files[0].type)) return "Only JPG, JPEG, and PNG images are allowed";
+                    return true;
+                  }
                 })}
                 onChange={(e) => {
                   const file = e.target.files[0];
+
+                  if (file && !["image/jpeg", "image/png"].includes(file.type)) {
+                    toast.error("Only JPG, JPEG, and PNG images are allowed");
+                    e.target.value = "";
+                    return;
+                  }
 
                   // Let react-hook-form handle it
                   register("profilePhoto").onChange(e);

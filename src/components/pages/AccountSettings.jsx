@@ -94,6 +94,11 @@ const AccountSettings = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (!["image/jpeg", "image/png"].includes(file.type)) {
+            toast.error("Only JPG, JPEG, and PNG images are allowed");
+            e.target.value = "";
+            return;
+        }
         setSelectedFile(file);
         const previewUrl = URL.createObjectURL(file);
         setProfileImage(previewUrl);
@@ -215,7 +220,7 @@ const AccountSettings = () => {
                                 >
                                     <img src={Edit} alt="Edit" className="w-4 h-4 filter brightness-0 invert" />
                                 </button>
-                                <input id="profileUpload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                                <input id="profileUpload" type="file" accept=".jpg,.jpeg,.png" className="hidden" onChange={handleImageChange} />
                             </>
                         )}
                     </div>

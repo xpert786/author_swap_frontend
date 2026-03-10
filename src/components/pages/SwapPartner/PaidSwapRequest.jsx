@@ -35,10 +35,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
         if (book.compatibility) {
             setCompatibility(book.compatibility);
         }
-
-        if (book.description) {
-            setMessage(book.description.slice(0, 250));
-        }
+        // Removed auto-filling of message from book description
     };
 
     useEffect(() => {
@@ -76,6 +73,10 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!message.trim()) {
+            toast.error("Message is required");
+            return;
+        }
         try {
             setSubmitting(true);
             const payload = {

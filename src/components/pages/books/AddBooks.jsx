@@ -115,11 +115,11 @@ const AddBooks = ({ onClose, onSubmit }) => {
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.type.startsWith("image/")) {
+      if (file.type === "image/jpeg" || file.type === "image/png") {
         setPreview(URL.createObjectURL(file));
         setFormData((prev) => ({ ...prev, coverImage: file }));
       } else {
-        toast.error("Please drop an image file");
+        toast.error("Please drop a JPG, JPEG, or PNG image file");
       }
     }
   };
@@ -127,6 +127,15 @@ const AddBooks = ({ onClose, onSubmit }) => {
   const handleChange = (e) => {
 
     const { name, value, type, checked, files } = e.target;
+
+    if (type === "file" && files.length > 0) {
+      const file = files[0];
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        toast.error("Only JPG, JPEG, and PNG images are allowed");
+        e.target.value = ""; // Reset input
+        return;
+      }
+    }
 
     setFormData((prev) => {
       if (type === "file") {
@@ -364,7 +373,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 <input
                   type="file"
                   name="coverImage"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png"
                   onChange={handleChange}
                   className="hidden"
                 />

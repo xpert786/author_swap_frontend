@@ -40,11 +40,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
         if (book.compatibility) {
             setCompatibility(book.compatibility);
         }
-
-        // Auto-fill message with book description if available
-        if (book.description) {
-            setMessage(book.description.slice(0, 250));
-        }
+        // Removed auto-filling message from description
     };
 
     useEffect(() => {
@@ -90,6 +86,10 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!message.trim()) {
+            toast.error("Message is required");
+            return;
+        }
         try {
             setSubmitting(true);
             const payload = {

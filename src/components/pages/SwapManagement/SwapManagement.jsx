@@ -122,7 +122,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
             } else {
-                toast.error("Could not get payment link. Please try again.");
+                toast("Please add a payment card to pay for this swap.", { icon: "💳" });
+                navigate("/account-settings");
             }
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to initiate payment");
