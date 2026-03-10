@@ -22,6 +22,8 @@ import Notification from "../pages/Notification";
 import SwapManagement from "../pages/SwapManagement/SwapManagement";
 import SwapHistory from "../pages/SwapManagement/SwapHistory";
 import TrackSwap from "../pages/SwapManagement/TrackSwap";
+import SwapPaymentSuccess from "../pages/SwapManagement/SwapPaymentSuccess";
+import SwapPaymentCancel from "../pages/SwapManagement/SwapPaymentCancel";
 import Newsletter from "../pages/newsletters/Newsletter";
 import { Analytics } from "../pages/PlaceholderPages";
 import SubscriptionPage from "../pages/subscription/SubscriptionPage";
@@ -64,6 +66,8 @@ const AppRoutes = () => {
           <Route path="/swap-management" element={<SwapManagement />} />
           <Route path="/swap-history/:id" element={<SwapHistory />} />
           <Route path="/track-swap/:id" element={<TrackSwap />} />
+          <Route path="/swap-payment-success" element={<SwapPaymentSuccess />} />
+          <Route path="/swap-payment-cancel" element={<SwapPaymentCancel />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reputation" element={<AuthorReputationSystem />} />
           <Route path="/notifications" element={<Notification />} />
