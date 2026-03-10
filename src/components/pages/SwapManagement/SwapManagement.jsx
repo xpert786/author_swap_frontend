@@ -332,8 +332,13 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
-                        <span className="whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border bg-green-50 text-green-700 border-green-200">
-                            Pricing: ${typeof data.price === "number" ? data.price.toFixed(0) : data.price}
+                        <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border 
+                            ${isPaymentDone 
+                                ? "bg-[#2F6F6D] text-white border-[#2F6F6D]" 
+                                : "bg-green-50 text-green-700 border-green-200"
+                            }`}
+                        >
+                            {isPaymentDone ? "Paid" : "Pricing"} ${typeof data.price === "number" ? data.price.toFixed(0) : data.price}
                         </span>
                     )}
                 </div>
