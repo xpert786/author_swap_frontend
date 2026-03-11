@@ -150,55 +150,147 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({
-          ...prev,
-          coverImage: file,
-          preview: URL.createObjectURL(file)
-        }));
-      } else {
-        toast.error("Please drop an image file");
-      }
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      toast.error("Only JPG and PNG images are allowed");
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+
+      if (width < 320 || height < 480 || width > 2000 || height > 3000) {
+        toast.error("Image must be at least 320 × 480 pixels");
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+
+      const ratio = width / height;
+
+      if (Math.abs(ratio - 2 / 3) > 0.02) {
+        toast.error("Image must have a 2:3 ratio");
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        coverImage: file,
+        preview: objectUrl
+      }));
+    };
+
+    img.src = objectUrl;
   };
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    return () => {
+      if (formData.preview && formData.preview.startsWith("blob:")) {
+        URL.revokeObjectURL(formData.preview);
+      }
+    };
+  }, [formData.preview]);
 
+  const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
-    if (type === "file") {
+    // Handle file input
+    if (type === "file" && files.length > 0) {
       const file = files[0];
-      if (file) {
+
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        toast.error("Only JPG and PNG images are allowed");
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        e.target.value = "";
+        return;
+      }
+
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+
+        if (width < 320 || height < 480 || width > 2000 || height > 3000) {
+          toast.error("Image must be at least 320 × 480 pixels");
+          URL.revokeObjectURL(objectUrl);
+          e.target.value = "";
+          return;
+        }
+
+        const ratio = width / height;
+
+        if (Math.abs(ratio - 2 / 3) > 0.02) {
+          toast.error("Image must have a 2:3 ratio");
+          URL.revokeObjectURL(objectUrl);
+          e.target.value = "";
+          return;
+        }
+
         setFormData((prev) => ({
           ...prev,
           coverImage: file,
-          preview: URL.createObjectURL(file)
+          preview: objectUrl
         }));
-      }
-    } else if (type === "checkbox") {
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData((prev) => {
-        let newValue = value;
-        if (name === "ratings") {
-          const val = parseFloat(value);
-          if (val > 5) newValue = 5;
-          else if (val < 0) newValue = 0;
-        }
-        return {
-          ...prev,
-          [name]: newValue,
-          // Reset subgenre if genre changes
-          ...(name === "genre" ? { subgenre: "" } : {})
-        };
-      });
+      };
+
+      img.src = objectUrl;
+      return;
     }
+
+    // ✅ Handle checkbox
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked
+      }));
+      return;
+    }
+
+    if (name === "ratings") {
+      let val = parseFloat(value);
+
+      if (val > 5) val = 5;
+      if (val < 0) val = 0;
+
+      setFormData((prev) => ({
+        ...prev,
+        ratings: val
+      }));
+      return;
+    }
+
+    // ✅ Handle normal inputs (title, description, select, etc.)
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.preview) {
+      toast.error("Please upload a book cover image");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -373,7 +465,10 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`mt-2 relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl h-44 cursor-pointer transition overflow-hidden ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-gray-300 hover:border-[#2F6F6D] bg-gray-50/30"}`}
+                className={`mt-2 relative flex items-center justify-center border-2 border-dashed rounded-xl w-[180px] h-[270px] mx-auto cursor-pointer transition bg-gray-50 ${isDragging
+                  ? "border-[#2F6F6D] bg-[#2F6F6D1A]"
+                  : "border-gray-300 hover:border-[#2F6F6D] hover:bg-gray-100"
+                  }`}
               >
                 <input
                   type="file"
@@ -384,11 +479,11 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
 
 
                 {formData.preview ? (
-                  <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-full h-full flex items-center justify-center p-2">
                     <img
                       src={formData.preview}
                       alt="preview"
-                      className="h-full object-contain"
+                      className="max-w-full max-h-full object-contain rounded"
                     />
                     <button
                       type="button"

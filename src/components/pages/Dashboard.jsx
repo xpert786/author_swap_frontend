@@ -318,7 +318,8 @@ const Dashboard = () => {
                 if (dayApiData.has_scheduled) bgColor = "bg-[#87D1A1]"; // Green for scheduled
                 else if (dayApiData.has_confirmed) bgColor = "bg-[#9FB5B3]"; // Teal for confirmed
                 else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]"; // Orange/Yellow for pending
-                else bgColor = "bg-[#2F6F6D1A]"; // Light teal for general slots
+                else if (dayApiData.has_published) bgColor = "bg-[#C7D2FE]"; // Soft purple/blue for published
+                else bgColor = "bg-[#2F6F6D1A]"; // Light teal for general/available slots
               }
 
               return (

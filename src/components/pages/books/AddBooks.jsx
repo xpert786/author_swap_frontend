@@ -113,61 +113,121 @@ const AddBooks = ({ onClose, onSubmit }) => {
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type === "image/jpeg" || file.type === "image/png") {
-        setPreview(URL.createObjectURL(file));
-        setFormData((prev) => ({ ...prev, coverImage: file }));
-      } else {
-        toast.error("Please drop a JPG, JPEG, or PNG image file");
-      }
+
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      toast.error("Only JPG and PNG images are allowed");
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+
+      if (width < 320 || height < 480 || width > 2000 || height > 3000) {
+        toast.error("Image must be between 320×480 and 2000×3000");
+        URL.revokeObjectURL(objectUrl);
+        e.target.value = "";
+        return;
+      }
+
+      const ratio = width / height;
+
+      if (Math.abs(ratio - 2 / 3) > 0.02) {
+        toast.error("Image must have a 2:3 ratio");
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+
+      setPreview(objectUrl);
+      setFormData((prev) => ({ ...prev, coverImage: file }));
+    };
+
+    img.src = objectUrl;
   };
 
   const handleChange = (e) => {
-
     const { name, value, type, checked, files } = e.target;
 
     if (type === "file" && files.length > 0) {
       const file = files[0];
+
       if (!["image/jpeg", "image/png"].includes(file.type)) {
         toast.error("Only JPG, JPEG, and PNG images are allowed");
-        e.target.value = ""; // Reset input
+        e.target.value = "";
         return;
       }
-    }
 
-    setFormData((prev) => {
-      if (type === "file") {
-        const file = files[0];
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
 
-        if (file) {
-          setPreview(URL.createObjectURL(file)); // 👈 create preview
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+
+        if (width < 320 || height < 480 || width > 2000 || height > 3000) {
+          toast.error("Image must be between 320×480 and 2000×3000");
+          URL.revokeObjectURL(objectUrl);
+          e.target.value = "";
+          return;
         }
 
-        return { ...prev, coverImage: file };
-      }
+        const ratio = width / height;
 
-      if (type === "checkbox") {
-        return { ...prev, [name]: checked };
-      }
+        if (Math.abs(ratio - 2 / 3) > 0.02) {
+          toast.error("Image must have a 2:3 ratio (example: 320×480, 640×960)");
+          URL.revokeObjectURL(objectUrl);
+          e.target.value = "";
+          return;
+        }
 
-      if (name === "genre") {
-        return {
-          ...prev,
-          genre: value,
-          subgenre: "",
-        };
-      }
+        setPreview(objectUrl);
+        setFormData((prev) => ({ ...prev, coverImage: file }));
+      };
 
-      if (name === "ratings") {
-        const val = parseFloat(value);
-        if (val > 5) return { ...prev, [name]: 5 };
-        if (val < 0) return { ...prev, [name]: 0 };
-      }
+      img.src = objectUrl;
+      return;
+    }
 
-      return { ...prev, [name]: value };
-    });
+    // checkbox
+    if (type === "checkbox") {
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+      return;
+    }
+
+    // genre change
+    if (name === "genre") {
+      setFormData((prev) => ({
+        ...prev,
+        genre: value,
+        subgenre: "",
+      }));
+      return;
+    }
+
+    // ratings limit
+    if (name === "ratings") {
+      let val = parseFloat(value);
+
+      if (val > 5) val = 5;
+      if (val < 0) val = 0;
+
+      setFormData((prev) => ({ ...prev, ratings: val }));
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -366,7 +426,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`mt-2 relative flex items-center justify-center border-2 border-dashed rounded-xl h-44 cursor-pointer transition overflow-hidden ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-gray-300 hover:border-[#2F6F6D] bg-gray-50/30"}`}
+                className={`mt-2 relative flex items-center justify-center border-2 border-dashed rounded-xl w-[180px] h-[270px] mx-auto cursor-pointer transition bg-gray-50 ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-gray-300 hover:border-[#2F6F6D] bg-gray-50/30"}`}
               >
 
 
@@ -379,11 +439,11 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 />
 
                 {preview ? (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full h-full flex items-center justify-center p-2">
                     <img
                       src={preview}
                       alt="Cover preview"
-                      className="w-full h-full object-contain"
+                      className="max-w-full max-h-full object-contain rounded"
                     />
                     <button
                       type="button"
@@ -401,7 +461,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
                       Drop Files Here or Click To Browse
                     </span>
                     <span className="text-[11px] text-gray-400 mt-1 block">
-                      Maximum file size 5MB
+                      JPG / PNG • Required size: 320 × 480 px • Max size 5MB
                     </span>
                   </div>
                 )}

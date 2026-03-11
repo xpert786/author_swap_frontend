@@ -307,7 +307,6 @@ const BooksPage = () => {
                         onChange={setStatus}
                         options={[
                             { label: "All Books", value: "all" },
-                            { label: "Active", value: "Active" },
                             { label: "Primary promo", value: "primary" },
                             { label: "Archived", value: "archived" }
                         ]}
@@ -426,7 +425,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
     "
         >
             {/* Cover */}
-            <div className="relative h-[480px] w-full flex items-center justify-center overflow-hidden rounded-xl">
+            <div className="relative w-full aspect-[2/3] overflow-hidden rounded-xl">
                 {/* Badges */}
                 <div className="absolute top-4 left-0 right-0 px-4 flex justify-between items-start z-20">
                     {book.is_primary_promo && (

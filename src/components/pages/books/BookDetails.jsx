@@ -171,7 +171,7 @@ export default function BookDetails() {
                     <EditBooks
                         bookId={id}
                         onClose={() => setIsEditOpen(false)}
-                        onSave={handleSave}
+                        onSubmit={fetchBookData}
                     />
                 )}
 
