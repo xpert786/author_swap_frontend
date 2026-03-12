@@ -5,7 +5,10 @@ import Edit from "../../assets/edit.png";
 import { getGenres } from "../../apis/genre";
 import { useProfile } from "../../context/ProfileContext";
 import { formatCamelCaseName } from "../../utils/formatName";
-import { User, CreditCard, Trash2, Star, Plus, X, AlertTriangle } from "lucide-react";
+import { User, CreditCard, Trash2, Star, Plus, X } from "lucide-react";
+import { FiX } from "react-icons/fi";
+import { IoChevronDown } from "react-icons/io5";
+import { useRef } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import AddCardForm from "./subscription/AddCardForm";
@@ -17,7 +20,7 @@ const defaultProfile = {
     name: "",
     email: "",
     location: "",
-    genre: "",
+    genres: [],
     website: "",
     instagram: "",
     tiktok: "",
@@ -34,6 +37,8 @@ const AccountSettings = () => {
     const [profileImage, setProfileImage] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
     const [genres, setGenres] = useState([]);
+    const [isGenreOpen, setIsGenreOpen] = useState(false);
+    const genreRef = useRef(null);
 
     // Payment method states
     const [paymentMethods, setPaymentMethods] = useState([]);
@@ -49,7 +54,7 @@ const AccountSettings = () => {
                 name: data.name || "",
                 email: data.email || "",
                 location: data.location || "",
-                genre: data.primary_genre || "",
+                genres: data.primary_genre ? data.primary_genre.split(",") : [],
                 website: data.website || "",
                 instagram: data.instagram_url || "",
                 tiktok: data.tiktok_url || "",
@@ -75,6 +80,16 @@ const AccountSettings = () => {
             setLoadingCards(false);
         }
     };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (genreRef.current && !genreRef.current.contains(event.target)) {
+                setIsGenreOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const loadGenres = async () => {
@@ -120,7 +135,12 @@ const AccountSettings = () => {
             formPayload.append("location", formData.location || "");
             formPayload.append("bio", formData.bio || "");
             formPayload.append("website", formData.website || "");
-            formPayload.append("primary_genre", formData.genre || "");
+            
+            // Send each genre individually
+            formData.genres.forEach(genre => {
+                formPayload.append("primary_genre", genre);
+            });
+            
             formPayload.append("instagram_url", formData.instagram || "");
             formPayload.append("tiktok_url", formData.tiktok || "");
             formPayload.append("facebook_url", formData.facebook || "");
@@ -174,7 +194,17 @@ const AccountSettings = () => {
 
     const handleEdit = () => setIsEditing(true);
     const handleCancel = () => {
-        setFormData(originalData);
+        setFormData({
+            name: originalData.name || "",
+            email: originalData.email || "",
+            location: originalData.location || "",
+            genres: originalData.primary_genre ? originalData.primary_genre.split(",") : [],
+            website: originalData.website || "",
+            instagram: originalData.instagram_url || "",
+            tiktok: originalData.tiktok_url || "",
+            facebook: originalData.facebook_url || "",
+            bio: originalData.bio || "",
+        });
         setIsEditing(false);
     };
 
@@ -229,7 +259,7 @@ const AccountSettings = () => {
                             {formatCamelCaseName(formData.name)}
                         </h2>
                         <p className="text-[13px] text-gray-500">
-                            {formatCamelCaseName(formData.genre) || "Author"} Author
+                            {formData.genres?.map(g => formatCamelCaseName(g)).join(", ") || "Author"} Author
                         </p>
                     </div>
                 </div>
@@ -240,22 +270,85 @@ const AccountSettings = () => {
                 <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
                 <Input label="Email (optional)" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
                 <Input label="Location (optional)" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
-
                 <div className="space-y-1.5">
-                    <label className="text-[12px] font-medium text-[#111827]">Primary Genre (optional)</label>
-                    <select
-                        name="genre"
-                        value={formData.genre}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm focus:ring-1 focus:ring-[#2F6F6D] outline-none"
-                    >
-                        <option value="">Select Genre</option>
-                        {genres.map((genre) => (
-                            <option key={genre.value} value={genre.value}>{genre.label}</option>
-                        ))}
-                    </select>
+                    <label className="text-[12px] font-medium text-[#111827]">Primary Genre(s) (optional)</label>
+                    <div className="relative" ref={genreRef}>
+                        <button
+                            type="button"
+                            onClick={() => isEditing && setIsGenreOpen(!isGenreOpen)}
+                            disabled={!isEditing}
+                            className={`w-full border border-[#B5B5B5] rounded-lg px-3 py-2 bg-white text-left flex items-center justify-between text-sm focus:outline-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                        >
+                            <span className="text-gray-500">
+                                {isEditing ? "Select genres..." : (formData.genres.length > 0 ? `${formData.genres.length} selected` : "None selected")}
+                            </span>
+                            {isEditing && (
+                                <IoChevronDown
+                                    size={18}
+                                    className={`text-gray-400 transition-transform ${isGenreOpen ? "rotate-180" : ""}`}
+                                />
+                            )}
+                        </button>
+
+                        {isGenreOpen && isEditing && (
+                            <div className="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-gray-100 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-[100] pt-1 pb-3 max-h-[280px] overflow-y-auto">
+                                {genres.map((genre) => {
+                                    const isSelected = formData.genres.includes(genre.value);
+                                    return (
+                                        <button
+                                            key={genre.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    genres: isSelected
+                                                        ? prev.genres.filter(g => g !== genre.value)
+                                                        : [...prev.genres, genre.value]
+                                                }));
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                                isSelected
+                                                    ? "bg-gray-50 text-gray-400"
+                                                    : "hover:bg-[#2F6F6D1A] text-gray-700"
+                                            }`}
+                                        >
+                                            {genre.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Selected Genres Chips */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {formData.genres.map((genreVal, index) => {
+                            const genreObj = genres.find(g => g.value === genreVal);
+                            const displayLabel = genreObj ? genreObj.label : genreVal;
+                            return (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-1.5 bg-[#2F6F6D1A] text-black px-3 py-1.5 rounded-full border border-[#2F6F6D33] text-sm"
+                                >
+                                    <span>{formatCamelCaseName(displayLabel)}</span>
+                                    {isEditing && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({
+                                                ...prev,
+                                                genres: prev.genres.filter(g => g !== genreVal)
+                                            }))}
+                                            className="text-gray-500 hover:text-red-500 transition-colors"
+                                        >
+                                            <FiX size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
+
                 <Input label="Website Link (optional)" name="website" value={formData.website} onChange={handleChange} disabled={!isEditing} />
                 <Input label="Instagram Link (optional)" name="instagram" value={formData.instagram} onChange={handleChange} disabled={!isEditing} />
                 <Input label="TikTok Link (optional)" name="tiktok" value={formData.tiktok} onChange={handleChange} disabled={!isEditing} />
