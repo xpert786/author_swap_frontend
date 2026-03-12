@@ -38,11 +38,17 @@ const Login = () => {
         data.isprofilecompleted?.toString() || "true"
       );
 
-      // Check subscription status
+      // Check subscription status and store expiry
+      const subscription = data.subscription;
       const hasActiveSubscription = data.has_subscription || 
-                                    data.subscription?.is_active || 
+                                    subscription?.is_active || 
                                     false;
       localStorage.setItem("has_subscription", hasActiveSubscription.toString());
+      
+      // Store subscription expiry date if available
+      if (subscription?.active_until || subscription?.renew_date) {
+        localStorage.setItem("subscription_expiry", subscription.active_until || subscription.renew_date);
+      }
 
       toast.success("Login successful!", { id: loadingToast });
 
@@ -80,11 +86,17 @@ const Login = () => {
         response.isprofilecompleted?.toString() || "true"
       );
 
-      // Check subscription status
+      // Check subscription status and store expiry
+      const subscription = response.subscription;
       const hasActiveSubscription = response.has_subscription || 
-                                    response.subscription?.is_active || 
+                                    subscription?.is_active || 
                                     false;
       localStorage.setItem("has_subscription", hasActiveSubscription.toString());
+      
+      // Store subscription expiry date if available
+      if (subscription?.active_until || subscription?.renew_date) {
+        localStorage.setItem("subscription_expiry", subscription.active_until || subscription.renew_date);
+      }
 
       toast.success("Login successful! Welcome back.");
 
