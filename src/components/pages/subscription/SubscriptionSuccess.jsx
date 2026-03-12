@@ -10,6 +10,9 @@ const SubscriptionSuccess = () => {
     const sessionId = searchParams.get("session_id");
 
     useEffect(() => {
+        // Set subscription status to true on success page
+        localStorage.setItem("has_subscription", "true");
+        
         // You could also verify the session_id with your backend here
         const timer = setTimeout(() => {
             setLoading(false);

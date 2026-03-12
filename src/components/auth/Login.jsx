@@ -38,11 +38,20 @@ const Login = () => {
         data.isprofilecompleted?.toString() || "true"
       );
 
+      // Check subscription status
+      const hasActiveSubscription = data.has_subscription || 
+                                    data.subscription?.is_active || 
+                                    false;
+      localStorage.setItem("has_subscription", hasActiveSubscription.toString());
+
       toast.success("Login successful!", { id: loadingToast });
 
       await refreshProfile();
 
-      if (data.isprofilecompleted === false) {
+      // Redirect based on subscription status
+      if (!hasActiveSubscription) {
+        navigate("/subscription");
+      } else if (data.isprofilecompleted === false) {
         navigate("/onboarding");
       } else {
         navigate("/dashboard");
@@ -71,11 +80,20 @@ const Login = () => {
         response.isprofilecompleted?.toString() || "true"
       );
 
+      // Check subscription status
+      const hasActiveSubscription = response.has_subscription || 
+                                    response.subscription?.is_active || 
+                                    false;
+      localStorage.setItem("has_subscription", hasActiveSubscription.toString());
+
       toast.success("Login successful! Welcome back.");
 
       await refreshProfile();
 
-      if (response.isprofilecompleted === false) {
+      // Redirect based on subscription status
+      if (!hasActiveSubscription) {
+        navigate("/subscription");
+      } else if (response.isprofilecompleted === false) {
         navigate("/onboarding");
       } else {
         navigate("/dashboard");

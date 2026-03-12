@@ -33,13 +33,16 @@ const SignUp = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem(
         "isprofilecompleted",
-        data.isprofilecompleted?.toString() || "true"
+        data.isprofilecompleted?.toString() || "false"
       );
+      // New users don't have subscription yet
+      localStorage.setItem("has_subscription", "false");
 
       toast.success("Google login successful!", { id: loadingToast });
 
       await refreshProfile();
 
+      // After signup/login, redirect based on profile completion
       if (data.isprofilecompleted === false) {
         navigate("/onboarding");
       } else {
@@ -64,9 +67,12 @@ const SignUp = () => {
       });
 
       localStorage.setItem("token", response.token);
+      // New users don't have subscription yet
+      localStorage.setItem("has_subscription", "false");
       toast.success("Account created successfully! Welcome to AuthorSwap.", { id: loadingToast });
 
       await refreshProfile();
+      // Redirect to onboarding page for new users
       navigate("/onboarding");
     } catch (error) {
       console.error("Signup failed:", error);

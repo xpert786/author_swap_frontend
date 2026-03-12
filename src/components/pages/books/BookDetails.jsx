@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Calendar, Star, Globe } from "lucide-react";
-import { SiAmazon } from "react-icons/si";
-import { FaApple } from "react-icons/fa";
-import { FiBookOpen } from "react-icons/fi";
+import amazonIcon from "../../../assets/amazon.png";
+import appleIcon from "../../../assets/apple.png";
+import koboIcon from "../../../assets/kobo.png";
+import bnIcon from "../../../assets/b-n.png";
 import { getBookById, updateBook } from "../../../apis/bookManegment";
 import EditBooks from "./EditBooks";
 import toast from "react-hot-toast";
 import edit from "../../../assets/edit.png";
 import { LuBookOpen } from "react-icons/lu";
-
 
 export default function BookDetails() {
     const { id } = useParams();
@@ -113,8 +113,6 @@ export default function BookDetails() {
             year: "numeric",
         })
         : "N/A";
-
-
 
     return (
         <div className="min-h-screen">
@@ -230,6 +228,7 @@ export default function BookDetails() {
                                     <PlatformCard
                                         name="Amazon"
                                         url={book.amazonUrl}
+                                        icon={amazonIcon}
                                         active={true}
                                     />
                                 )}
@@ -237,6 +236,7 @@ export default function BookDetails() {
                                     <PlatformCard
                                         name="Apple Books"
                                         url={book.appleUrl}
+                                        icon={appleIcon}
                                         active={true}
                                     />
                                 )}
@@ -244,6 +244,7 @@ export default function BookDetails() {
                                     <PlatformCard
                                         name="Kobo"
                                         url={book.koboUrl}
+                                        icon={koboIcon}
                                         active={true}
                                     />
                                 )}
@@ -251,6 +252,7 @@ export default function BookDetails() {
                                     <PlatformCard
                                         name="Barnes & Noble"
                                         url={book.barnesUrl}
+                                        icon={bnIcon}
                                         active={true}
                                     />
                                 )}
@@ -282,50 +284,23 @@ function MetaCard({ label, value }) {
 }
 
 
-function PlatformCard({ name, url, active = false }) {
+function PlatformCard({ name, url, icon, active = false }) {
     return (
         <div
             onClick={() => url && window.open(url, "_blank")}
-            className={`w-full sm:w-44 rounded-[10px] border p-4 sm:p-6 flex flex-row sm:flex-col items-center gap-4 sm:gap-3 transition cursor-pointer hover:shadow-md active:scale-95 ${active
-                ? "border-[#2F6F6D33] bg-[#2F6F6D05]"
+            className={`w-full sm:w-44 rounded-[10px] border p-4 sm:p-6 flex flex-row sm:flex-col items-center gap-4 sm:gap-3 cursor-pointer hover:border-[#E07A5F] hover:bg-[#E07A5F0D] ${active
+                ? "border-[#B5B5B5] bg-white"
                 : "border-[#B5B5B5] bg-white"
                 }`}
         >
-            <div
-                className={`w-12 h-12 rounded-[6px] flex items-center justify-center shadow-md
-    ${name === "Amazon"
-                        ? "bg-gradient-to-br from-[#FF9900] via-[#FF8C00] to-[#E47911]"
-                        : name === "Apple Books"
-                            ? "bg-gradient-to-br from-black via-gray-900 to-gray-800"
-                            : name === "Kobo"
-                                ? "bg-gradient-to-br from-[#0079C1] via-[#005A8D] to-[#003B5C]"
-                                : name === "Barnes & Noble"
-                                    ? "bg-gradient-to-br from-[#004B33] via-[#003B28] to-[#002B1D]"
-                                    : "bg-gray-100"
-                    }
-  `}
-            >
-                {name === "Amazon" && (
-                    <SiAmazon className="text-white w-5 h-5" />
-                )}
-
-                {name === "Apple Books" && (
-                    <FaApple className="text-white w-5 h-5" />
-                )}
-
-                {name === "Kobo" && (
-                    <FiBookOpen className="text-white w-5 h-5" />
-                )}
-
-                {name === "Barnes & Noble" && (
-                    <LuBookOpen className="text-white w-5 h-5" />
-                )}
+            <div className="w-12 h-12 rounded-[6px] flex items-center justify-center shadow-md border border-[#2F6F6D] p-1">
+                <img src={icon} alt={name} className="w-full h-full object-contain" />
             </div>
 
             <p className="font-medium text-gray-900">{name}</p>
 
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#16A34A1A] text-[#16A34A]">
-                Available
+               Live
             </span>
         </div>
     );

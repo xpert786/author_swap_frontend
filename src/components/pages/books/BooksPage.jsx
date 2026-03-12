@@ -9,14 +9,16 @@ import {
     Globe,
     ChevronDown
 } from "lucide-react";
-import { SiAmazon } from "react-icons/si";
-import { FaApple } from "react-icons/fa";
-import { FiBookOpen } from "react-icons/fi";
+import amazonIcon from "../../../assets/amazon.png";
+import appleIcon from "../../../assets/apple.png";
+import koboIcon from "../../../assets/kobo.png";
+import bnIcon from "../../../assets/b-n.png";
 import { useNavigate } from "react-router-dom";
 import AddBooks from "./AddBooks";
 import EditBooks from "./EditBooks";
 import DeleteBooks from "./DeleteBooks";
 import { LuBookOpen } from "react-icons/lu";
+import { FiBookOpen } from "react-icons/fi";
 import Megaphone from "../../../assets/megaphone.png";
 import UpGraphImg from "../../../assets/upgraph.png";
 import edit from "../../../assets/edit.png";
@@ -59,15 +61,15 @@ const BooksPage = () => {
             const formattedBooks = rawBooks.map((book) => ({
                 ...book,
 
-                // ✅ Fix cover (only if relative URL)
+                // Fix cover (only if relative URL)
                 book_cover: book.book_cover?.startsWith("http")
                     ? book.book_cover
                     : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`,
 
-                // ✅ Fix date properly
+                // Fix date properly
                 publish_date: book.publish_date || null,
 
-                // ✅ Ensure rating number
+                // Ensure rating number
                 rating: Number(book.rating) || 0,
             }));
 
@@ -542,20 +544,26 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
 
                         <div className="flex gap-2">
                             {book.amazon_url && (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF9900] to-[#FF6B00] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
-                                    <SiAmazon size={14} />
+                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
+                                    <img src={amazonIcon} alt="Amazon" className="w-full h-full object-contain" />
                                 </div>
                             )}
 
                             {book.apple_url && (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#000000] to-[#333333] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
-                                    <FaApple size={14} />
+                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
+                                    <img src={appleIcon} alt="Apple Books" className="w-full h-full object-contain" />
                                 </div>
                             )}
 
                             {book.kobo_url && (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#BF0000] to-[#8B0000] flex items-center justify-center text-white shadow-sm hover:scale-110 transition-transform">
-                                    <FiBookOpen size={14} />
+                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
+                                    <img src={koboIcon} alt="Kobo" className="w-full h-full object-contain" />
+                                </div>
+                            )}
+
+                            {book.barnes_noble_url && (
+                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
+                                    <img src={bnIcon} alt="Barnes & Noble" className="w-full h-full object-contain" />
                                 </div>
                             )}
                         </div>

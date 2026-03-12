@@ -6,6 +6,7 @@ import Mailerlite from "./Mailerlite";
 import Confirmation from "./Confirmation";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 import { getProfile } from "../../apis/onboarding";
 import { useProfile } from "../../context/ProfileContext";
 
@@ -62,7 +63,10 @@ const OnboardingLayout = () => {
     localStorage.setItem("isprofilecompleted", "true");
     await refreshProfile();
     console.log("Final Data:", formData);
-    navigate("/dashboard");
+    
+    // Show toast to buy subscription and redirect to subscription page
+    toast.success("Profile complete! Please subscribe to continue.");
+    navigate("/subscription");
   };
 
   return (
