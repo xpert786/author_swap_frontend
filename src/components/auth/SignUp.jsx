@@ -129,7 +129,7 @@ const SignUp = () => {
       <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
         {/* LEFT SIDE - BRANDING */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-white">
+        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-[#111827]">
           <div className="max-w-md">
             <img
               src={Logo}
@@ -147,16 +147,16 @@ const SignUp = () => {
 
         {/* RIGHT SIDE - SIGN UP CARD */}
         <div className="w-full max-w-[440px]">
-          <div className="bg-white rounded-[18px] shadow-2xl w-full p-6 md:p-10">
+          <div className="bg-[#2F6F6D] rounded-[18px] shadow-2xl w-full p-6 md:p-10">
 
-            <h2 className="text-2xl font-bold text-[#E07A5F] mb-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
               Create Account
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
               {/* Email address */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Email address
                 </label>
                 <input
@@ -169,10 +169,10 @@ const SignUp = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all
+                  className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all
                   ${errors.email
                       ? "border-red-500 focus:ring-red-400 bg-red-50/10"
-                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-white"
                     }`}
                 />
                 {errors.email && (
@@ -184,7 +184,7 @@ const SignUp = () => {
 
               {/* Password */}
               <div className="relative">
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Password
                 </label>
                 <div className="relative">
@@ -198,10 +198,10 @@ const SignUp = () => {
                         message: "Minimum 8 characters required",
                       },
                     })}
-                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
+                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all pr-12
                     ${errors.password
                         ? "border-red-500 focus:ring-red-400 bg-red-50/10"
-                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-white"
                       }`}
                   />
                   <button
@@ -221,7 +221,7 @@ const SignUp = () => {
 
               {/* Confirm Password */}
               <div className="relative">
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -233,10 +233,10 @@ const SignUp = () => {
                       validate: (value) =>
                         value === password || "Passwords do not match",
                     })}
-                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
+                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all pr-12
                     ${errors.confirmPassword
                         ? "border-red-500 focus:ring-red-400 bg-red-50/10"
-                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-white"
                       }`}
                   />
                   <button
@@ -263,13 +263,13 @@ const SignUp = () => {
               </button>
             </form>
 
-            {/* Bottom Footer */}
+            {/* Footer */}
             <div className="flex flex-col items-center mt-6">
-              <p className="text-xs font-normal text-[#111827]">
+              <p className="text-xs font-medium text-white">
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="text-[#2F6F6D] font-normal hover:underline transition-all"
+                  className="text-white font-medium hover:underline"
                 >
                   Log in
                 </Link>
@@ -277,7 +277,7 @@ const SignUp = () => {
 
               <div className="mt-6 flex items-center justify-center w-full">
                 <div className="flex-1 h-px bg-[#E5E7EB]"></div>
-                <span className="px-3 text-[11px] font-normal text-[#374151] whitespace-nowrap bg-white">
+                <span className="px-3 text-[11px] font-medium text-white whitespace-nowrap">
                   or sign up with
                 </span>
                 <div className="flex-1 h-px bg-[#E5E7EB]"></div>

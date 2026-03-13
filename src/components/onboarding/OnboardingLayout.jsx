@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OnboardingSidebar from "./OnboardingSidebar";
 import AccountBasics from "./AccountBasics";
 import OnlinePresence from "./OnlinePresence";
 import Mailerlite from "./Mailerlite";
 import Confirmation from "./Confirmation";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { getProfile } from "../../apis/onboarding";
 import { useProfile } from "../../context/ProfileContext";
@@ -16,6 +15,7 @@ const OnboardingLayout = () => {
   const [formData, setFormData] = useState({});
   const [isMailerliteConnected, setIsMailerliteConnected] = useState(false);
   const navigate = useNavigate();
+  const { refreshProfile } = useProfile();
 
   useEffect(() => {
     const fetchExisting = async () => {
@@ -23,12 +23,15 @@ const OnboardingLayout = () => {
         const res = await getProfile();
         if (res.data.mailerlite_api_key) {
           setIsMailerliteConnected(true);
-          setFormData(prev => ({ ...prev, mailerlite_api_key: res.data.mailerlite_api_key }));
+          setFormData((prev) => ({
+            ...prev,
+            mailerlite_api_key: res.data.mailerlite_api_key,
+          }));
         }
-      } catch (e) { }
-    }
+      } catch (e) {}
+    };
     fetchExisting();
-  }, [])
+  }, []);
 
   const next = (data) => {
     const updatedData = { ...formData, ...data };
@@ -40,8 +43,11 @@ const OnboardingLayout = () => {
 
     setStep((prev) => {
       let newStep = prev + 1;
-      // Skip Mailerlite if we just came from step 2 and already have a key
-      if (newStep === 3 && (updatedData.mailerlite_api_key || isMailerliteConnected)) {
+      // Skip Mailerlite step if key already exists
+      if (
+        newStep === 3 &&
+        (updatedData.mailerlite_api_key || isMailerliteConnected)
+      ) {
         newStep = 4;
       }
       if (newStep > maxStep) setMaxStep(newStep);
@@ -49,23 +55,21 @@ const OnboardingLayout = () => {
     });
   };
 
-  const prev = () => {
-    setStep((prev) => prev - 1);
-  };
+  const prev = () => setStep((prev) => prev - 1);
 
-  const goToStep = (stepNumber) => {
-    setStep(stepNumber);
-  };
-
-  const { refreshProfile } = useProfile();
+  const goToStep = (stepNumber) => setStep(stepNumber);
 
   const finish = async () => {
+    // Mark profile as complete
     localStorage.setItem("isprofilecompleted", "true");
+
+    // Refresh profile data in context
     await refreshProfile();
-    console.log("Final Data:", formData);
-    
-    // Show toast to buy subscription and redirect to subscription page
-    toast.success("Profile complete! Please subscribe to continue.");
+
+    // After onboarding, always go to subscription.
+    // ProtectedRoute will redirect to /dashboard automatically
+    // if the user already has an active subscription.
+    toast.success("Profile complete! Please choose a subscription to continue.");
     navigate("/subscription");
   };
 
@@ -78,24 +82,10 @@ const OnboardingLayout = () => {
       <div className="flex-1 lg:ml-[50%] min-h-screen flex items-start justify-center p-6 md:p-12 lg:p-16 2xl:p-24 bg-white">
         <div className="w-full max-w-[620px] transition-all duration-300">
           {step === 1 && <AccountBasics next={next} />}
-          {step === 2 && (
-            <OnlinePresence
-              next={next}
-              prev={prev}
-            />
-          )}
-          {step === 3 && (
-            <Mailerlite
-              next={next}
-              prev={prev}
-            />
-          )}
+          {step === 2 && <OnlinePresence next={next} prev={prev} />}
+          {step === 3 && <Mailerlite next={next} prev={prev} />}
           {step === 4 && (
-            <Confirmation
-              prev={prev}
-              finish={finish}
-              goToStep={goToStep}
-            />
+            <Confirmation prev={prev} finish={finish} goToStep={goToStep} />
           )}
         </div>
       </div>

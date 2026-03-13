@@ -147,7 +147,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
             onClick={finish}
             className="px-6 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800"
           >
-            Go to Dashboard
+            Continue to Subscription
           </button>
         </div>
       </div >

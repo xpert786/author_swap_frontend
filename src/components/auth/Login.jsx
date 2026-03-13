@@ -7,7 +7,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { login, googleLogin } from "../../apis/auth";
 import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
-
 import { useProfile } from "../../context/ProfileContext";
 
 const Login = () => {
@@ -22,94 +21,62 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  // Shared post-login handler — stores token/flags then lets ProtectedRoute decide routing
+  const handleLoginSuccess = async (token, data) => {
+    localStorage.setItem("token", token);
+
+    // If localStorage already says profile is complete, NEVER overwrite it —
+    // the server incorrectly returns false for existing users who already completed onboarding.
+    // Only write "false" if this device has never seen a completed profile before.
+    const alreadyComplete = localStorage.getItem("isprofilecompleted") === "true";
+    if (!alreadyComplete) {
+      localStorage.setItem(
+        "isprofilecompleted",
+        data?.isprofilecompleted === true ? "true" : "false"
+      );
+    }
+
+    const subscription = data?.subscription;
+    const subscriptionExpiry = subscription?.active_until || subscription?.renew_date;
+    const isExpired = subscriptionExpiry && new Date(subscriptionExpiry) < new Date();
+    const hasActiveSubscription =
+      (data?.has_subscription || subscription?.is_active) && !isExpired;
+
+    localStorage.setItem("has_subscription", String(!!hasActiveSubscription));
+    if (subscriptionExpiry) {
+      localStorage.setItem("subscription_expiry", subscriptionExpiry);
+    }
+
+    await refreshProfile();
+
+    // Always go to dashboard — ProtectedRoute redirects to /onboarding or /subscription if needed
+    navigate("/dashboard");
+  };
+
   const handleGoogleSuccess = async (response) => {
     const loadingToast = toast.loading("Connecting with Google...");
     try {
-      // response.credential contains the ID Token
       const data = await googleLogin(response.credential);
-
-      if (!data?.token) {
-        throw new Error("Login failed");
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "isprofilecompleted",
-        data.isprofilecompleted?.toString() || "true"
-      );
-
-      // Check subscription status and store expiry
-      const subscription = data.subscription;
-      const hasActiveSubscription = data.has_subscription || 
-                                    subscription?.is_active || 
-                                    false;
-      localStorage.setItem("has_subscription", hasActiveSubscription.toString());
-      
-      // Store subscription expiry date if available
-      if (subscription?.active_until || subscription?.renew_date) {
-        localStorage.setItem("subscription_expiry", subscription.active_until || subscription.renew_date);
-      }
+      if (!data?.token) throw new Error("Login failed");
 
       toast.success("Login successful!", { id: loadingToast });
-
-      await refreshProfile();
-
-      // Redirect based on subscription status
-      if (!hasActiveSubscription) {
-        navigate("/subscription");
-      } else if (data.isprofilecompleted === false) {
-        navigate("/onboarding");
-      } else {
-        navigate("/dashboard");
-      }
+      await handleLoginSuccess(data.token, data);
     } catch (error) {
       console.error("Google login failed:", error);
-      toast.error(error?.response?.data?.message || "Google Authentication failed", { id: loadingToast });
+      toast.error(
+        error?.response?.data?.message || "Google Authentication failed",
+        { id: loadingToast }
+      );
     }
   };
 
-
   const onSubmit = async (data) => {
     try {
-      const response = await login({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (!response?.token) {
-        throw new Error("Invalid response from server");
-      }
-
-      localStorage.setItem("token", response.token);
-      localStorage.setItem(
-        "isprofilecompleted",
-        response.isprofilecompleted?.toString() || "true"
-      );
-
-      // Check subscription status and store expiry
-      const subscription = response.subscription;
-      const hasActiveSubscription = response.has_subscription || 
-                                    subscription?.is_active || 
-                                    false;
-      localStorage.setItem("has_subscription", hasActiveSubscription.toString());
-      
-      // Store subscription expiry date if available
-      if (subscription?.active_until || subscription?.renew_date) {
-        localStorage.setItem("subscription_expiry", subscription.active_until || subscription.renew_date);
-      }
+      const response = await login({ email: data.email, password: data.password });
+      if (!response?.token) throw new Error("Invalid response from server");
 
       toast.success("Login successful! Welcome back.");
-
-      await refreshProfile();
-
-      // Redirect based on subscription status
-      if (!hasActiveSubscription) {
-        navigate("/subscription");
-      } else if (response.isprofilecompleted === false) {
-        navigate("/onboarding");
-      } else {
-        navigate("/dashboard");
-      }
+      await handleLoginSuccess(response.token, response);
     } catch (error) {
       console.error("Login failed:", error);
 
@@ -117,26 +84,30 @@ const Login = () => {
       let errorMessage = "Login failed";
 
       if (serverData) {
-        if (typeof serverData === 'string') {
+        if (typeof serverData === "string") {
           errorMessage = serverData;
         } else if (serverData.message || serverData.error || serverData.detail) {
-          errorMessage = serverData.message || serverData.error || serverData.detail;
+          errorMessage =
+            serverData.message || serverData.error || serverData.detail;
         } else {
-          // Fallback: use the first field error as the toast message
-          const fieldKeys = Object.keys(serverData).filter(k => !['status'].includes(k));
+          const fieldKeys = Object.keys(serverData).filter(
+            (k) => !["status"].includes(k)
+          );
           if (fieldKeys.length > 0) {
             const firstError = serverData[fieldKeys[0]];
-            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+            errorMessage = Array.isArray(firstError)
+              ? firstError[0]
+              : firstError;
           }
         }
       } else {
         errorMessage = error.message;
       }
 
-      // Handle field-specific errors from server for inline display
-      if (serverData && typeof serverData === 'object') {
-        Object.keys(serverData).forEach(field => {
-          if (!['message', 'error', 'detail', 'status'].includes(field)) {
+      // Set inline field errors
+      if (serverData && typeof serverData === "object") {
+        Object.keys(serverData).forEach((field) => {
+          if (!["message", "error", "detail", "status"].includes(field)) {
             const errorVal = serverData[field];
             const message = Array.isArray(errorVal) ? errorVal[0] : errorVal;
             setError(field, { type: "server", message });
@@ -163,7 +134,7 @@ const Login = () => {
       <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
         {/* LEFT SIDE - BRANDING */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-white">
+        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-[#111827]">
           <div className="max-w-md">
             <img
               src={Logo}
@@ -181,16 +152,14 @@ const Login = () => {
 
         {/* RIGHT SIDE - LOGIN CARD */}
         <div className="w-full max-w-[440px]">
-          <div className="bg-white rounded-[18px] shadow-2xl w-full p-6 md:p-10">
+          <div className="bg-[#2F6F6D] rounded-[18px] shadow-2xl w-full p-6 md:p-10">
 
-            <h2 className="text-2xl font-bold text-[#E07A5F] mb-6">
-              Log In
-            </h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Log In</h2>
 
             <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
-              {/* Email address */}
+              {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Email address
                 </label>
                 <input
@@ -203,10 +172,10 @@ const Login = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all
-                  ${errors.email
+                  className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all
+                    ${errors.email
                       ? "border-red-500 focus:ring-red-400"
-                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                      : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-white"
                     }`}
                 />
                 {errors.email && (
@@ -218,7 +187,7 @@ const Login = () => {
 
               {/* Password */}
               <div className="relative">
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Password
                 </label>
                 <div className="relative">
@@ -232,10 +201,10 @@ const Login = () => {
                         message: "Minimum 8 characters required",
                       },
                     })}
-                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs focus:outline-none focus:ring-2 transition-all pr-12
-                    ${errors.password
+                    className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all pr-12
+                      ${errors.password
                         ? "border-red-500 focus:ring-red-400"
-                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-gray-50/30"
+                        : "border-gray-200 focus:border-[#E07A5F] focus:ring-[#E07A5F]/20 bg-white"
                       }`}
                   />
                   <button
@@ -243,7 +212,11 @@ const Login = () => {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                    {showPassword ? (
+                      <FaRegEyeSlash size={16} />
+                    ) : (
+                      <FaRegEye size={16} />
+                    )}
                   </button>
                 </div>
                 {errors.password && (
@@ -261,17 +234,19 @@ const Login = () => {
                     {...register("remember")}
                     className="w-3.5 h-3.5 rounded border-gray-300 text-[#2F6F6D] focus:ring-[#2F6F6D] cursor-pointer"
                   />
-                  <span className="text-xs font-normal text-[#374151] group-hover:text-gray-800 transition-colors">Remember me</span>
+                  <span className="text-xs font-normal text-white group-hover:text-gray-200 transition-colors">
+                    Remember me
+                  </span>
                 </label>
                 <Link
                   to="/forget-password"
-                  className="text-[11px] font-normal text-[#2F6F6D] hover:underline"
+                  className="text-[11px] font-normal text-white hover:text-gray-200 hover:underline"
                 >
                   Forget your password
                 </Link>
               </div>
 
-              {/* Log In Button */}
+              {/* Submit */}
               <button
                 type="submit"
                 className="w-full bg-[#E07A5F] text-white py-3 rounded-[8px] hover:bg-[#d96b57] font-medium text-sm transition-all shadow-lg active:scale-[0.98] mt-1"
@@ -280,13 +255,13 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Bottom Footer */}
+            {/* Footer */}
             <div className="flex flex-col items-center mt-6">
-              <p className="text-xs font-medium text-[#374151]">
+              <p className="text-xs font-medium text-white">
                 Don't have an account?{" "}
                 <Link
                   to="/signup"
-                  className="text-[#2F6F6D] font-medium hover:underline"
+                  className="font-medium hover:underline"
                 >
                   Sign up
                 </Link>
@@ -294,7 +269,7 @@ const Login = () => {
 
               <div className="mt-6 flex items-center justify-center w-full">
                 <div className="flex-1 h-px bg-[#E5E7EB]"></div>
-                <span className="px-3 text-[11px] font-medium text-[#374151] whitespace-nowrap bg-white">
+                <span className="px-3 text-[11px] font-medium text-white whitespace-nowrap">
                   or sign up with
                 </span>
                 <div className="flex-1 h-px bg-[#E5E7EB]"></div>

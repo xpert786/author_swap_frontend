@@ -69,7 +69,7 @@ const OtpVerification = () => {
       <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
         {/* LEFT SIDE - BRANDING */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-white">
+        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-[#111827]">
           <div className="max-w-md">
             <img
               src={Logo}
@@ -87,12 +87,12 @@ const OtpVerification = () => {
 
         {/* RIGHT SIDE - CARD */}
         <div className="w-full max-w-[440px]">
-          <div className="bg-white rounded-[18px] shadow-2xl w-full p-6 md:p-10">
+          <div className="bg-[#2F6F6D] rounded-[18px] shadow-2xl w-full p-6 md:p-10">
 
-            <h2 className="text-2xl font-bold text-[#E07A5F] mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               OTP Verification
             </h2>
-            <p className="text-xs text-gray-500 mb-8 ml-0.5">
+            <p className="text-xs text-white/80 mb-8 ml-0.5">
               Enter the 6-digit code sent to your email.
             </p>
 
@@ -119,7 +119,7 @@ const OtpVerification = () => {
                         if (prev) prev.focus();
                       }
                     }}
-                    className="w-10 h-10 md:w-11 md:h-11 text-center text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20 focus:border-[#E07A5F] bg-gray-50/50 transition-all uppercase"
+                    className="w-10 h-10 md:w-11 md:h-11 text-center text-sm font-bold rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#E07A5F]/20 focus:border-[#E07A5F] bg-white transition-all uppercase"
                   />
                 ))}
               </div>
@@ -140,13 +140,13 @@ const OtpVerification = () => {
             </form>
 
             <div className="flex flex-col items-center mt-8">
-              <p className="text-xs font-medium text-gray-500">
+              <p className="text-xs font-medium text-white/80">
                 Didn’t get the OTP yet?{" "}
                 <button
                   onClick={() => {
                     toast.success("OTP resent successfully");
                   }}
-                  className="text-[#2F6F6D] font-medium hover:underline transition-all"
+                  className="text-white font-medium hover:underline transition-all"
                 >
                   Resend OTP
                 </button>

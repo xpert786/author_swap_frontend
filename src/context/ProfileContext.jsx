@@ -16,7 +16,7 @@ export const ProfileProvider = ({ children }) => {
             const token = localStorage.getItem("token");
             if (!token) {
                 setLoading(false);
-                return;
+                return null;
             }
 
             setLoading(true);
@@ -34,17 +34,26 @@ export const ProfileProvider = ({ children }) => {
             console.log("Subscription data:", subData);
             
             setProfile(profileData);
-            setSubscription(subData?.subscription || null);
+            // The subscription is directly in subData.subscription, not nested further
+            const subscriptionData = subData?.subscription || null;
+            setSubscription(subscriptionData);
             
             // Update localStorage with subscription status
-            if (subData?.subscription?.is_active) {
+            if (subscriptionData?.is_active === true) {
                 localStorage.setItem("has_subscription", "true");
                 localStorage.setItem("subscription_expiry", 
-                    subData.subscription.active_until || subData.subscription.renew_date || ""
+                    subscriptionData.active_until || subscriptionData.renew_date || ""
                 );
+            } else {
+                // Ensure localStorage is updated if subscription is not active
+                localStorage.removeItem("has_subscription");
+                localStorage.removeItem("subscription_expiry");
             }
+            
+            return { profile: profileData, subscription: subscriptionData };
         } catch (error) {
             console.error("Failed to fetch profile:", error);
+            return null;
         } finally {
             setLoading(false);
         }

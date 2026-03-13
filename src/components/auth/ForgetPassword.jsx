@@ -52,7 +52,7 @@ const ForgetPassword = () => {
       <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
         {/* LEFT SIDE - BRANDING */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-white">
+        <div className="hidden lg:flex lg:w-1/2 flex-col items-start text-[#111827]">
           <div className="max-w-md">
             <img
               src={Logo}
@@ -70,16 +70,16 @@ const ForgetPassword = () => {
 
         {/* RIGHT SIDE - CARD */}
         <div className="w-full max-w-[440px]">
-          <div className="bg-white rounded-[18px] shadow-2xl w-full p-6 md:p-10">
+          <div className="bg-[#2F6F6D] rounded-[18px] shadow-2xl w-full p-6 md:p-10">
 
-            <h2 className="text-2xl font-bold text-[#E07A5F] mb-6">
+            <h2 className="text-2xl font-bold text-white mb-6">
               Forgot Password
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Email address */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5 ml-0.5">
+                <label className="block text-xs font-semibold text-white mb-1.5 ml-0.5">
                   Email address
                 </label>
                 <input
@@ -92,9 +92,9 @@ const ForgetPassword = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs 
+                  className="w-full border border-gray-200 rounded-[10px] px-4 py-2.5 text-xs text-gray-900
   focus:outline-none focus:ring-2 focus:ring-gray-200 
-  bg-gray-50/30 transition-all"
+  bg-white transition-all"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-[10px] mt-1 font-medium ml-0.5">
