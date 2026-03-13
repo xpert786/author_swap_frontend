@@ -42,31 +42,40 @@ const OnlinePresence = ({ next, prev }) => {
     loadProfile();
   }, [reset]);
 
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append("website_url", data.website);
-      formData.append("instagram_url", data.instagram);
-      formData.append("tiktok_url", data.tiktok);
-      formData.append("facebook_url", data.facebook);
-      formData.append("collaboration_status", data.collaborationStatus);
-
-      const response = await onboardingStep2(formData);
-
-      toast.success("Online presence saved successfully");
-
-      next(response);
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.message ||
-        "Something went wrong. Please try again."
-      );
-    } finally {
-      setLoading(false);
+const onSubmit = async (data) => {
+  try {
+    // ✅ check if all urls are empty
+    if (!data.website && !data.instagram && !data.tiktok && !data.facebook) {
+      toast.error("Please add at least one online presence link.");
+      return;
     }
-  };
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("website_url", data.website);
+    formData.append("instagram_url", data.instagram);
+    formData.append("tiktok_url", data.tiktok);
+    formData.append("facebook_url", data.facebook);
+    formData.append("collaboration_status", data.collaborationStatus);
+
+    const response = await onboardingStep2(formData);
+
+    toast.success("Online presence saved successfully");
+    next(response);
+
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.message ||
+      "Something went wrong. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <div className="w-full flex items-center justify-center p-6">
       <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl">
@@ -77,7 +86,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Website */}
           <div>
-            <label className="block text-sm mb-2">Website URL (optional)</label>
+            <label className="block text-sm mb-2">Website URL</label>
             <input
               {...register("website")}
               placeholder="Enter Website URL"
@@ -88,7 +97,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Instagram */}
           <div>
-            <label className="block text-sm mb-2">Instagram (optional)</label>
+            <label className="block text-sm mb-2">Instagram</label>
             <input
               {...register("instagram")}
               placeholder="Enter Instagram link"
@@ -99,7 +108,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* TikTok */}
           <div>
-            <label className="block text-sm mb-2">TikTok (optional)</label>
+            <label className="block text-sm mb-2">TikTok</label>
             <input
               {...register("tiktok")}
               placeholder="Enter TikTok link"
@@ -110,7 +119,7 @@ const OnlinePresence = ({ next, prev }) => {
 
           {/* Facebook */}
           <div>
-            <label className="block text-sm mb-2">Facebook (optional)</label>
+            <label className="block text-sm mb-2">Facebook</label>
             <input
               {...register("facebook")}
               placeholder="Enter Facebook link"
