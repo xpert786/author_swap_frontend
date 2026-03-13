@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
+import { exportGoogleCalendar, exportOutlookCalendar, exportICSCalendar } from "../../../apis/calendar";
 import toast from "react-hot-toast";
 
 const Newsletter = () => {
@@ -117,37 +118,54 @@ const Newsletter = () => {
     };
 
 
-    const handleExportGoogle = () => {
-        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
-        if (daySlots.length === 0) {
-            toast.error("No slots available for this day");
-            return;
+    const handleExportGoogle = async () => {
+        try {
+            const response = await exportGoogleCalendar();
+            if (response?.url) {
+                window.open(response.url, "_blank");
+            } else {
+                toast.error("Failed to get Google Calendar URL");
+            }
+        } catch (error) {
+            toast.error("Failed to export to Google Calendar");
         }
-        handleSlotExport(daySlots[0].id, "google");
         setExportDropdownOpen(false);
     };
 
-    const handleExportOutlook = () => {
-        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
-        if (daySlots.length === 0) {
-            toast.error("No slots available for this day");
-            return;
+    const handleExportOutlook = async () => {
+        try {
+            const response = await exportOutlookCalendar();
+            if (response?.url) {
+                window.open(response.url, "_blank");
+            } else {
+                toast.error("Failed to get Outlook URL");
+            }
+        } catch (error) {
+            toast.error("Failed to export to Outlook");
         }
-        handleSlotExport(daySlots[0].id, "outlook");
         setExportDropdownOpen(false);
     };
 
-    const handleExportICS = () => {
-        const daySlots = slots.filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"));
-        if (daySlots.length === 0) {
-            toast.error("No slots available for this day");
-            return;
+    const handleExportICS = async () => {
+        try {
+            const response = await exportICSCalendar();
+            if (response?.content) {
+                const blob = new Blob([response.content], { type: "text/calendar;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.setAttribute("download", `newsletter_calendar.ics`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                toast.success("ICS file downloaded");
+            } else {
+                toast.error("Failed to get ICS content");
+            }
+        } catch (error) {
+            toast.error("Failed to download ICS file");
         }
-        handleSlotExport(daySlots[0].id, "ics");
         setExportDropdownOpen(false);
     };
-
-
 
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
