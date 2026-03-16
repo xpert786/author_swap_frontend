@@ -44,15 +44,15 @@ const Confirmation = ({ prev, finish, goToStep }) => {
           Confirmation & Review
         </h2>
 
-        <div className="bg-white p-8 rounded-xl border border-[#7C7C7C] shadow-sm">
+        <div className="bg-white p-8 rounded-xl border border-[#7C7C7C]">
 
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-medium text-lg">Profile Preview</h3>
             <button
               onClick={() => goToStep(1)}
-              className="p-1 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="p-1.5 bg-[#2F6F6D33] rounded-md hover:bg-gray-200"
             >
-              <img src={Edit} alt="" className="w-5 h-5" />
+              <img src={Edit} alt="" className="w-4 h-4" />
             </button>
           </div>
 
@@ -71,7 +71,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
                 {formatCamelCaseName(profile?.pen_name) || "N/A"}
               </h4>
               <div className="max-h-24 overflow-y-auto custom-scrollbar pr-2">
-                <p className="text-sm text-gray-600 break-all">
+                <p className="text-sm text-[#374151] break-all">
                   {profile?.author_bio || "No bio added"}
                 </p>
               </div>
@@ -83,7 +83,7 @@ const Confirmation = ({ prev, finish, goToStep }) => {
                   ).map((g, i) => (
                     <span
                       key={i}
-                      className="inline-block text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full"
+                      className="inline-block text-xs bg-[#16A34A33] text-[#111827] px-3 py-1 rounded-full"
                     >
                       {formatCamelCaseName(g.trim())}
                     </span>
@@ -97,9 +97,9 @@ const Confirmation = ({ prev, finish, goToStep }) => {
             <h3 className="font-medium text-lg">Online Presence</h3>
             <button
               onClick={() => goToStep(2)}
-              className="p-1 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="p-1.5 bg-[#2F6F6D33] rounded-md hover:bg-gray-200"
             >
-              <img src={Edit} alt="" className="w-5 h-5" />
+              <img src={Edit} alt="" className="w-4 h-4" />
             </button>
           </div>
 

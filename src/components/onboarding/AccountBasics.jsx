@@ -327,72 +327,82 @@ const AccountBasics = ({ next }) => {
           <div className="mb-4">
             <label className="block text-sm mb-2">Profile Photo</label>
 
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg h-40 flex flex-col items-center justify-center text-center transition-colors ${isDragging ? "border-[#2F6F6D] bg-[#2F6F6D1A]" : "border-[#B5B5B5] text-gray-500"}`}
-            >
-              <input
-                type="file"
-                id="profileUpload"
-                accept=".jpg,.jpeg,.png"
-                className="hidden"
-                {...register("profilePhoto", {
-                  validate: (files) => {
-                    if (!files || !files[0]) return true;
-                    if (files[0].size > 10 * 1024 * 1024) return "Max file size is 10MB";
-                    if (!["image/jpeg", "image/png"].includes(files[0].type)) return "Only JPG, JPEG, and PNG images are allowed";
-                    return true;
-                  }
-                })}
-                onChange={(e) => {
-                  const file = e.target.files[0];
+            <div className="flex justify-center">
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-2xl w-48 h-48 flex flex-col items-center justify-center text-center transition-all duration-300 overflow-hidden ${
+                  isDragging ? "border-[#2F6F6D] bg-[#2F6F6D0D]" : "border-[#B5B5B5] hover:border-[#2F6F6D66] bg-gray-50/30"
+                }`}
+              >
+                <input
+                  type="file"
+                  id="profileUpload"
+                  accept=".jpg,.jpeg,.png"
+                  className="hidden"
+                  {...register("profilePhoto", {
+                    validate: (files) => {
+                      if (!files || !files[0]) return true;
+                      if (files[0].size > 10 * 1024 * 1024) return "Max file size is 10MB";
+                      if (!["image/jpeg", "image/png"].includes(files[0].type)) return "Only JPG, JPEG, and PNG images are allowed";
+                      return true;
+                    }
+                  })}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
 
-                  if (file && !["image/jpeg", "image/png"].includes(file.type)) {
-                    toast.error("Only JPG, JPEG, and PNG images are allowed");
-                    e.target.value = "";
-                    return;
-                  }
+                    if (file && !["image/jpeg", "image/png"].includes(file.type)) {
+                      toast.error("Only JPG, JPEG, and PNG images are allowed");
+                      e.target.value = "";
+                      return;
+                    }
 
-                  // Let react-hook-form handle it
-                  register("profilePhoto").onChange(e);
+                    // Let react-hook-form handle it
+                    register("profilePhoto").onChange(e);
 
-                  if (file) {
-                    setPreview(URL.createObjectURL(file));
-                  }
-                }}
-              />
+                    if (file) {
+                      setPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
 
-              {preview ? (
-                <div className="relative w-full h-full">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="object-cover w-full h-full rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors shadow-md z-10"
+                {preview ? (
+                  <div className="absolute inset-0 w-full h-full">
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-lg z-20"
+                      title="Remove Image"
+                    >
+                      <FiX size={14} />
+                    </button>
+                    <label 
+                      htmlFor="profileUpload" 
+                      className="absolute inset-0 cursor-pointer"
+                      title="Change Photo"
+                    />
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="profileUpload"
+                    className="cursor-pointer p-4 w-full h-full flex flex-col items-center justify-center space-y-2"
                   >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              ) : (
-                <label
-                  htmlFor="profileUpload"
-                  className="cursor-pointer space-y-2"
-                >
-                  <MdOutlineFileDownload className="mx-auto text-3xl text-gray-400" />
-                  <p className="text-sm">
-                    Drag and Drop Files Here Or Click To Browse
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    JPG, PNG up to 10MB
-                  </p>
-                </label>
-              )}
+                    <MdOutlineFileDownload className="mx-auto text-3xl text-gray-400" />
+                    <p className="text-[12px] leading-tight text-gray-500">
+                      Drag and Drop Or Click To Browse
+                    </p>
+                    <p className="text-[10px] text-gray-400">
+                      JPG, PNG up to 10MB
+                    </p>
+                  </label>
+                )}
+              </div>
             </div>
 
             {errors.profilePhoto && (

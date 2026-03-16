@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiChevronDown, FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiRefreshCw, FiMessageSquare } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import PaidSwapRequest from "./PaidSwapRequest";
@@ -10,6 +10,7 @@ import { formatCamelCaseName } from "../../../utils/formatName";
 
 import "./SwapPartner.css";
 import dayjs from "dayjs";
+import messageIcon from "../../../assets/message.png";
 
 // ─── Partner Card ─────────────────────────────────────────────────────────────
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
@@ -56,39 +57,59 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
             onClick={onClick}
         >
             {/* ── Header Row ── */}
-            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                {/* Left Section - Avatar, Name, Swaps */}
-                <div className="flex items-start gap-3 min-w-0">
-                    <img
-                        src={authorPhoto}
-                        alt={authorName}
-                        className="w-10 h-10 rounded-full object-cover shrink-0"
-                    />
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-3 min-w-0">
+                    <div className="flex items-start gap-3 min-w-0">
+                        <img
+                            src={authorPhoto}
+                            alt={authorName}
+                            className="w-10 h-10 rounded-full object-cover shrink-0"
+                        />
 
-                    <div className="min-w-0">
-                        {/* Name + Swaps forced into one line */}
-                        <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
-                            <p className="text-[14px] font-bold text-black leading-tight">
-                                {formatCamelCaseName(authorName)}
-                            </p>
-                            <p className="text-[10px] text-[#374151] font-medium">
-                                {swapsCompleted} swaps completed
-                            </p>
+                        <div className="min-w-0">
+                            {/* Name + Swaps forced into one line */}
+                            <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
+                                <p className="text-[14px] font-bold text-black leading-tight">
+                                    {formatCamelCaseName(authorName)}
+                                </p>
+                                <p className="text-[10px] text-[#374151] font-medium">
+                                    {swapsCompleted} swaps completed
+                                </p>
+                            </div>
                         </div>
+                    </div>
+
+                    {/* Badges Row - Left aligned and drops down naturally */}
+                    <div className="flex flex-wrap items-center gap-1">
+                        {getBadges().map((b, i) => (
+                            <span
+                                key={i}
+                                className={`${b.bg} text-black text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap`}
+                            >
+                                {b.text}
+                            </span>
+                        ))}
                     </div>
                 </div>
 
-                {/* Badges Row - Left aligned and drops down naturally */}
-                <div className="flex flex-wrap items-center gap-1">
-                    {getBadges().map((b, i) => (
-                        <span
-                            key={i}
-                            className={`${b.bg} text-black text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap`}
-                        >
-                            {b.text}
-                        </span>
-                    ))}
-                </div>
+                {/* Message Button - Rounded Square as requested */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/communication", {
+                            state: {
+                                partnerId: partner.author?.id,
+                                partnerName: authorName,
+                                partnerAvatar: authorPhoto,
+                                partnerUsername: partner.author?.username || ""
+                            }
+                        });
+                    }}
+                    className="w-9 h-9 shrink-0 bg-[#DEE8E7] rounded-[10px] flex items-center justify-center transition-all hover:bg-[#cfdedd] shadow-sm mt-0.5"
+                    title="Message Author"
+                >
+                    <img src={messageIcon} alt="Message" className="w-5 h-5 object-contain" />
+                </button>
             </div>
 
             {/* ── Tags Row ── */}

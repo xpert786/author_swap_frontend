@@ -353,82 +353,97 @@ export default function SubscriptionPage() {
 
             {/* Plan Change Preview Modal */}
             {showPreviewModal && previewData && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPreviewModal(false)} />
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-in fade-in zoom-in duration-300">
-                        {/* Header */}
-                        <div className="bg-[#2F6F6D] px-6 py-4 flex items-center justify-between">
-                            <h3 className="text-white font-bold text-lg">Confirm Plan Change</h3>
-                            <button onClick={() => setShowPreviewModal(false)} className="text-white/80 hover:text-white">
-                                <Rocket size={20} />
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 space-y-6">
-                            <div className="space-y-4">
+                <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-[100]">
+                    <div className="bg-white w-[500px] rounded-[10px] shadow-xl overflow-hidden m-5">
+                        <div className="p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Current Plan</label>
-                                    <p className="text-sm font-medium text-gray-900 border-l-4 border-gray-200 pl-3 py-1">
-                                        {previewData.current_plan}
+                                    <h2 className="text-xl font-semibold text-gray-800">
+                                        Confirm Plan Change
+                                    </h2>
+                                    <p className="text-[13px] text-gray-500 mt-0.5">
+                                        Review the details of your plan upgrade
                                     </p>
                                 </div>
-                                <div className="flex justify-center">
-                                    <ArrowRight className="text-[#2F6F6D] animate-pulse" size={24} />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-wider text-[#2F6F6D] font-bold">New Plan</label>
-                                    <p className="text-sm font-bold text-[#2F6F6D] border-l-4 border-[#2F6F6D] pl-3 py-1">
-                                        {previewData.new_plan}
-                                    </p>
-                                </div>
+                                <button
+                                    onClick={() => setShowPreviewModal(false)}
+                                    className="text-gray-400 hover:text-gray-600 text-lg transition-colors"
+                                >
+                                    ✕
+                                </button>
                             </div>
 
-                            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">Amount Due Now</span>
-                                    <span className="font-bold text-gray-900 text-lg">{previewData.amount_due_display}</span>
-                                </div>
-                                <div className="border-t border-gray-200 pt-3 space-y-1">
-                                    <div className="flex justify-between text-[11px]">
-                                        <span className="text-gray-500">Billing period end</span>
-                                        <span className="text-gray-700 font-medium">{new Date(previewData.billing_period_end).toLocaleDateString()}</span>
+                            {/* Content */}
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-[#B5B5B5]/20">
+                                        <div className="flex-1">
+                                            <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold block mb-1">Current Plan</label>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {previewData.current_plan}
+                                            </p>
+                                        </div>
+                                        <div className="px-4 text-[#2F6F6D]">
+                                            <ArrowRight size={20} />
+                                        </div>
+                                        <div className="flex-1 text-right">
+                                            <label className="text-[10px] uppercase tracking-wider text-[#2F6F6D] font-bold block mb-1">New Plan</label>
+                                            <p className="text-sm font-bold text-[#2F6F6D]">
+                                                {previewData.new_plan}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between text-[11px]">
-                                        <span className="text-gray-500">Proration date</span>
-                                        <span className="text-gray-700 font-medium">{new Date(previewData.proration_date).toLocaleDateString()}</span>
+                                </div>
+
+                                <div className="bg-white border border-[#B5B5B5] rounded-xl p-5 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Amount Due Now</span>
+                                        <span className="font-bold text-[#2F6F6D] text-2xl">{previewData.amount_due_display}</span>
+                                    </div>
+                                    <div className="border-t border-gray-100 pt-3 space-y-2">
+                                        <div className="flex justify-between text-[12px]">
+                                            <span className="text-gray-500">Billing period end</span>
+                                            <span className="text-gray-700 font-medium">{new Date(previewData.billing_period_end).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[12px]">
+                                            <span className="text-gray-500">Proration date</span>
+                                            <span className="text-gray-700 font-medium">{new Date(previewData.proration_date).toLocaleDateString()}</span>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <p className="text-[11px] text-gray-400 text-center leading-relaxed">
+                                    By clicking "Change Now," your new plan will be activated immediately.
+                                    The amount due accounts for the remaining time on your current plan.
+                                </p>
                             </div>
 
-                            <p className="text-[10px] text-gray-400 text-center leading-relaxed">
-                                By clicking "Change Now," your new plan will be activated immediately.
-                                The amount due account for the remaining time on your current plan.
-                            </p>
-                        </div>
+                            {/* Footer */}
+                            <div className="flex justify-end gap-3 pt-6 mt-2 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPreviewModal(false)}
+                                    className="px-5 py-2 text-[13px] rounded-lg border text-gray-600 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
 
-                        {/* Footer */}
-                        <div className="p-4 bg-gray-50 flex gap-3">
-                            <button
-                                onClick={() => setShowPreviewModal(false)}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-white transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleConfirmChange}
-                                disabled={confirmLoading}
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-[#2F6F6D] text-white text-sm font-semibold hover:bg-[#255755] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#2F6F6D]/20 disabled:opacity-50"
-                            >
-                                {confirmLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        Change Now
-                                        <Rocket size={16} />
-                                    </>
-                                )}
-                            </button>
+                                <button
+                                    onClick={handleConfirmChange}
+                                    disabled={confirmLoading}
+                                    className="px-6 py-2 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 transition shadow-sm flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {confirmLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Upgrade Now
+                                            <Rocket size={14} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

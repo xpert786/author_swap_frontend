@@ -171,16 +171,8 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
       const width = img.width;
       const height = img.height;
 
-      if (width < 320 || height < 480 || width > 2000 || height > 3000) {
-        toast.error("Image must be at least 320 × 480 pixels");
-        URL.revokeObjectURL(objectUrl);
-        return;
-      }
-
-      const ratio = width / height;
-
-      if (Math.abs(ratio - 2 / 3) > 0.02) {
-        toast.error("Image must have a 2:3 ratio");
+      if (width < 320 || height < 480 || width > 3000 || height > 4500) {
+        toast.error("Please upload an image with better resolution (at least 320x480px)");
         URL.revokeObjectURL(objectUrl);
         return;
       }
@@ -229,17 +221,8 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
         const width = img.width;
         const height = img.height;
 
-        if (width < 320 || height < 480 || width > 2000 || height > 3000) {
-          toast.error("Image must be at least 320 × 480 pixels");
-          URL.revokeObjectURL(objectUrl);
-          e.target.value = "";
-          return;
-        }
-
-        const ratio = width / height;
-
-        if (Math.abs(ratio - 2 / 3) > 0.02) {
-          toast.error("Image must have a 2:3 ratio");
+        if (width < 320 || height < 480 || width > 3000 || height > 4500) {
+          toast.error("Please upload an image with better resolution (at least 320x480px)");
           URL.revokeObjectURL(objectUrl);
           e.target.value = "";
           return;
