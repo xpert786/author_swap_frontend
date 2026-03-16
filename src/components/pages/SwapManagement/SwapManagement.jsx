@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { getSwaps, acceptSwap, declineSwap, restoreSwap, payForSwap } from '../../../apis/swap';
+import { getSwaps, acceptSwap, declineSwap, restoreSwap, payForSwap, directPayment } from '../../../apis/swap';
 import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
@@ -115,16 +115,23 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         e.stopPropagation();
         try {
             setActionLoading("pay");
-            const response = await payForSwap(data.id);
-            const checkoutUrl = response?.data?.checkout_url || response?.data?.url;
-            if (checkoutUrl) {
-                window.location.href = checkoutUrl;
-            } else {
-                toast("Please add a payment card to pay for this swap.", { icon: "💳" });
-                navigate("/account-settings");
+            
+            // Extract necessary data for direct payment
+            const payload = {
+                receiver_id: data.author_id || data.receiver_id || data.id, // Fallback to id if author_id is missing
+                amount: data.price ? String(data.price) : "0.00",
+                description: `Internal payment for Swap ID: ${data.id}`
+            };
+
+            const response = await directPayment(payload);
+            
+            if (response.data) {
+                toast.success(response.data.message || "Payment successful!");
+                onRefresh?.();
             }
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to initiate payment");
+            console.error("Payment error:", err);
+            toast.error(err?.response?.data?.message || "Failed to process payment");
         } finally {
             setActionLoading(null);
         }
@@ -149,15 +156,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 return (
                     <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
                         <button
-                            onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-                            className="flex-1 px-4 py-2.5 bg-[#2F6F6D] text-white text-[12px] font-semibold rounded-[8px] hover:bg-[#245957] transition-colors"
-                        >
-                            View Details
-                        </button>
-                        <button
                             onClick={handlePayNow}
                             disabled={actionLoading === "pay"}
-                            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
+                            className="w-1/2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
                         >
                             {actionLoading === "pay" ? (
                                 <>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, CheckCircle2, Bell, RefreshCw, Send } from 'lucide-react';
 import { getNotifications, testNotification } from '../../apis/notification';
 import { toast } from 'react-hot-toast';
@@ -48,6 +49,7 @@ const Badge = ({ type, text }) => {
 };
 
 const Notification = () => {
+    const navigate = useNavigate();
     const { notifications: wsNotifications, setUnreadCount, setUnreadCounts, markAllAsSeen } = useNotifications();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -187,7 +189,12 @@ const Notification = () => {
                                         {items.map((item) => (
                                             <div
                                                 key={item.id}
-                                                onClick={() => setSelectedId(item.id)}
+                                                onClick={() => {
+                                                    setSelectedId(item.id);
+                                                    if (item.action_url) {
+                                                        navigate(item.action_url);
+                                                    }
+                                                }}
                                                 className={`group relative flex flex-col md:flex-row md:items-center justify-between p-4 px-6 rounded-xl transition-all duration-200 cursor-pointer border ${selectedId === item.id
                                                     ? "bg-[#E07A5F0D] border-[#B5B5B5]"
                                                     : "bg-white border-[#B5B5B5] hover:border-[#1F4F4D33] hover:bg-[#F9FBF9]"

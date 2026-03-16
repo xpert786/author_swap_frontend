@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiSearch, FiPaperclip, FiFileText, FiChevronLeft, FiPlus, FiX, FiEdit2, FiTrash2, FiMoreVertical, FiCheck, FiAlertTriangle } from "react-icons/fi";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { SendIcon } from "../../icons";
 
 import { getConversations, getChatHistory, getComposePartners, sendMessage, editMessage, deleteMessage } from "../../../apis/chat";
@@ -12,6 +12,7 @@ const CommunicationTools = () => {
     const { refreshCounts } = useNotifications();
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
     const [conversations, setConversations] = useState([]);
     const [activeConv, setActiveConv] = useState(null);
     const [messageInput, setMessageInput] = useState("");
@@ -52,25 +53,27 @@ const CommunicationTools = () => {
         const load = async () => {
             await fetchConversations();
 
-            // Check for navigating from SlotDetails
-            if (location.state?.partnerId) {
-                const pId = location.state.partnerId;
-                const pName = location.state.partnerName || "Partner";
-                const pAvatar = location.state.partnerAvatar;
+            // Check for navigating from SlotDetails or Notifications
+            const pId = location.state?.partnerId || searchParams.get("conv");
+            
+            if (pId) {
+                const pName = location.state?.partnerName || "Partner";
+                const pAvatar = location.state?.partnerAvatar;
 
-                // If not in conversations, set transient partner
-                if (!conversations.find(c => c.id === pId)) {
-                    setTransientPartner({
-                        id: pId,
-                        name: pName,
-                        avatar: pAvatar,
-                        username: location.state.partnerUsername || ""
-                    });
+                // If not in conversations, set transient partner (only if we have state info, 
+                // otherwise the API fetch for chat history will handle the basic selection)
+                if (!conversations.find(c => String(c.id) === String(pId))) {
+                    if (location.state?.partnerId) {
+                        setTransientPartner({
+                            id: pId,
+                            name: pName,
+                            avatar: pAvatar,
+                            username: location.state.partnerUsername || ""
+                        });
+                    }
                 }
 
                 handleSelectConv(pId);
-                // We DON'T clear window.history.state yet because we need it to persist on rerender 
-                // but only clear if desired or handled elsewhere. Actually, location.state is enough.
             }
         };
         load();

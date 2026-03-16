@@ -27,3 +27,7 @@ export const trackSwap = (id) => {
 export const payForSwap = (id) => {
     return apiClient.post(`stripe/create-swap-checkout-session/`, { swap_request_id: id });
 };
+
+export const directPayment = (data) => {
+    return apiClient.post(`payments/direct/`, data);
+};
