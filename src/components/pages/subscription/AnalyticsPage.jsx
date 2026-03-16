@@ -138,16 +138,23 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const normalizedSubGrowth = useMemo(() => {
         return subGrowth.map(item => ({
             ...item,
-            value: getStatValue(item.value, 0)
+            value: item.count ?? getStatValue(item.value, 0)
         }));
     }, [subGrowth]);
 
     const normalizedHistTrend = useMemo(() => {
-        return histTrend.map(item => ({
-            ...item,
-            value: getStatValue(item.value, 0)
-        }));
-    }, [histTrend]);
+        return histTrend.map(item => {
+            let value = 0;
+            if (activeGraphTab === "Open Rate") {
+                value = parseFloat(item.open_rate) || 0;
+            } else if (activeGraphTab === "Click Rate") {
+                value = parseFloat(item.click_rate) || 0;
+            } else if (activeGraphTab === "Subscriber Growth") {
+                value = item.subscriber_growth || 0;
+            }
+            return { ...item, value };
+        });
+    }, [histTrend, activeGraphTab]);
 
     const campaignDates = useMemo(() => {
         return [...new Set(campaigns.map(c => getStatValue(c.date)).filter(Boolean))];
@@ -401,25 +408,31 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                     <div className="text-right">Conversion</div>
                                 </div>
 
-                                {linkAnalysis.map((link, idx) => (
+                                {linkAnalysis.reduce((acc, campaign) => {
+                                    const links = campaign.links.map(link => ({
+                                        ...link,
+                                        campaignName: campaign.campaign_name
+                                    }));
+                                    return [...acc, ...links];
+                                }, []).map((link, idx) => (
                                     <div key={idx} className="grid grid-cols-4 items-center px-6 py-4 border-t first:border-t-0 text-xs border-[#B5B5B5]">
                                         <div>
-                                            <p className="text-gray-900 font-medium">{link.destination}</p>
+                                            <p className="text-gray-900 font-medium">{link.name}</p>
                                             <p className="text-gray-400 text-[11px] mt-1 truncate">{link.url}</p>
                                         </div>
                                         <div className="text-center text-gray-700">
-                                            {getStatValue(link.clicks)}
+                                            {link.clicks ?? 0}
                                         </div>
                                         <div className="text-center">
                                             <p className="text-gray-900">
-                                                {getStatValue(link.ctr)}
+                                                {link.ctr}
                                             </p>
-                                            <p className={`text-[11px] ${link.ctr?.is_positive !== false ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                                {link.ctr?.is_positive !== false ? 'Excellent' : 'Improving'}
+                                            <p className={`text-[11px] ${parseFloat(link.ctr) > 0 ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                                {link.ctr_label || (parseFloat(link.ctr) > 0 ? 'Excellent' : 'Improving')}
                                             </p>
                                         </div>
                                         <div className="text-right text-gray-700">
-                                            {getStatValue(link.conversion)}
+                                            {link.conversion}
                                         </div>
                                     </div>
                                 ))}

@@ -170,6 +170,7 @@ const EditNewsSlot = ({ isOpen, onClose, slotData, onSave }) => {
                   value={formData.send_date}
                   onChange={handleChange}
                   required
+                  min={new Date().toISOString().split("T")[0]}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>

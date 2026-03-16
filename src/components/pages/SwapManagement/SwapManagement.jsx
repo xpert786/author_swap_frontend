@@ -72,8 +72,6 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
     const authorImage =
         data.profile_picture ||
-        data.author_image ||
-        data.image ||
         `https://ui-avatars.com/api/?name=${authorName}&background=random`;
 
     // Card highlight: payment needed from THIS user

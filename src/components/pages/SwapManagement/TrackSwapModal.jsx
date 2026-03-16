@@ -177,12 +177,21 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                             { label: "Facebook:", value: links.facebook },
                                             { label: "Instagram:", value: links.instagram },
                                             { label: "Twitter:", value: links.twitter }
-                                        ].map((link, idx) => (
-                                            <div key={idx} className="flex items-center text-[12px]">
-                                                <span className="w-24 text-[#374151] font-normal">{link.label}</span>
-                                                <span className="font-normal text-[#111827] truncate flex-1">{link.value || "NA"}</span>
-                                            </div>
-                                        ))}
+                                        ]
+                                            .filter(link => link.value && link.value !== "NA")
+                                            .map((link, idx) => (
+                                                <div key={idx} className="flex items-center text-[12px]">
+                                                    <span className="w-24 text-[#374151] font-normal">{link.label}</span>
+                                                    <a
+                                                        href={link.value}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="font-normal text-[#2F6F6D] hover:underline truncate flex-1"
+                                                    >
+                                                        {link.value}
+                                                    </a>
+                                                </div>
+                                            ))}
                                     </div>
                                 </div>
 

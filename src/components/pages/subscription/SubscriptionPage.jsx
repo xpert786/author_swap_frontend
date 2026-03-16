@@ -209,13 +209,13 @@ export default function SubscriptionPage() {
                                         <span className="text-xs bg-[#2F6F6D] text-white px-3 py-1 rounded-full font-medium">
                                             {subscription.tier_details?.name || "Member"}
                                         </span>
-                                        <button
+                                        {/* <button
                                             onClick={handleManualUpgrade}
                                             className="text-xs bg-white border border-[#2F6F6D] text-[#2F6F6D] px-4 py-2 rounded-lg font-semibold hover:bg-[#2F6F6D] hover:text-white transition-all shadow-sm flex items-center gap-2 group"
                                         >
                                             Upgrade Plan
                                             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </div>
                             </div>

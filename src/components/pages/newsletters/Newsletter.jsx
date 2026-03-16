@@ -121,8 +121,8 @@ const Newsletter = () => {
     const handleExportGoogle = async () => {
         try {
             const response = await exportGoogleCalendar();
-            if (response?.url) {
-                window.open(response.url, "_blank");
+            if (response?.calendar_url) {
+                window.open(response.calendar_url, "_blank");
             } else {
                 toast.error("Failed to get Google Calendar URL");
             }
@@ -135,8 +135,8 @@ const Newsletter = () => {
     const handleExportOutlook = async () => {
         try {
             const response = await exportOutlookCalendar();
-            if (response?.url) {
-                window.open(response.url, "_blank");
+            if (response?.calendar_url) {
+                window.open(response.calendar_url, "_blank");
             } else {
                 toast.error("Failed to get Outlook URL");
             }

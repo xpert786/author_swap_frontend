@@ -145,15 +145,13 @@ const Notification = () => {
     }, [filteredNotifications]);
 
     return (
-        <div className="max-w-full mx-auto px-2 pb-10">
+        <div className="min-h-screen">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <Bell className="text-[#1F4F4D]" size={24} />
+                    <h1 className="text-xl font-medium text-[#111827] flex items-center gap-2 tracking-wide">
                         All Notifications
                     </h1>
-                    <p className="text-sm text-gray-500 mt-1">Stay updated with your latest swap activities</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -161,26 +159,17 @@ const Notification = () => {
                         <input
                             type="text"
                             placeholder="Search notifications"
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1F4F4D]/20 focus:border-[#1F4F4D] transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-[#B5B5B580] rounded-[10px] text-sm focus:outline-none"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                        <Search className="absolute left-3 top-2.5 text-[#374151]" size={18} />
                     </div>
-
-                    {/* <button
-                        onClick={handleTestNotification}
-                        disabled={testLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#1F4F4D] text-white rounded-xl text-sm font-medium hover:bg-[#163a39] transition-all disabled:opacity-50 whitespace-nowrap shadow-sm"
-                    >
-                        {testLoading ? <RefreshCw className="animate-spin" size={16} /> : <Send size={16} />}
-                        Test API
-                    </button> */}
                 </div>
             </div>
 
             {/* Notifications List Container */}
-            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
+            <div className="bg-white rounded-2xl p-3 md:p-5 shadow-sm border border-[#B5B5B5]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <RefreshCw className="animate-spin text-[#1F4F4D] mb-4" size={40} />
@@ -190,9 +179,9 @@ const Notification = () => {
                     <div className="space-y-8">
                         {Object.keys(groupedNotifications).length > 0 ? (
                             Object.entries(groupedNotifications).map(([section, items]) => (
-                                <div key={section} className="space-y-4">
-                                    <div className="flex items-center justify-between border-b pb-2 border-gray-100">
-                                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{section}</h2>
+                                <div key={section} className="space-y-3 mb-3">
+                                    <div className="flex items-center justify-between border-b pb-2 border-[#B5B5B5]">
+                                        <h2 className="text-xs font-medium text-[#2D2F33]">{section}</h2>
                                     </div>
                                     <div className="grid gap-3">
                                         {items.map((item) => (
@@ -200,13 +189,13 @@ const Notification = () => {
                                                 key={item.id}
                                                 onClick={() => setSelectedId(item.id)}
                                                 className={`group relative flex flex-col md:flex-row md:items-center justify-between p-4 px-6 rounded-xl transition-all duration-200 cursor-pointer border ${selectedId === item.id
-                                                    ? "bg-[#E07A5F0D] border-[#E07A5F33]"
-                                                    : "bg-white border-gray-100 hover:border-[#1F4F4D33] hover:bg-gray-50"
+                                                    ? "bg-[#E07A5F0D] border-[#B5B5B5]"
+                                                    : "bg-white border-[#B5B5B5] hover:border-[#1F4F4D33] hover:bg-[#F9FBF9]"
                                                     }`}
                                             >
-                                                <div className="flex-1 min-w-0 pr-4">
+                                                <div className="flex-1 min-w-0 pr-4">   
                                                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                                        <h3 className={`text-sm md:text-base font-semibold text-[#2D2F33] truncate`}>
+                                                        <h3 className={`text-sm md:text-base font-medium text-[#2D2F33] truncate`}>
                                                             {item.title || "Notification"}
                                                         </h3>
                                                         {(item.badge || item.type) && (
@@ -215,9 +204,9 @@ const Notification = () => {
                                                                 text={item.badge || item.type}
                                                             />
                                                         )}
-                                                        {item.is_read === false && (
+                                                        {/* {item.is_read === false && (
                                                             <span className="w-2 h-2 bg-[#E07A5F] rounded-full"></span>
-                                                        )}
+                                                        )} */}
                                                     </div>
                                                     <p className="text-xs md:text-sm text-[#4B5563] leading-relaxed max-w-2xl">
                                                         {item.message || item.text}
