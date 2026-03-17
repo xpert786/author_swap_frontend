@@ -312,18 +312,11 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             );
         }
 
-        // ── 5. COMPLETED (payment done or free) ──
-        if (isCompleted) {
+        if (isCompleted || isApproved) {
             return (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/swap-history/${data.id}`, { state: { data } });
-                    }}
-                    className="w-fit px-5 py-2.5 bg-[#2F6F6D] text-white rounded-[6px] text-xs font-medium hover:opacity-90 transition-opacity"
-                >
-                    View Swap History
-                </button>
+                <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                    Swap Completed
+                </div>
             );
         }
 
@@ -377,12 +370,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 <div className="flex items-end gap-1.5 shrink-0">
                     {(data.badge || data.status) && (
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
-                            ${isCompleted && !paymentPending
+                            ${isCompleted || isApproved && !paymentPending
                                 ? "bg-[#16A34A1A] text-[#166534] border-[#16A34A33]"
                                 : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
-                            {formatLabel(data.badge || data.status)}
+                            {isApproved || isCompleted ? "Completed" : formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (

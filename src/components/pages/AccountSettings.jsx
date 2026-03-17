@@ -496,16 +496,16 @@ const AccountSettings = () => {
                                     transactions.map((t, idx) => (
                                         <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${t.type === 'withdrawal' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                                    {t.type === 'withdrawal' ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
+                                                <div className={`p-2 rounded-lg ${t?.type === 'withdrawal' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                    {t?.type === 'withdrawal' ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-gray-900 capitalize">{t.description || t.type.replace('_', ' ')}</p>
-                                                    <p className="text-xs text-gray-500">{t.date}</p>
+                                                    <p className="text-sm font-semibold text-gray-900 capitalize">{t?.description || t?.type?.replace('_', ' ') || 'Transaction'}</p>
+                                                    <p className="text-xs text-gray-500">{t?.date}</p>
                                                 </div>
                                             </div>
-                                            <div className={`text-sm font-bold ${t.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}`}>
-                                                {t.type === 'withdrawal' ? '-' : '+'}${t.amount}
+                                            <div className={`text-sm font-bold ${t?.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}`}>
+                                                {t?.type === 'withdrawal' ? '-' : '+'}${t?.amount}
                                             </div>
                                         </div>
                                     ))
