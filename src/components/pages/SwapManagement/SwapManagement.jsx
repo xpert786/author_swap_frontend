@@ -87,7 +87,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             setActionLoading("accept");
             await acceptSwap(data.id);
             toast.success("Swap accepted!");
-            setIsApproved(true);
+            if (!isPaidSwap) {
+                setIsApproved(true);
+            }
             onRefresh?.(true); // Silent refresh
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to accept swap");
