@@ -194,7 +194,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                     <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
                         {isPaid || isPaymentDone ? (
                             <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                                Payment Done
+                                {isCompleted ? "Swap Completed" : "Payment Done"}
                             </div>
                         ) : (
                             <button
@@ -271,7 +271,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             // If it's a paid swap and payment is done, receiver needs to "Approve" to finalize
             // This happens only if status is exactly 'accepted' (meaning waiting for final approval)
             if (isReceiver && isPaymentDone && status === "accepted") {
-                if (isApproved) {
+                if (isCompleted || isApproved) {
                     return (
                         <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                             Swap Completed
@@ -294,7 +294,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                     <div className="flex flex-col gap-2">
                         {(isPaid || isPaymentDone) && (
                             <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                                Payment Done
+                                {isCompleted ? "Swap Completed" : "Payment Done"}
                             </div>
                         )}
                         <button
@@ -364,7 +364,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 <div className="flex flex-col gap-2">
                     {isPaid || isPaymentDone ? (
                         <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                            Payment Done
+                            {isCompleted ? "Swap Completed" : "Payment Done"}
                         </div>
                     ) : (
                         <button
@@ -383,11 +383,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
     return (
         <div
-            onClick={onViewDetails}
-            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full cursor-pointer hover:shadow-md
+            onClick={(isPaid || isPaymentDone || isCompleted) ? (e) => e.stopPropagation() : onViewDetails}
+            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full
+                ${(isPaid || isPaymentDone || isCompleted) ? "cursor-default" : "cursor-pointer hover:shadow-md"}
                 ${needsMyPayment
                     ? "bg-[#FFF5F5] border-[#E8A0A0]"
-                    : isCompleted && !paymentPending
+                    : (isCompleted || isApproved) && !paymentPending
                         ? "bg-[#EBF5EE] border-[#16A34A]"
                         : "bg-white border-[#B5B5B5]"
                 }`}
@@ -414,12 +415,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 <div className="flex items-end gap-1.5 shrink-0">
                     {(data.badge || data.status) && (
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
-                            ${isCompleted || isApproved && !paymentPending
+                            ${(isCompleted || isApproved) && !paymentPending
                                 ? "bg-[#16A34A1A] text-[#166534] border-[#16A34A33]"
                                 : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
-                            {isCompleted ? "Completed" : isApproved || isPaid || isPaymentDone ? "Payment Done" : formatLabel(data.badge || data.status)}
+                            {isCompleted || isApproved ? "Swap Completed" : isPaid || isPaymentDone ? "Payment Done" : formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
