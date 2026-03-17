@@ -31,3 +31,7 @@ export const payForSwap = (id) => {
 export const directPayment = (data) => {
     return apiClient.post(`payments/direct/`, data);
 };
+
+export const confirmSwapPayment = (id) => {
+    return apiClient.post(`stripe/confirm-swap-payment/${id}/`);
+};

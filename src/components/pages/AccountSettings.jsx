@@ -13,6 +13,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import AddCardForm from "./subscription/AddCardForm";
 import { getPaymentMethods, deletePaymentMethod, setDefaultPaymentMethod } from "../../apis/subscription";
+import { getWalletBalance, getTransactionHistory, withdrawFunds } from "../../apis/wallet";
+import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, History, DollarSign } from "lucide-react";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -47,6 +49,15 @@ const AccountSettings = () => {
     const [pmToDelete, setPmToDelete] = useState(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
+    // Wallet states
+    const [walletData, setWalletData] = useState({ balance: "0.00", currency: "USD" });
+    const [transactions, setTransactions] = useState([]);
+    const [loadingWallet, setLoadingWallet] = useState(false);
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState("");
+    const [withdrawing, setWithdrawing] = useState(false);
+    const [selectedCard, setSelectedCard] = useState(null);
+
     const fetchProfile = async () => {
         try {
             const { data } = await getProfile();
@@ -73,11 +84,60 @@ const AccountSettings = () => {
         try {
             setLoadingCards(true);
             const res = await getPaymentMethods();
-            setPaymentMethods(res.data || []);
+            const cards = res.data || [];
+            setPaymentMethods(cards);
+
+            // Auto-select default or first card if none selected
+            if (!selectedCard && cards.length > 0) {
+                const defaultCard = cards.find(pm => pm.is_default) || cards[0];
+                setSelectedCard(defaultCard);
+            }
         } catch (err) {
             console.error("Failed to load payment methods", err);
         } finally {
             setLoadingCards(false);
+        }
+    };
+
+    const fetchWalletData = async () => {
+        try {
+            setLoadingWallet(true);
+            const cardId = selectedCard?.id || "";
+            const [balanceRes, transRes] = await Promise.all([
+                getWalletBalance(cardId),
+                getTransactionHistory("", cardId)
+            ]);
+            setWalletData(balanceRes.data);
+            setTransactions(transRes.data);
+        } catch (err) {
+            console.error("Failed to load wallet data", err);
+        } finally {
+            setLoadingWallet(false);
+        }
+    };
+
+    const handleWithdraw = async (e) => {
+        e.preventDefault();
+        if (!withdrawAmount || isNaN(withdrawAmount) || parseFloat(withdrawAmount) <= 0) {
+            toast.error("Please enter a valid amount");
+            return;
+        }
+        if (parseFloat(withdrawAmount) > parseFloat(walletData.balance)) {
+            toast.error("Insufficient balance");
+            return;
+        }
+
+        try {
+            setWithdrawing(true);
+            await withdrawFunds(withdrawAmount);
+            toast.success("Withdrawal request submitted");
+            setIsWithdrawModalOpen(false);
+            setWithdrawAmount("");
+            fetchWalletData();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Withdrawal failed");
+        } finally {
+            setWithdrawing(false);
         }
     };
 
@@ -92,6 +152,12 @@ const AccountSettings = () => {
     }, []);
 
     useEffect(() => {
+        if (selectedCard) {
+            fetchWalletData();
+        }
+    }, [selectedCard]);
+
+    useEffect(() => {
         const loadGenres = async () => {
             try {
                 const data = await getGenres();
@@ -104,6 +170,7 @@ const AccountSettings = () => {
         loadGenres();
         fetchProfile();
         fetchPaymentMethods();
+        fetchWalletData();
     }, []);
 
     const handleImageChange = (e) => {
@@ -135,12 +202,12 @@ const AccountSettings = () => {
             formPayload.append("location", formData.location || "");
             formPayload.append("bio", formData.bio || "");
             formPayload.append("website", formData.website || "");
-            
+
             // Send each genre individually
             formData.genres.forEach(genre => {
                 formPayload.append("primary_genre", genre);
             });
-            
+
             formPayload.append("instagram_url", formData.instagram || "");
             formPayload.append("tiktok_url", formData.tiktok || "");
             formPayload.append("facebook_url", formData.facebook || "");
@@ -178,10 +245,12 @@ const AccountSettings = () => {
             toast.error("Failed to remove card");
         } finally {
             setIsConfirmModalOpen(false);
+            if (pmToDelete === selectedCard?.id) {
+                setSelectedCard(null);
+            }
             setPmToDelete(null);
         }
     };
-
     const handleSetDefaultPm = async (pmId) => {
         try {
             await setDefaultPaymentMethod(pmId);
@@ -241,7 +310,6 @@ const AccountSettings = () => {
                                 <User size={40} />
                             </div>
                         )}
-
                         {isEditing && (
                             <>
                                 <button
@@ -306,11 +374,10 @@ const AccountSettings = () => {
                                                         : [...prev.genres, genre.value]
                                                 }));
                                             }}
-                                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                                                isSelected
-                                                    ? "bg-gray-50 text-gray-400"
-                                                    : "hover:bg-[#2F6F6D1A] text-gray-700"
-                                            }`}
+                                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${isSelected
+                                                ? "bg-gray-50 text-gray-400"
+                                                : "hover:bg-[#2F6F6D1A] text-gray-700"
+                                                }`}
                                         >
                                             {genre.label}
                                         </button>
@@ -382,6 +449,129 @@ const AccountSettings = () => {
                 </div>
             )}
 
+            {/* Wallet Section */}
+            {paymentMethods.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-gray-100">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="text-xl font-semibold text-black">My Wallet</h2>
+                            <p className="text-[12px] text-gray-500 font-medium">Manage your earnings and withdrawals</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Balance Card */}
+                        <div className="lg:col-span-1 bg-gradient-to-br from-[#2F6F6D] to-[#255755] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden h-fit">
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 opacity-80 mb-2">
+                                    <WalletIcon size={18} />
+                                    <span className="text-sm font-medium">Total Balance</span>
+                                </div>
+                                <h3 className="text-3xl font-bold mb-6">${walletData.balance}</h3>
+                                <button
+                                    onClick={() => setIsWithdrawModalOpen(true)}
+                                    className="w-full bg-white text-[#2F6F6D] font-bold py-3 rounded-xl hover:bg-opacity-95 transition-all shadow-md active:scale-[0.98]"
+                                >
+                                    Withdraw Funds
+                                </button>
+                            </div>
+                            {/* Decorative circles */}
+                            <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white opacity-5 rounded-full"></div>
+                            <div className="absolute bottom-[-40px] left-[-20px] w-40 h-40 bg-white opacity-5 rounded-full"></div>
+                        </div>
+
+                        {/* Transaction History */}
+                        <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 mb-4">
+                                <History size={18} className="text-[#2F6F6D]" />
+                                <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
+                            </div>
+
+                            <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                {loadingWallet ? (
+                                    <div className="flex justify-center py-10">
+                                        <div className="w-6 h-6 border-2 border-[#2F6F6D] border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                ) : transactions.length > 0 ? (
+                                    transactions.map((t, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg ${t.type === 'withdrawal' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                    {t.type === 'withdrawal' ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-900 capitalize">{t.description || t.type.replace('_', ' ')}</p>
+                                                    <p className="text-xs text-gray-500">{t.date}</p>
+                                                </div>
+                                            </div>
+                                            <div className={`text-sm font-bold ${t.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}`}>
+                                                {t.type === 'withdrawal' ? '-' : '+'}${t.amount}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-10 text-gray-400 italic text-sm">
+                                        No transactions found.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Withdraw Modal */}
+            {isWithdrawModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+                        <button
+                            onClick={() => setIsWithdrawModalOpen(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                        <div className="bg-[#2F6F6D1A] w-12 h-12 rounded-full flex items-center justify-center text-[#2F6F6D] mx-auto mb-4">
+                            <DollarSign size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Withdraw Funds</h3>
+                        <p className="text-sm text-gray-500 mb-6">Enter the amount you wish to withdraw to your connected bank account.</p>
+
+                        <div className="mb-6">
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                                <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={withdrawAmount}
+                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                    className="w-full pl-8 pr-4 py-3 border-2 border-gray-100 rounded-xl focus:border-[#2F6F6D] outline-none transition-all font-bold text-lg"
+                                />
+                            </div>
+                            <div className="flex justify-between mt-2 px-1">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase">Available Balance</span>
+                                <span className="text-[10px] text-[#2F6F6D] font-bold">${walletData.balance}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsWithdrawModalOpen(false)}
+                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleWithdraw}
+                                disabled={withdrawing}
+                                className="flex-1 px-4 py-3 rounded-xl bg-[#2F6F6D] text-white font-bold text-sm hover:bg-[#255755] transition-all disabled:opacity-50"
+                            >
+                                {withdrawing ? "Processing..." : "Confirm"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Payment Methods Section */}
             <div className="mt-12 pt-8 border-t border-gray-100">
                 <div className="flex justify-between items-center mb-6">
@@ -405,7 +595,14 @@ const AccountSettings = () => {
                         </div>
                     ) : paymentMethods.length > 0 ? (
                         paymentMethods.map((pm) => (
-                            <div key={pm.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-[#2F6F6D33] transition-all">
+                            <div
+                                key={pm.id}
+                                onClick={() => setSelectedCard(pm)}
+                                className={`flex items-center justify-between p-4 border rounded-xl transition-all cursor-pointer ${selectedCard?.id === pm.id
+                                    ? 'border-[#2F6F6D] bg-[#2F6F6D05] ring-1 ring-[#2F6F6D]'
+                                    : 'border-gray-200 hover:border-[#2F6F6D33]'
+                                    }`}
+                            >
                                 <div className="flex items-center gap-4">
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <CreditCard className="text-gray-400" size={24} />

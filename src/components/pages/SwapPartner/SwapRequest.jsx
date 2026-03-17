@@ -209,7 +209,6 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                         </p>
                                     </div>
                                 </div>
-
                                 {/* Audience Size */}
                                 <div className={`flex gap-3 border p-3 rounded-xl transition-colors ${compatibility.audience_comparable ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"}`}>
                                     <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${compatibility.audience_comparable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>

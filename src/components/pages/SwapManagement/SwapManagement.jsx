@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { getSwaps, acceptSwap, declineSwap, restoreSwap, payForSwap, directPayment } from '../../../apis/swap';
+import { getSwaps, acceptSwap, declineSwap, restoreSwap, payForSwap, directPayment, confirmSwapPayment } from '../../../apis/swap';
 import { FiRefreshCw } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
@@ -51,6 +51,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
     const [actionLoading, setActionLoading] = useState(null);
 
     const [isPaid, setIsPaid] = useState(false);
+    const [isApproved, setIsApproved] = useState(false);
 
     const { isSender, isReceiver } = getSwapRole(data, currentUserName);
 
@@ -86,9 +87,25 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             setActionLoading("accept");
             await acceptSwap(data.id);
             toast.success("Swap accepted!");
-            onRefresh?.();
+            setIsApproved(true);
+            onRefresh?.(true); // Silent refresh
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to accept swap");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleReceivePayment = async (e) => {
+        e.stopPropagation();
+        try {
+            setActionLoading("receive_payment");
+            await confirmSwapPayment(data.id);
+            toast.success("Swap Completed Successfully!");
+            setIsApproved(true);
+            onRefresh?.(true); // Silent refresh
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Failed to confirm payment");
         } finally {
             setActionLoading(null);
         }
@@ -105,7 +122,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             setActionLoading("restore");
             await restoreSwap(data.id);
             toast.success("Swap restored!");
-            onRefresh?.();
+            onRefresh?.(true); // Silent refresh
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to restore swap");
         } finally {
@@ -117,7 +134,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         e.stopPropagation();
         try {
             setActionLoading("pay");
-            
+
             // Extract necessary data for direct payment
             const payload = {
                 receiver_id: data.author_id || data.receiver_id || data.id, // Fallback to id if author_id is missing
@@ -126,11 +143,11 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             };
 
             const response = await directPayment(payload);
-            
+
             if (response.data) {
                 toast.success(response.data.message || "Payment successful!");
                 setIsPaid(true);
-                onRefresh?.();
+                onRefresh?.(true); // Silent refresh
             }
         } catch (err) {
             console.error("Payment error:", err);
@@ -159,12 +176,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 return (
                     <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
                         {isPaid ? (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-                                className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
-                            >
-                                View Details
-                            </button>
+                            <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                                Payment Successful
+                            </div>
                         ) : (
                             <button
                                 onClick={handlePayNow}
@@ -187,10 +201,21 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             }
 
             if (isReceiver) {
+                if (isApproved) {
+                    return (
+                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Swap Completed
+                        </div>
+                    );
+                }
                 return (
-                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                        Waiting for partner's payment
-                    </div>
+                    <button
+                        onClick={handleReceivePayment}
+                        disabled={actionLoading === "receive_payment"}
+                        className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                        {actionLoading === "receive_payment" ? "Confirming..." : "Received Payment"}
+                    </button>
                 );
             }
         }
@@ -226,6 +251,27 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
         // ── 3. ACCEPTED (free swap or payment already done) ──
         if (isAccepted) {
+            // If it's a paid swap and payment is done, receiver needs to "Approve" to finalize
+            // This happens only if status is exactly 'accepted' (meaning waiting for final approval)
+            if (isReceiver && isPaymentDone && status === "accepted") {
+                if (isApproved) {
+                    return (
+                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Swap Completed
+                        </div>
+                    );
+                }
+                return (
+                    <button
+                        onClick={handleReceivePayment}
+                        disabled={actionLoading === "receive_payment"}
+                        className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                        {actionLoading === "receive_payment" ? "Confirming..." : "Received Payment"}
+                    </button>
+                );
+            }
+
             return (
                 <button
                     onClick={(e) => {
@@ -452,9 +498,9 @@ const SwapManagement = () => {
         }
     };
 
-    const fetchSwaps = async (tabKey = "all") => {
+    const fetchSwaps = async (tabKey = "all", silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const response = await getSwaps(tabKey);
             const responseData = response.data;
             const data = responseData.results || responseData || [];
@@ -556,7 +602,7 @@ const SwapManagement = () => {
                                     key={swap.id}
                                     data={swap}
                                     currentUserName={currentUserName}
-                                    onRefresh={() => fetchSwaps(activeTab.key)}
+                                    onRefresh={(silent = false) => fetchSwaps(activeTab.key, silent)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);
                                         if (swap.status === "scheduled") {
