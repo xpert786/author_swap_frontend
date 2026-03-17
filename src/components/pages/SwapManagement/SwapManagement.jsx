@@ -50,7 +50,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
 
-    const [isPaid, setIsPaid] = useState(false);
+    const [isPaid, setIsPaid] = useState(() => {
+        return localStorage.getItem(`paid_${data.id}`) === 'true';
+    });
     const [isApproved, setIsApproved] = useState(false);
 
     const { isSender, isReceiver } = getSwapRole(data, currentUserName);
@@ -79,6 +81,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
     // Card highlight: payment needed from THIS user
     const needsMyPayment = paymentPending && isSender;
+
+    useEffect(() => {
+        if (isPaymentDone) {
+            localStorage.removeItem(`paid_${data.id}`);
+        }
+    }, [isPaymentDone, data.id]);
 
     /* ── Handlers ── */
     const handleAccept = async (e) => {
@@ -146,9 +154,16 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
             const response = await directPayment(payload);
 
+            if (response.data?.url) {
+                localStorage.setItem(`paid_${data.id}`, 'true');
+                window.location.href = response.data.url;
+                return;
+            }
+
             if (response.data) {
                 toast.success(response.data.message || "Payment successful!");
                 setIsPaid(true);
+                localStorage.setItem(`paid_${data.id}`, 'true');
                 onRefresh?.(true); // Silent refresh
             }
         } catch (err) {
@@ -177,9 +192,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             if (isSender) {
                 return (
                     <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
-                        {isPaid ? (
+                        {isPaid || isPaymentDone ? (
                             <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                                Payment Successful
+                                Payment Done
                             </div>
                         ) : (
                             <button
@@ -271,6 +286,27 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                     >
                         {actionLoading === "receive_payment" ? "Confirming..." : "Received Payment"}
                     </button>
+                );
+            }
+
+            if (isSender) {
+                return (
+                    <div className="flex flex-col gap-2">
+                        {isPaymentDone && (
+                            <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                                Payment Done
+                            </div>
+                        )}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/track-swap/${data.id}`, { state: { data } });
+                            }}
+                            className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                        >
+                            Track My Swap
+                        </button>
+                    </div>
                 );
             }
 
@@ -377,7 +413,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                                 : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
-                            {isApproved || isCompleted ? "Completed" : formatLabel(data.badge || data.status)}
+                            {isCompleted ? "Completed" : isApproved || isPaid || isPaymentDone ? "Payment Done" : formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
