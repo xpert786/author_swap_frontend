@@ -292,7 +292,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             if (isSender) {
                 return (
                     <div className="flex flex-col gap-2">
-                        {isPaymentDone && (
+                        {(isPaid || isPaymentDone) && (
                             <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                                 Payment Done
                             </div>
@@ -350,7 +350,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             );
         }
 
-        if (isCompleted || isApproved) {
+        if (isCompleted) {
             return (
                 <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                     Swap Completed
@@ -362,12 +362,18 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         if (isScheduled) {
             return (
                 <div className="flex flex-col gap-2">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-                        className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
-                    >
-                        View Details
-                    </button>
+                    {isPaid || isPaymentDone ? (
+                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Payment Done
+                        </div>
+                    ) : (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
+                            className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                        >
+                            View Details
+                        </button>
+                    )}
                 </div>
             );
         }
