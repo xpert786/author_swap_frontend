@@ -312,9 +312,7 @@ const Dashboard = () => {
               if (!isCurrentMonth) {
                 bgColor = "bg-gray-50/30";
               } else if (dayApiData?.has_slots) {
-                if (dayApiData.has_verified) bgColor = "bg-[#9FB5B3]";
-                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
-                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]";
+                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#87D1A1]";
                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                 else bgColor = "bg-[#F3F4F6]";
@@ -353,15 +351,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#87D1A1]" />
-              <span className="text-[10px] font-medium text-gray-600">Confirmed</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-[#FDE7C4]" />
-              <span className="text-[10px] font-medium text-gray-600">Pending</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-[#9FB5B3]" />
-              <span className="text-[10px] font-medium text-gray-600">Verified</span>
+              <span className="text-[10px] font-medium text-gray-600">Booked</span>
             </div>
           </div>
         </div>

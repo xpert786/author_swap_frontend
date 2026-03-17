@@ -241,24 +241,15 @@ const Newsletter = () => {
                 if (item.has_published) {
                     status = "Published";
                     statusColor = "bg-[#F1B9AA]";
-                } else if (item.has_verified) {
-                    status = "Verified";
-                    statusColor = "bg-[#9FB5B3]";
-                } else if (item.has_confirmed) {
-                    status = "Confirmed";
-                    statusColor = "bg-[#87D1A1]";
-                } else if (item.has_pending) {
-                    status = "Pending";
-                    statusColor = "bg-[#FDE7C4]";
-                } else if (item.has_booked) {
+                } else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) {
                     status = "Booked";
-                    statusColor = "bg-[#F59E0B33]";
+                    statusColor = "bg-[#87D1A1]";
                 } else if (item.has_available) {
                     status = "Available";
                     statusColor = "bg-[#16A34A33]";
                 } else if (item.status) {
                     status = formatLabel(item.status);
-                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
+                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#87D1A1]";
                 }
 
                 return {
@@ -296,7 +287,7 @@ const Newsletter = () => {
                 year: currentMonth.format("YYYY"),
                 genre: selectedGenreValue || "all",
                 visibility: visibility === "All Visibility" ? "all" : (visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_")),
-                status: status === "All Status" ? "all" : (status === "Verified" ? "verified_sent" : status.toLowerCase())
+                status: status === "All Status" ? "all" : (status === "Booked" ? "booked" : status.toLowerCase())
             };
             const response = await statsNewsSlot(params);
             const statsData = response.data?.stats_cards || {};
@@ -438,7 +429,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Status", "Available", "Pending", "Confirmed", "Verified", "Published"].map((item) => (
+                                        {["All Status", "Available", "Booked", "Published"].map((item) => (
                                             <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
                                         ))}
                                     </div>
@@ -554,9 +545,7 @@ const Newsletter = () => {
                                 bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
                             } else if (dayApiData?.has_slots) {
                                 // Background Priority matching YOUR response keys
-                                if (dayApiData.has_verified) bgColor = "bg-[#9FB5B3]";
-                                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
-                                else if (dayApiData.has_pending) bgColor = "bg-[#FDE7C4]";
+                                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#87D1A1]";
                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";
@@ -599,15 +588,7 @@ const Newsletter = () => {
                         </div>
                         <div className="flex items-center gap-2.5">
                             <div className="w-5 h-5 rounded-[4px] bg-[#87D1A1] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Confirmed Slots</span>
-                        </div>
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#FDE7C4] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Pending slots</span>
-                        </div>
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#9FB5B3] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">verified slots</span>
+                            <span className="text-[14px] font-medium text-[#374151]">Booked Slots</span>
                         </div>
                     </div>
                 </div>
@@ -634,9 +615,8 @@ const Newsletter = () => {
                                         .filter(s => {
                                             if (status === "All Status") return true;
                                             const targetStatus = status.toLowerCase();
-                                            // Handle mapping variations like Verified vs Verified Sent
-                                            if (targetStatus === "verified") {
-                                                return s.rawStatus === "verified" || s.rawStatus === "verified_sent";
+                                            if (targetStatus === "booked") {
+                                                return s.rawStatus === "booked" || s.rawStatus === "confirmed" || s.rawStatus === "verified" || s.rawStatus === "pending";
                                             }
                                             return s.rawStatus === targetStatus;
                                         });

@@ -178,7 +178,7 @@ export default function BookDetails() {
 
             <div className="bg-white rounded-[10px] border border-[#B5B5B5] p-4">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start">
-                    <div className="w-full lg:w-80 xl:w-96 shrink-0">
+                    <div className="w-full lg:w-80 xl:w-96 shrink-0 lg:sticky lg:top-8">
                         <div className="rounded-[10px] overflow-hidden shadow-md">
                             <img
                                 src={book.coverImage || "/placeholder.jpg"}

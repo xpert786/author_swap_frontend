@@ -50,6 +50,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
 
+    const [isPaid, setIsPaid] = useState(false);
+
     const { isSender, isReceiver } = getSwapRole(data, currentUserName);
 
     const status = (data.status || "").toLowerCase();
@@ -127,6 +129,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             
             if (response.data) {
                 toast.success(response.data.message || "Payment successful!");
+                setIsPaid(true);
                 onRefresh?.();
             }
         } catch (err) {
@@ -155,21 +158,30 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             if (isSender) {
                 return (
                     <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
-                        <button
-                            onClick={handlePayNow}
-                            disabled={actionLoading === "pay"}
-                            className="w-1/2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
-                        >
-                            {actionLoading === "pay" ? (
-                                <>
-                                    <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                    </svg>
-                                    Processing…
-                                </>
-                            ) : "Pay Now"}
-                        </button>
+                        {isPaid ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
+                                className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                            >
+                                View Details
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handlePayNow}
+                                disabled={actionLoading === "pay"}
+                                className="w-1/2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
+                            >
+                                {actionLoading === "pay" ? (
+                                    <>
+                                        <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                        Processing…
+                                    </>
+                                ) : "Pay Now"}
+                            </button>
+                        )}
                     </div>
                 );
             }
@@ -273,9 +285,6 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         if (isScheduled) {
             return (
                 <div className="flex flex-col gap-2">
-                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                        Scheduled for {data.scheduled_date || data.send_date || "N/A"}
-                    </div>
                     <button
                         onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
                         className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"

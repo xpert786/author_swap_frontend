@@ -440,7 +440,7 @@ const CommunicationTools = () => {
                                         className="flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all border bg-white border-[rgba(181,181,181,0.3)] hover:bg-gray-50 active:scale-[0.98]"
                                     >
                                         <img
-                                            src={partner.avatar || "https://ui-avatars.com/api/?name=" + (partner.name || partner.username)}
+                                            src={partner.profile_picture || "https://ui-avatars.com/api/?name=" + (partner.name || partner.username)}
                                             alt={partner.name}
                                             className="w-8 h-8 rounded-full object-cover shrink-0"
                                             onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=" + (partner.name || partner.username); }}
