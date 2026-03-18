@@ -243,13 +243,13 @@ const Newsletter = () => {
                     statusColor = "bg-[#F1B9AA]";
                 } else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) {
                     status = "Booked";
-                    statusColor = "bg-[#87D1A1]";
+                    statusColor = "bg-[#F59E0B33]";
                 } else if (item.has_available) {
                     status = "Available";
                     statusColor = "bg-[#16A34A33]";
                 } else if (item.status) {
                     status = formatLabel(item.status);
-                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#87D1A1]";
+                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
                 }
 
                 return {
@@ -545,7 +545,7 @@ const Newsletter = () => {
                                 bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
                             } else if (dayApiData?.has_slots) {
                                 // Background Priority matching YOUR response keys
-                                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#87D1A1]";
+                                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";
@@ -593,7 +593,7 @@ const Newsletter = () => {
 
                         {/* Confirmed */}
                         <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#87D1A1] shadow-sm" />
+                            <div className="w-5 h-5 rounded-[4px] bg-[#F59E0B33] shadow-sm" />
                             <span className="text-[14px] font-medium text-[#374151]">Confirmed slots</span>
                         </div>
 

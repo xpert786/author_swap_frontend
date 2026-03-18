@@ -298,6 +298,17 @@ const AccountSettings = () => {
         }
     };
 
+    const handleSetDefaultPm = async (pmId) => {
+        try {
+            await setDefaultPaymentMethod(pmId);
+            toast.success("Default payment method updated");
+            fetchPaymentMethods();
+        } catch (err) {
+            console.error("Failed to set default payment method:", err);
+            toast.error("Failed to set default payment method");
+        }
+    };
+
     const handleEdit = () => setIsEditing(true);
     const handleCancel = () => {
         setFormData({

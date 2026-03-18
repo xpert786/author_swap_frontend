@@ -365,18 +365,37 @@ const Dashboard = () => {
 
           {/* Legend */}
           <div className="flex flex-wrap gap-x-6 gap-y-2 mt-6 justify-center">
+
+            {/* Available */}
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#16A34A33] border border-teal-100" />
               <span className="text-[10px] font-medium text-gray-600">Available</span>
             </div>
+
+            {/* Published */}
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#F1B9AA]" />
               <span className="text-[10px] font-medium text-gray-600">Published</span>
             </div>
+
+            {/* Confirmed */}
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#87D1A1]" />
-              <span className="text-[10px] font-medium text-gray-600">Booked</span>
+              <span className="text-[10px] font-medium text-gray-600">Confirmed</span>
             </div>
+
+            {/* Pending */}
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#EAD8B1]" />
+              <span className="text-[10px] font-medium text-gray-600">Pending</span>
+            </div>
+
+            {/* Verified */}
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-[#9DB7B5]" />
+              <span className="text-[10px] font-medium text-gray-600">Verified</span>
+            </div>
+
           </div>
         </div>
 
