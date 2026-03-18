@@ -650,12 +650,20 @@ const AccountSettings = () => {
                                     <span className="text-sm font-medium">Total Balance</span>
                                 </div>
                                 <h3 className="text-3xl font-bold mb-6">${walletData.balance}</h3>
-                                <button
-                                    onClick={() => setIsWithdrawModalOpen(true)}
-                                    className="w-full bg-white text-[#2F6F6D] font-bold py-3 rounded-xl hover:bg-opacity-95 transition-all shadow-md active:scale-[0.98]"
-                                >
-                                    Withdraw Funds
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setIsAddFundsModalOpen(true)}
+                                        className="flex-1 bg-white text-[#2F6F6D] font-bold py-3 rounded-xl hover:bg-opacity-95 transition-all shadow-md active:scale-[0.98]"
+                                    >
+                                        Add Funds
+                                    </button>
+                                    <button
+                                        onClick={() => setIsWithdrawModalOpen(true)}
+                                        className="flex-1 bg-white text-[#2F6F6D] font-bold py-3 rounded-xl hover:bg-opacity-95 transition-all shadow-md active:scale-[0.98]"
+                                    >
+                                        Withdraw Funds
+                                    </button>
+                                </div>
                             </div>
                             {/* Decorative circles */}
                             <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white opacity-5 rounded-full"></div>
@@ -679,16 +687,16 @@ const AccountSettings = () => {
                                         {transactions.map((t, idx) => (
                                             <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`p-2 rounded-lg ${t?.type === 'withdrawal' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                                        {t?.type === 'withdrawal' ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
+                                                    <div className={`p-2 rounded-lg ${t?.transaction_type === 'withdrawal' || parseFloat(t?.amount) < 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                        {t?.transaction_type === 'withdrawal' || parseFloat(t?.amount) < 0 ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-semibold text-gray-900 capitalize">{t?.description || t?.type?.replace('_', ' ') || 'Transaction'}</p>
+                                                        <p className="text-sm font-semibold text-gray-900 capitalize">{t?.description || t?.transaction_type?.replace('_', ' ') || 'Transaction'}</p>
                                                         <p className="text-xs text-gray-500">{t?.date}</p>
                                                     </div>
                                                 </div>
-                                                <div className={`text-sm font-bold ${t?.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {t?.type === 'withdrawal' ? '-' : '+'}${t?.amount}
+                                                <div className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {parseFloat(t?.amount) < 0 ? t?.amount : '+' + t?.amount}
                                                 </div>
                                             </div>
                                         ))}
@@ -741,8 +749,8 @@ const AccountSettings = () => {
 
                 {/* Add Funds Modal */}
                 {isAddFundsModalOpen && (
-                    <div className="fixed inset-0 bg-black/50 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+                    <div className="fixed inset-0 bg-black/40 z-[120] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center transform transition-all animate-in fade-in zoom-in duration-200">
                             <button
                                 onClick={() => { setIsAddFundsModalOpen(false); setAddFundsAmount(""); }}
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"

@@ -146,11 +146,11 @@ const AuthorReputationSystem = () => {
                     {/* Platform Ranking Banner */}
                     <div className="rounded-xl p-4 flex items-center gap-4 mb-4" style={{ background: "#FFF4F0", border: "1px solid rgba(181, 181, 181, 1)" }}>
                         <div className="w-10 h-10 rounded-full flex items-center justify-center font-normal text-xs" style={{ background: "#F59E0B" }}>
-                            #{data.platform_ranking?.rank || "--"}
+                            #{data.platform_ranking?.rank}
                         </div>
                         <div>
                             <h3 className="font-medium text-[15px]">Platform Ranking</h3>
-                            <p className="text-xs mt-1">You're in the top {data.platform_ranking?.percentile || data.platform_ranking?.top_percentage || "--"}% of all authors based on reputation score</p>
+                            <p className="text-xs mt-1">You're in the top {data.platform_ranking?.percentile}% of all authors based on reputation score</p>
                         </div>
                     </div>
 
