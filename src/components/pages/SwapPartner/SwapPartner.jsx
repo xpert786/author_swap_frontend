@@ -33,7 +33,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const price = parseFloat(partner.price || 0);
     const isPaid = price > 0;
     const status = partner.status || "available";
-    const promotionType = partner.promotionType || partner.badge || null;
+    const promotionType = partner.promotionType || partner.badge || null;   
 
     // Status badges
     const getBadges = () => {
@@ -308,12 +308,16 @@ const SwapPartner = () => {
     const [selectedAudience, setSelectedAudience] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedPaid, setSelectedPaid] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [hasNext, setHasNext] = useState(false);
+    const [hasPrevious, setHasPrevious] = useState(false);
 
 
-    const fetchSlots = async () => {
+    const fetchSlots = async (page = 1) => {
         try {
             setLoading(true);
-            const response = await getExploreSlots();
+            const response = await getExploreSlots({ page });
             // Handle common DRF structures or direct arrays
             let data = response.data?.results || response.data || [];
             // Handle camelCase conversion
@@ -321,6 +325,19 @@ const SwapPartner = () => {
 
             setSlots(data);
             if (data.length > 0) setSelectedId(data[0].id);
+            
+            // Set pagination info from response
+            if (response.data?.pagination) {
+                setTotalPages(response.data.pagination.total_pages || 1);
+                setHasNext(response.data.pagination.has_next || false);
+                setHasPrevious(response.data.pagination.has_previous || false);
+            } else {
+                // Fallback if no pagination info in response
+                setTotalPages(1);
+                setHasNext(false);
+                setHasPrevious(page > 1);
+            }
+            setCurrentPage(page);
         } catch (error) {
             console.error("Failed to fetch explore slots:", error);
             setSlots([]);
@@ -490,6 +507,29 @@ const SwapPartner = () => {
                             />
                         ))}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 mt-6">
+                            <button
+                                onClick={() => fetchSlots(currentPage - 1)}
+                                disabled={!hasPrevious || loading}
+                                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-gray-600">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => fetchSlots(currentPage + 1)}
+                                disabled={!hasNext || loading}
+                                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
 
                     {filtered.length === 0 && (
                         <div className="text-center py-16 text-gray-400 text-sm italic">

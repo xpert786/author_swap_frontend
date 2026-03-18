@@ -191,7 +191,16 @@ const Notification = () => {
                                                 key={item.id}
                                                 onClick={() => {
                                                     setSelectedId(item.id);
-                                                    if (item.type === 'swap' || item.badge === 'swap') {
+                                                    const title = (item.title || "").toLowerCase();
+                                                    const message = (item.message || item.text || "").toLowerCase();
+                                                    
+                                                    // Check for money/payment received notifications
+                                                    if (title.includes('money') && title.includes('received') || 
+                                                        title.includes('payment') && title.includes('received') ||
+                                                        message.includes('money') && message.includes('received') ||
+                                                        message.includes('payment') && message.includes('received')) {
+                                                        navigate('/account-settings');
+                                                    } else if (item.type === 'swap' || item.badge === 'swap') {
                                                         navigate('/swap-management');
                                                     } else if (item.action_url) {
                                                         // For swap notifications, override the action_url to go to swap-management
