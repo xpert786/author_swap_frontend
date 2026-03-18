@@ -290,11 +290,26 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId }) 
 
         // ── 3. COMPLETED ──────────────────────────────────────────────────
         if (isCompleted) {
-            return (
-                <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                    Swap Completed
-                </div>
-            );
+            // Show Track My Swap button for paid swaps, Swap Completed for free swaps
+            if (isPaidSwap) {
+                return (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/track-swap/${data.id}`, { state: { data } });
+                        }}
+                        className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                    >
+                        Track My Swap
+                    </button>
+                );
+            } else {
+                return (
+                    <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Swap Completed
+                    </div>
+                );
+            }
         }
 
         // ── 4. REJECTED ───────────────────────────────────────────────────
