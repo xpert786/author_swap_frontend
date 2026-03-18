@@ -578,18 +578,37 @@ const Newsletter = () => {
 
                     {/* LEGEND */}
                     <div className="flex flex-wrap gap-x-8 gap-y-3 mt-8 justify-center">
+
+                        {/* Available */}
                         <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#16A34A33] shadow-sm border border-teal-100" />
+                            <div className="w-5 h-5 rounded-[4px] bg-[#16A34A33] border border-teal-100 shadow-sm" />
                             <span className="text-[14px] font-medium text-[#374151]">Available slots</span>
                         </div>
+
+                        {/* Published */}
                         <div className="flex items-center gap-2.5">
                             <div className="w-5 h-5 rounded-[4px] bg-[#F1B9AA] shadow-sm" />
                             <span className="text-[14px] font-medium text-[#374151]">Published slots</span>
                         </div>
+
+                        {/* Confirmed */}
                         <div className="flex items-center gap-2.5">
                             <div className="w-5 h-5 rounded-[4px] bg-[#87D1A1] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Booked Slots</span>
+                            <span className="text-[14px] font-medium text-[#374151]">Confirmed slots</span>
                         </div>
+
+                        {/* Pending */}
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#EAD8B1] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">Pending slots</span>
+                        </div>
+
+                        {/* Verified */}
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-5 h-5 rounded-[4px] bg-[#9DB7B5] shadow-sm" />
+                            <span className="text-[14px] font-medium text-[#374151]">Verified slots</span>
+                        </div>
+
                     </div>
                 </div>
 

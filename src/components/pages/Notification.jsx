@@ -191,8 +191,16 @@ const Notification = () => {
                                                 key={item.id}
                                                 onClick={() => {
                                                     setSelectedId(item.id);
-                                                    if (item.action_url) {
-                                                        navigate(item.action_url);
+                                                    if (item.type === 'swap' || item.badge === 'swap') {
+                                                        navigate('/swap-management');
+                                                    } else if (item.action_url) {
+                                                        // For swap notifications, override the action_url to go to swap-management
+                                                        const isSwapRelated = item.action_url.includes('/swaps/') || item.action_url.includes('swap');
+                                                        if (isSwapRelated) {
+                                                            navigate('/swap-management');
+                                                        } else {
+                                                            navigate(item.action_url);
+                                                        }
                                                     }
                                                 }}
                                                 className={`group relative flex flex-col md:flex-row md:items-center justify-between p-4 px-6 rounded-xl transition-all duration-200 cursor-pointer border ${selectedId === item.id

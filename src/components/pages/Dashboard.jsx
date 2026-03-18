@@ -33,10 +33,34 @@ const Dashboard = () => {
   const ITEMS_PER_PAGE = 6;
 
   const stats = [
-    { label: "Book", value: dashboardData?.stats_cards?.book || "0", icon: OpenBook, color: "bg-[#2F6F6D33]", path: "/books" },
-    { label: "Newsletter Slots", value: dashboardData?.stats_cards?.newsletter_slots || "0", icon: OpenBook, color: "bg-[#E07A5F80]", path: "/newsletter" },
-    { label: "Completed Swaps", value: dashboardData?.stats_cards?.completed_swaps || "0", icon: OpenBook, color: "bg-[#16A34A33]", path: "/swap-management" },
-    { label: "Reliability", value: dashboardData?.stats_cards?.reliability || "0", icon: OpenBook, color: "bg-[#DC262633]", path: "/reputation" },
+    {
+      label: "Book",
+      value: dashboardData?.stats_cards?.book || "0",
+      icon: OpenBook,
+      color: "bg-[#9DB7B5]", // neutral (similar to verified)
+      path: "/books",
+    },
+    {
+      label: "Newsletter Slots",
+      value: dashboardData?.stats_cards?.newsletter_slots || "0",
+      icon: OpenBook,
+      color: "bg-[#F1B9AA]", // published
+      path: "/newsletter",
+    },
+    {
+      label: "Completed Swaps",
+      value: dashboardData?.stats_cards?.completed_swaps || "0",
+      icon: OpenBook,
+      color: "bg-[#87D1A1]", // confirmed
+      path: "/swap-management",
+    },
+    {
+      label: "Reliability",
+      value: dashboardData?.stats_cards?.reliability || "0",
+      icon: OpenBook,
+      color: "bg-[#EAD8B1]", // pending-style soft tone (less aggressive than red)
+      path: "/reputation",
+    },
   ];
 
   const activities = useMemo(() => {
