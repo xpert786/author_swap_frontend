@@ -30,9 +30,6 @@ export const ProfileProvider = ({ children }) => {
                 })
             ]);
             
-            console.log("Profile data:", profileData);
-            console.log("Subscription data:", subData);
-            
             setProfile(profileData);
             // The subscription is directly in subData.subscription, not nested further
             const subscriptionData = subData?.subscription || null;

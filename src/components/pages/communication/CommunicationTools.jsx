@@ -126,7 +126,6 @@ const CommunicationTools = () => {
 
         const startFallbackPolling = () => {
             if (!pollingTimer) {
-                console.log("Starting fallback HTTP polling for messages...");
                 pollingTimer = setInterval(() => {
                     // Only poll if WebSocket is not open
                     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
@@ -146,13 +145,10 @@ const CommunicationTools = () => {
             const pathPrefix = apiBase.includes("/authorswap") ? "/authorswap" : "";
             const socketPath = `${wsProtocol}//${host}${pathPrefix}/ws/chat/${activeConv}/?token=${token}`;
 
-            console.log("Connecting to Chat WebSocket:", socketPath);
             const socket = new WebSocket(socketPath);
             socketRef.current = socket;
 
             socket.onopen = () => {
-                console.log("WebSocket connected successfully!");
-                // Clear polling if socket succeeds
                 if (pollingTimer) {
                     clearInterval(pollingTimer);
                     pollingTimer = null;
@@ -189,7 +185,6 @@ const CommunicationTools = () => {
                 if (isComponentMounted) {
                     // Start generic HTTP polling since WebSockets are failing
                     startFallbackPolling();
-                    console.log("Attempting to reconnect WebSocket in 5 seconds...");
                     reconnectTimer = setTimeout(connectWebSocket, 5000);
                 }
             };

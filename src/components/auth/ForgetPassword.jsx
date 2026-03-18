@@ -20,8 +20,6 @@ const ForgetPassword = () => {
         email: data.email,
       });
 
-      console.log("OTP Sent:", response);
-
       toast.success("OTP sent successfully!");
 
       localStorage.setItem("resetEmail", data.email);

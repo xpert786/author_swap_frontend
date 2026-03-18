@@ -106,7 +106,6 @@ const SwapDetails = () => {
                 setLoading(true);
                 const response = await getSlotDetails(passed.id);
                 setDetail(toCamel(response.data));
-                console.log(response.data); 
             } catch (error) {
                 console.error("Failed to fetch slot details:", error);
             } finally {

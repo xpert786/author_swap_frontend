@@ -126,8 +126,6 @@ const AccountBasics = ({ next }) => {
         formData.append("profile_photo", data.profilePhoto[0]);
       }
 
-      console.log("ProfilePhoto:", data.profilePhoto);
-
       const promise = onboardingStep1(formData);
 
       toast.promise(promise, {

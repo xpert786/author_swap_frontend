@@ -30,7 +30,6 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
     if (!isOpen) return null;
 
     const handleSendNote = () => {
-        console.log("Sending note:", note);
         setNote("");
     };
 

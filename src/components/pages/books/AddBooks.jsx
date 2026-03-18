@@ -53,16 +53,13 @@ const AddBooks = ({ onClose, onSubmit }) => {
   }, [preview]);
 
   useEffect(() => {
-    console.log("Selected Genre:", formData.genre);
-    console.log("All SubGenres:", allSubGenres);
-
+  
     if (!formData.genre) {
       setSubGenres([]);
       return;
     }
 
     const selectedSubGenres = allSubGenres[formData.genre] || [];
-    console.log("Filtered SubGenres:", selectedSubGenres);
 
     setSubGenres(selectedSubGenres);
   }, [formData.genre, allSubGenres]);
@@ -71,7 +68,6 @@ const AddBooks = ({ onClose, onSubmit }) => {
     const loadGenres = async () => {
       try {
         const data = await getGenres();
-        console.log("GENRES API:", data); // 👈 ADD THIS
         setGenres(data);
       } catch (error) {
         toast.error("Failed to load genres");

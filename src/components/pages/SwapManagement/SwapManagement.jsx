@@ -29,49 +29,54 @@ const formatLabel = (str) => {
 };
 
 /**
- * sender_name  = user who SENT / initiated the swap
- * author_name  = user who RECEIVED the swap request
+ * sender_id   = ID of the user who INITIATED the swap
+ * receiver_id = ID of the user who RECEIVES the swap request
+ * currentUserId = ID of the currently logged-in user
+ *
+ * Fallback: if receiver_id is absent from the API response (list endpoints
+ * often omit it), treat anyone who is NOT the sender as the receiver so the
+ * UI always renders correctly.
  */
-const getSwapRole = (data, currentUserName) => {
-    const myName = (currentUserName || "").toLowerCase().trim();
-    const senderName = (data.sender_name || "").toLowerCase().trim();
+const getSwapRole = (data, currentUserId) => {
+    if (!currentUserId) {
+        return { isSender: false, isReceiver: false };
+    }
 
-    const isSender =
-        !!myName &&
-        !!senderName &&
-        (myName === senderName ||
-            senderName.includes(myName) ||
-            myName.includes(senderName));
+    const myId = Number(currentUserId);
+    const senderId = Number(data.sender_id);
+    const receiverId = Number(data.receiver_id);
 
-    return { isSender, isReceiver: !isSender };
+    const isSender = myId === senderId;
+    const isReceiver = myId === receiverId;
+
+    return { isSender, isReceiver };
 };
 
-const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId }) => {
+
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
 
     const [isPaid, setIsPaid] = useState(() => {
         return localStorage.getItem(`paid_${data.id}`) === 'true';
     });
-    const [isApproved, setIsApproved] = useState(false);
 
-    const { isSender, isReceiver } = getSwapRole(data, currentUserName);
+    const { isSender, isReceiver } = getSwapRole(data, currentUserId);
 
     const status = (data.status || "").toLowerCase();
-    const isPending = status === "pending" || status === "incoming";
-    const isSending = status === "sending";
-    const isAccepted = status === "accepted" || status === "confirmed" || status === "active";
+    const isSending = status === "sending" || status === "pending" || status === "incoming";
+    const isAccepted =
+        status === "accepted" ||
+        status === "confirmed" ||
+        status === "active" ||
+        status === "scheduled"; // ✅ ADD THIS
     const isRejected = status === "rejected" || status === "reject";
     const isCompleted = status === "completed" || status === "complete";
     const isScheduled = status === "scheduled";
 
-    // ── Payment flags (from API, not derived from status) ──
+    // ── Payment flags (directly from API) ──
     const isPaidSwap = data.eligible_for_pay === true;
     const isPaymentDone = data.payment_done === true;
-
-    // A paid swap where payment hasn't been made yet —
-    // this can happen on ANY status where the swap is "active/progressing"
-    const paymentPending = isPaidSwap && !isPaymentDone;
 
     const authorName = data.author_name || data.author || "Unknown Author";
     const authorRole = data.author_genre_label || data.author_role || data.role || "Author";
@@ -79,8 +84,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         data.profile_picture ||
         `https://ui-avatars.com/api/?name=${authorName}&background=random`;
 
-    // Card highlight: payment needed from THIS user
-    const needsMyPayment = paymentPending && isSender;
+    // Card highlight: sender still needs to pay
+    const needsMyPayment = isPaidSwap && !isPaymentDone && isSender && isAccepted;
 
     useEffect(() => {
         if (isPaymentDone) {
@@ -95,10 +100,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             setActionLoading("accept");
             await acceptSwap(data.id);
             toast.success("Swap accepted!");
-            if (!isPaidSwap) {
-                setIsApproved(true);
-            }
-            onRefresh?.(true); // Silent refresh
+            onRefresh?.(true);
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to accept swap");
         } finally {
@@ -112,8 +114,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             setActionLoading("receive_payment");
             await confirmSwapPayment(data.id);
             toast.success("Swap Completed Successfully!");
-            setIsApproved(true);
-            onRefresh?.(true); // Silent refresh
+            onRefresh?.(true);
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to confirm payment");
         } finally {
@@ -145,9 +146,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         try {
             setActionLoading("pay");
 
-            // Extract necessary data for direct payment
             const payload = {
-                receiver_id: data.author_id || data.receiver_id || data.id, // Fallback to id if author_id is missing
+                receiver_id: data.receiver_id,
                 amount: data.price ? String(data.price) : "0.00",
                 description: `Internal payment for Swap ID: ${data.id}`
             };
@@ -164,7 +164,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 toast.success(response.data.message || "Payment successful!");
                 setIsPaid(true);
                 localStorage.setItem(`paid_${data.id}`, 'true');
-                onRefresh?.(true); // Silent refresh
+                onRefresh?.(true);
             }
         } catch (err) {
             console.error("Payment error:", err);
@@ -174,71 +174,27 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
         }
     };
 
-    // ─────────────────────────────────────────────────────────────
-    // What to render in the action area.
-    // Priority order:
-    //   1. If payment is pending   → show payment UI (overrides status UI)
-    //   2. Pending / Sending       → Accept+Decline (receiver) or Waiting (sender)
-    //   3. Accepted (free/paid)    → Track My Swap
-    //   4. Rejected                → Rejection box + Restore
-    //   5. Completed               → View Swap History
-    //   6. Scheduled               → Scheduled banner + View Details
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────
+    // renderActions — strict priority flow:
+    //   1. SENDING   → sender: waiting banner | receiver: Accept + Decline
+    //   2. ACCEPTED  → paid+unpaid: Pay Now (sender) / Waiting (receiver)
+    //                  paid+done:   Payment Done (sender) / Confirm (receiver)
+    //                  free:        Track My Swap (both)
+    //   3. COMPLETED → Swap Completed (both)
+    //   4. REJECTED  → Rejection box + Restore (receiver only)
+    //   5. SCHEDULED → View Details
+    // ─────────────────────────────────────────────────────────────────────
     const renderActions = () => {
-
-        // ── 1. PAYMENT PENDING (eligible_for_pay:true, payment_done:false) ──
-        // Intercepts completed/accepted/any status until payment is resolved
-        if (paymentPending && !isPending && !isSending && !isRejected) {
+        
+        // ── 1. SENDING / PENDING ──────────────────────────────────────────
+        if (isSending) {
             if (isSender) {
                 return (
-                    <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
-                        {isPaid || isPaymentDone ? (
-                            <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                                {isCompleted ? "Swap Completed" : "Payment Done"}
-                            </div>
-                        ) : (
-                            <button
-                                onClick={handlePayNow}
-                                disabled={actionLoading === "pay"}
-                                className="w-1/2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
-                            >
-                                {actionLoading === "pay" ? (
-                                    <>
-                                        <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                        Processing…
-                                    </>
-                                ) : "Pay Now"}
-                            </button>
-                        )}
+                    <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Waiting for author acceptance
                     </div>
                 );
             }
-
-            if (isReceiver) {
-                if (isApproved) {
-                    return (
-                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                            Swap Completed
-                        </div>
-                    );
-                }
-                return (
-                    <button
-                        onClick={handleReceivePayment}
-                        disabled={actionLoading === "receive_payment"}
-                        className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
-                    >
-                        {actionLoading === "receive_payment" ? "Confirming..." : "Received Payment"}
-                    </button>
-                );
-            }
-        }
-
-        // ── 2. PENDING / SENDING ──
-        if (isPending || isSending) {
             if (isReceiver) {
                 return (
                     <div className="flex gap-2">
@@ -258,58 +214,67 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                     </div>
                 );
             }
-            // Sender sees NO buttons — just a banner
-            return (
-                <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                    Waiting for partner response
-                </div>
-            );
+            return null;
         }
 
-        // ── 3. ACCEPTED (free swap or payment already done) ──
+        // ── 2. ACCEPTED ───────────────────────────────────────────────────
         if (isAccepted) {
-            // If it's a paid swap and payment is done, receiver needs to "Approve" to finalize
-            // This happens only if status is exactly 'accepted' (meaning waiting for final approval)
-            if (isReceiver && isPaymentDone && status === "accepted") {
-                if (isCompleted || isApproved) {
+
+            // 2a. Paid swap — payment NOT yet done
+            if (isPaidSwap && !isPaymentDone) {
+                if (isSender) {
                     return (
-                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                            Swap Completed
+                        <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
+                            <button
+                                onClick={handlePayNow}
+                                disabled={actionLoading === "pay"}
+                                className="w-1/2 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#B5B5B5] text-black text-[12px] font-semibold rounded-[8px] hover:bg-gray-50 transition-colors disabled:opacity-60"
+                            >
+                                {actionLoading === "pay" ? (
+                                    <>
+                                        <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                        Processing…
+                                    </>
+                                ) : "Pay Now"}
+                            </button>
                         </div>
                     );
                 }
-                return (
-                    <button
-                        onClick={handleReceivePayment}
-                        disabled={actionLoading === "receive_payment"}
-                        className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
-                    >
-                        {actionLoading === "receive_payment" ? "Confirming..." : "Received Payment"}
-                    </button>
-                );
+                if (isReceiver) {
+                    return (
+                        <div className="bg-[#F59E0B33] text-[#374151] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Waiting for the payment
+                        </div>
+                    );
+                }
             }
 
-            if (isSender) {
-                return (
-                    <div className="flex flex-col gap-2">
-                        {(isPaid || isPaymentDone) && (
-                            <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                                {isCompleted ? "Swap Completed" : "Payment Done"}
-                            </div>
-                        )}
+            // 2b. Paid swap — payment IS done
+            if (isPaidSwap && isPaymentDone) {
+                if (isSender) {
+                    return (
+                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                            Payment Done ✅
+                        </div>
+                    );
+                }
+                if (isReceiver) {
+                    return (
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/track-swap/${data.id}`, { state: { data } });
-                            }}
-                            className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                            onClick={handleReceivePayment}
+                            disabled={actionLoading === "receive_payment"}
+                            className="px-6 py-2 bg-[#16A34A] text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
                         >
-                            Track My Swap
+                            {actionLoading === "receive_payment" ? "Confirming..." : "Confirm Payment Received"}
                         </button>
-                    </div>
-                );
+                    );
+                }
             }
 
+            // 2c. Free swap (eligible_for_pay = false) — both see Track My Swap
             return (
                 <button
                     onClick={(e) => {
@@ -323,7 +288,16 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             );
         }
 
-        // ── 4. REJECTED ──
+        // ── 3. COMPLETED ──────────────────────────────────────────────────
+        if (isCompleted) {
+            return (
+                <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                    Swap Completed
+                </div>
+            );
+        }
+
+        // ── 4. REJECTED ───────────────────────────────────────────────────
         if (isRejected) {
             return (
                 <div className="space-y-3">
@@ -350,45 +324,29 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
             );
         }
 
-        if (isCompleted) {
-            return (
-                <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                    Swap Completed
-                </div>
-            );
-        }
-
-        // ── 6. SCHEDULED ──
-        if (isScheduled) {
-            return (
-                <div className="flex flex-col gap-2">
-                    {isPaid || isPaymentDone ? (
-                        <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                            {isCompleted ? "Swap Completed" : "Payment Done"}
-                        </div>
-                    ) : (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-                            className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
-                        >
-                            View Details
-                        </button>
-                    )}
-                </div>
-            );
-        }
+        // ── 5. SCHEDULED ──────────────────────────────────────────────────
+        // if (isScheduled) {
+        //     return (
+        //         <button
+        //             onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
+        //             className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+        //         >
+        //             View Details
+        //         </button>
+        //     );
+        // }
 
         return null;
     };
 
     return (
         <div
-            onClick={(isPaid || isPaymentDone || isCompleted) ? (e) => e.stopPropagation() : onViewDetails}
+            onClick={isCompleted ? (e) => e.stopPropagation() : onViewDetails}
             className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full
-                ${(isPaid || isPaymentDone || isCompleted) ? "cursor-default" : "cursor-pointer hover:shadow-md"}
+                ${isCompleted ? "cursor-default" : "cursor-pointer hover:shadow-md"}
                 ${needsMyPayment
                     ? "bg-[#FFF5F5] border-[#E8A0A0]"
-                    : (isCompleted || isApproved) && !paymentPending
+                    : isCompleted
                         ? "bg-[#EBF5EE] border-[#16A34A]"
                         : "bg-white border-[#B5B5B5]"
                 }`}
@@ -415,12 +373,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
                 <div className="flex items-end gap-1.5 shrink-0">
                     {(data.badge || data.status) && (
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
-                            ${(isCompleted || isApproved) && !paymentPending
+                            ${isCompleted
                                 ? "bg-[#16A34A1A] text-[#166534] border-[#16A34A33]"
                                 : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
-                            {isCompleted || isApproved ? "Swap Completed" : isPaid || isPaymentDone ? "Payment Done" : formatLabel(data.badge || data.status)}
+                            {isCompleted ? "Swap Completed" : isPaymentDone ? "Payment Done ✅" : formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
@@ -500,10 +458,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserName }
 
 const SwapManagement = () => {
     const { profile } = useProfile();
-    const currentUserName = profile
-        ? (profile.name || `${profile.first_name || ""} ${profile.last_name || ""}`).toLowerCase().trim()
-        : "";
-
+   const currentUserId = profile?.user ?? null;
     const [swaps, setSwaps] = useState([]);
     const [tabCounts, setTabCounts] = useState({});
     const [loading, setLoading] = useState(true);
@@ -639,7 +594,7 @@ const SwapManagement = () => {
                                 <SwapCard
                                     key={swap.id}
                                     data={swap}
-                                    currentUserName={currentUserName}
+                                    currentUserId={currentUserId}
                                     onRefresh={(silent = false) => fetchSwaps(activeTab.key, silent)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);

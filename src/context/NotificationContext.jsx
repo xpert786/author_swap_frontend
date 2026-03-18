@@ -69,14 +69,10 @@ export const NotificationProvider = ({ children }) => {
         // Detect if we are using a subdirectory (like /authorswap)
         const pathPrefix = apiBase.includes("/authorswap") ? "/authorswap" : "";
         const wsUrl = `${wsProtocol}//${host}${pathPrefix}/ws/notifications/?token=${token}`;
-
-        console.log("Connecting to WebSocket:", wsUrl);
-
         const socket = new WebSocket(wsUrl);
         socketRef.current = socket;
 
         socket.onopen = () => {
-            console.log("WebSocket Connected ✅");
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current);
                 reconnectTimeoutRef.current = null;
@@ -86,7 +82,6 @@ export const NotificationProvider = ({ children }) => {
         socket.onmessage = (event) => {
             try {
                 const payload = JSON.parse(event.data);
-                console.log("WebSocket Message Received 📩", payload);
 
                 if (payload.type === "notification") {
                     const newNotification = payload.data;
@@ -141,11 +136,9 @@ export const NotificationProvider = ({ children }) => {
         };
 
         socket.onclose = (event) => {
-            console.log("WebSocket Disconnected ❌", event.reason);
             // Attempt to reconnect after 5 seconds if not a clean logout close
             if (event.code !== 1000 && localStorage.getItem("token")) {
                 reconnectTimeoutRef.current = setTimeout(() => {
-                    console.log("Attempting to reconnect WebSocket...");
                     connectWebSocket();
                 }, 5000);
             }

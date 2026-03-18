@@ -24,11 +24,15 @@ export default function SubscriptionPage() {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [selectedTier, setSelectedTier] = useState(null);
 
+    // Payment confirmation modal state
+    const [showPaymentConfirmModal, setShowPaymentConfirmModal] = useState(false);
+    const [defaultCard, setDefaultCard] = useState(null);
+    const [fetchingCard, setFetchingCard] = useState(false);
+
     const fetchVerification = async (showLoader = true) => {
         try {
             if (showLoader) setLoading(true);
             const res = await getSubscriberVerification();
-            console.log("Verification Data:", res.data);
             setVerification(res.data);
         } catch (error) {
             console.error("Failed to fetch verification status", error);
@@ -81,7 +85,42 @@ export default function SubscriptionPage() {
         }
     };
 
+    // Step 1 — "Upgrade Now" clicked inside preview modal:
+    // Fetch the user's default card, then either redirect or open the confirmation modal.
     const handleConfirmChange = async () => {
+        if (!selectedTier) return;
+        try {
+            setFetchingCard(true);
+            const res = await getPaymentMethods();
+            const methods = res.data || [];
+            const found = methods.find((pm) => pm.is_default);
+
+            if (!found) {
+                // No default card — send to Stripe checkout so they can add a card and pay
+                const checkoutRes = await createCheckoutSession({ tier_id: selectedTier.id.toString() });
+                const url = checkoutRes.data?.url || checkoutRes.data?.checkout_url;
+                if (url) {
+                    window.location.href = url;
+                } else {
+                    toast.error("Could not start checkout. Please try again.");
+                }
+                return;
+            }
+
+            setDefaultCard(found);
+            setShowPreviewModal(false);
+            setShowPaymentConfirmModal(true);
+        } catch (error) {
+            console.error("Failed to fetch payment methods:", error);
+            toast.error("Could not retrieve payment methods. Please try again.");
+        } finally {
+            setFetchingCard(false);
+        }
+    };
+
+    // Step 2 — "Yes, Continue" clicked inside the confirmation modal:
+    // Actually call manualUpgrade and handle the result.
+    const handleProceedUpgrade = async () => {
         if (!selectedTier) return;
         try {
             setConfirmLoading(true);
@@ -91,12 +130,12 @@ export default function SubscriptionPage() {
                 window.location.href = res.data.url || res.data.checkout_url;
             } else {
                 toast.success(res.data.message || "Plan updated successfully!");
-                setShowPreviewModal(false);
+                setShowPaymentConfirmModal(false);
                 fetchVerification(false);
                 if (refreshProfile) refreshProfile();
             }
         } catch (error) {
-            console.error("Confirmation error:", error);
+            console.error("Upgrade error:", error);
             const errMsg = error.response?.data?.error || error.response?.data?.detail || "Failed to update plan.";
             toast.error(errMsg);
         } finally {
@@ -116,7 +155,6 @@ export default function SubscriptionPage() {
     const tiers = verification?.available_tiers || [];
     const isConnected = verifDetails.is_connected_mailerlite || false;
     const lastSynced = verifDetails.last_verified_at || "Never";
-    console.log("Current Subscription Object:", subscription);
     const getPrimaryCta = (tier) => {
         const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
         if (isCurrent) return "Current Plan";
@@ -244,7 +282,6 @@ export default function SubscriptionPage() {
                             {tiers.map((tier) => {
                                 // Robust comparison (handling potential string/number mismatches)
                                 const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
-                                console.log(`Comparing sub.tier (${subscription?.tier}) with tier.id (${tier.id}) -> Result:`, isCurrent);
 
                                 return (
                                     <div
@@ -431,16 +468,88 @@ export default function SubscriptionPage() {
 
                                 <button
                                     onClick={handleConfirmChange}
-                                    disabled={confirmLoading}
+                                    disabled={confirmLoading || fetchingCard}
                                     className="px-6 py-2 text-[13px] rounded-lg bg-[#2F6F6D] text-white hover:opacity-90 transition shadow-sm flex items-center gap-2 disabled:opacity-50"
                                 >
-                                    {confirmLoading ? (
+                                    {(confirmLoading || fetchingCard) ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
                                             Upgrade Now
                                             <Rocket size={14} />
+
                                         </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* ── Payment Confirmation Modal ── */}
+            {showPaymentConfirmModal && defaultCard && (
+                <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-[110]">
+                    <div className="bg-white w-[440px] rounded-[10px] shadow-xl overflow-hidden m-5">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-5">
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-800">Confirm Payment Method</h2>
+                                    <p className="text-[13px] text-gray-500 mt-0.5">Review the card that will be charged</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowPaymentConfirmModal(false)}
+                                    className="text-gray-400 hover:text-gray-600 text-lg transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* Card Info */}
+                            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 mb-5">
+                                <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900 capitalize">
+                                        {defaultCard.card_brand} •••• {defaultCard.last4}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        Expires {defaultCard.exp_month}/{defaultCard.exp_year}
+                                    </p>
+                                </div>
+                                <span className="ml-auto text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                    Default
+                                </span>
+                            </div>
+
+                            <p className="text-[12px] text-gray-500 text-center mb-6">
+                                Your default card will be charged for the prorated upgrade amount.
+                                Do you want to continue?
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowPaymentConfirmModal(false);
+                                        navigate("/account-settings");
+                                    }}
+                                    className="flex-1 px-4 py-2.5 text-[13px] rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                    Change Card
+                                </button>
+                                <button
+                                    onClick={handleProceedUpgrade}
+                                    disabled={confirmLoading}
+                                    className="flex-1 px-4 py-2.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white font-medium hover:opacity-90 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {confirmLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        "Yes, Continue"
                                     )}
                                 </button>
                             </div>
