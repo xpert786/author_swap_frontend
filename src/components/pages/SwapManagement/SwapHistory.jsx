@@ -95,7 +95,9 @@ const SwapHistory = () => {
                     }}
                 >
                     <PartyPopper size={24} className="text-white" />
-                    <span className="text-lg font-medium">{data.status_label || "Swap Tracked"}</span>
+                    <span className="text-lg font-medium">
+                        {data?.status ? `Swap ${data.status}` : "Swap Tracked"}
+                    </span>
                 </div>
             </div>
 

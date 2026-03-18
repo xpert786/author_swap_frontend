@@ -39,42 +39,9 @@ const defaultEmptyData = [
     { month: "Dec", value: 0 },
 ];
 
-
-/* -------------------- DATA -------------------- */
-
-const subscriberGrowth = [
-    { month: "Jan", value: 22 },
-    { month: "Feb", value: 25 },
-    { month: "Mar", value: 18 },
-    { month: "Apr", value: 35 },
-    { month: "May", value: 28 },
-    { month: "Jun", value: 12 },
-    { month: "Jul", value: 55 },
-    { month: "Aug", value: 48 },
-    { month: "Sep", value: 75 },
-    { month: "Oct", value: 98 },
-    { month: "Nov", value: 100 },
-    { month: "Dec", value: 102 },
-];
-
-const historicalTrend = [
-    { month: "Jan", value: 10 },
-    { month: "Feb", value: 12 },
-    { month: "Mar", value: 18 },
-    { month: "Apr", value: 30 },
-    { month: "May", value: 38 },
-    { month: "Jun", value: 15 },
-    { month: "Jul", value: 22 },
-    { month: "Aug", value: 28 },
-    { month: "Sep", value: 45 },
-    { month: "Oct", value: 60 },
-    { month: "Nov", value: 72 },
-    { month: "Dec", value: 85 },
-];
-
-
 const tabs = ["Recent", "Top Performing", "Swap Campaigns"];
 const tabsGraph = ["Open Rate", "Click Rate", "Subscriber Growth"];
+
 /* -------------------- COMPONENT -------------------- */
 
 const AnalyticsPage = ({ isChildView = false }) => {
@@ -115,7 +82,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
         setIsMounted(true);
     }, []);
 
-    // If viewed on the direct route /analytics-page, we might want to handle navigation
     const handleTabChange = (tab) => {
         if (tab === "subscription") {
             navigate("/subscription");
@@ -134,11 +100,22 @@ const AnalyticsPage = ({ isChildView = false }) => {
         ? analytics.historical_trends
         : subGrowth;
 
-    // Normalize chart data to ensure values are primitives
+    const ALL_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
     const normalizedSubGrowth = useMemo(() => {
-        return subGrowth.map(item => ({
-            ...item,
-            value: item.count ?? getStatValue(item.value, 0)
+        // Build a lookup from whatever the API returns
+        const lookup = {};
+        subGrowth.forEach(item => {
+            const key = item.month || item.label || "";
+            const val = item.count ?? getStatValue(item.value, 0);
+            if (key) lookup[key] = Number(val) || 0;
+        });
+
+        // If API only returned a single data point, spread across all months with 0s
+        // so recharts can draw a real line
+        return ALL_MONTHS.map(month => ({
+            month,
+            subscribers: lookup[month] ?? 0,
         }));
     }, [subGrowth]);
 
@@ -163,11 +140,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const filteredCampaigns = useMemo(() => {
         return campaigns.filter(camp => {
             if (!camp) return false;
-
-            // Handle both object and primitive types for open_rate
             const openRateRaw = getStatValue(camp.open_rate);
             const openRateVal = openRateRaw ? parseFloat(openRateRaw) : 0;
-
             if (activeCampaignTab === "Recent") return true;
             if (activeCampaignTab === "Top Performing") return openRateVal > 40;
             if (activeCampaignTab === "Swap Campaigns") return camp.type === "Swap" || (camp.name && camp.name.toLowerCase().includes("swap"));
@@ -198,15 +172,13 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             </p>
                         </div>
 
-                        {/* Tabs for standalone view */}
-                        <div className="flex gap-2 mb-6 bg-white border border-[#2F6F6D] p-1 rounded-lg w-fit ">
+                        <div className="flex gap-2 mb-6 bg-white border border-[#2F6F6D] p-1 rounded-lg w-fit">
                             <button
                                 onClick={() => handleTabChange("subscription")}
                                 className="px-4 py-2 text-sm rounded-md text-gray-700 hover:bg-gray-100 cursor-pointer"
                             >
                                 Subscription
                             </button>
-
                             <button
                                 onClick={() => setPageTab("analytics")}
                                 className="px-4 py-2 text-sm rounded-md bg-[#2F6F6D] text-white cursor-pointer"
@@ -217,8 +189,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
                     </>
                 )}
 
-
                 <div className="border border-[#B5B5B5] p-5 rounded-xl space-y-8">
+
                     {/* ================= MESSAGE CARD ================= */}
                     <div className="bg-white border border-gray-200 rounded-xl px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -235,7 +207,10 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 </div>
                             </div>
                         </div>
-                        <button onClick={fetchData} className="flex items-center gap-2 bg-[#2F6F6D] text-white text-sm px-4 py-2 rounded-md transition-all hover:bg-opacity-90 active:scale-95">
+                        <button
+                            onClick={fetchData}
+                            className="flex items-center gap-2 bg-[#2F6F6D] text-white text-sm px-4 py-2 rounded-md transition-all hover:bg-opacity-90 active:scale-95"
+                        >
                             <LuRefreshCw className="w-4 h-4" />
                             Refresh Analytics
                         </button>
@@ -244,7 +219,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                     {/* ================= KPI CARDS ================= */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 border-b pb-8 border-[#B5B5B5]">
                         {[
-                            { label: "Active", data: summaryStats.active_subscribers, fallbackValue: "0", fallbackSub: "+0% this month", border: "border-emerald-400", icon: <UsersRound className="w-5 h-5" /> },
+                            { label: "Active", data: summaryStats.active_subscribers?.active, fallbackValue: "0", fallbackSub: "+0% this month", border: "border-emerald-400", icon: <UsersRound className="w-5 h-5" /> },
                             { label: "Avg Open Rate", data: summaryStats.avg_open_rate, fallbackValue: "0%", fallbackSub: "+0% this month", border: "border-amber-400", icon: <AvgOpenRate /> },
                             { label: "Avg Click Rate", data: summaryStats.avg_click_rate, fallbackValue: "0%", fallbackSub: "+0% this month", border: "border-red-400", icon: <RxCursorArrow className="w-5 h-5" /> },
                             { label: "List Health Score", data: summaryStats.list_health_score, fallbackValue: "0/100", fallbackSub: "0% growth", border: "border-gray-300", icon: <HeartPulse className="w-5 h-5" /> },
@@ -281,24 +256,47 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
                                         <XAxis
                                             dataKey="month"
-                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            tick={{ fontSize: 11, fill: '#6B7280' }}
                                             axisLine={false}
                                             tickLine={false}
                                             dy={10}
                                         />
                                         <YAxis
-                                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                                            tick={{ fontSize: 11, fill: '#6B7280' }}
                                             axisLine={false}
                                             tickLine={false}
                                         />
-                                        <Tooltip />
+                                        <Tooltip
+                                            content={({ active, payload, label }) => {
+                                                if (active && payload && payload.length) {
+                                                    return (
+                                                        <div style={{
+                                                            background: '#2F6F6D',
+                                                            borderRadius: '6px',
+                                                            padding: '8px 14px',
+                                                            color: '#fff',
+                                                            fontSize: '11px',
+                                                            fontWeight: 600,
+                                                            letterSpacing: '0.05em',
+                                                            textTransform: 'uppercase',
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                        }}>
+                                                            <p style={{ marginBottom: '2px', opacity: 0.85 }}>{label}</p>
+                                                            <p>SUBSCRIBERS : {payload[0].value?.toLocaleString()}</p>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                            cursor={{ stroke: '#2F6F6D', strokeWidth: 1, strokeDasharray: '4 2' }}
+                                        />
                                         <Line
                                             type="monotone"
-                                            dataKey="value"
-                                            stroke="#059669"
-                                            strokeWidth={3}
-                                            dot={{ r: 4, fill: '#059669', strokeWidth: 2, stroke: '#fff' }}
-                                            activeDot={{ r: 6 }}
+                                            dataKey="subscribers"
+                                            stroke="#2F6F6D"
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 4, fill: '#2F6F6D', stroke: '#fff', strokeWidth: 2 }}
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
@@ -308,16 +306,14 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         </div>
                     </div>
 
-                    {/* ================= LIST HEALTH ================= */}
-                    <div>
-                        <p className="text-xl font-semibold text-[#111827] mb-4">
-                            List Health Metrics
-                        </p>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 border-b pb-8 border-[#B5B5B5]">
+                    {/* ================= LIST HEALTH METRICS ================= */}
+                    <div className="bg-white rounded-xl">
+                        <h3 className="text-lg font-semibold mb-4">List Health Metrics</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {[
                                 { label: "Bounce Rate", data: listHealth.bounce_rate, fallback: "0%" },
                                 { label: "Unsubscribe Rate", data: listHealth.unsubscribe_rate, fallback: "0%" },
-                                { label: "Active Rate", data: listHealth.active_rate, fallback: "0%" },
+                                { label: "Spam Complaints", data: listHealth.spam_complaints, fallback: "0" },
                                 { label: "Avg Engagement", data: listHealth.avg_engagement, fallback: "0" },
                             ].map((item, i) => {
                                 const displayValue = getStatValue(item.data, item.fallback);
@@ -345,7 +341,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                         key={tab}
                                         onClick={() => setActiveCampaignTab(tab)}
                                         className={`px-4 py-2 text-sm rounded-md transition-all duration-200 cursor-pointer
-                                             ${activeCampaignTab === tab
+                                            ${activeCampaignTab === tab
                                                 ? "bg-[#2F6F6D] text-white shadow-sm"
                                                 : "text-gray-700 hover:bg-gray-100"
                                             }`}
@@ -359,18 +355,21 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         <div className="space-y-4">
                             {filteredCampaigns.length > 0 ? (
                                 filteredCampaigns.map((camp, idx) => (
-                                    <div key={idx} className={`flex justify-between px-6 py-5 ${idx === 0 ? "bg-[#FEF3F2]" : "bg-white"} border border-[#B5B5B5] rounded-lg`}>
+                                    <div
+                                        key={idx}
+                                        className={`flex justify-between px-6 py-5 ${idx === 0 ? "bg-[#FEF3F2]" : "bg-white"} border border-[#B5B5B5] rounded-lg`}
+                                    >
                                         <div>
                                             <p className="text-sm font-medium text-gray-900">
                                                 {camp.name}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {getStatValue(camp.date)} • Sent to {getStatValue(camp.sent_to)}
+                                                {getStatValue(camp.status, "active")} • Sent to {getStatValue(camp.sent_to, "—")}
                                             </p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-semibold">
-                                                {getStatValue(camp.open_rate)}
+                                                {getStatValue(camp.open_rate, "—")}
                                             </p>
                                             <p className="text-xs text-gray-500">Open Rate</p>
                                         </div>
@@ -390,7 +389,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             <p className="text-sm font-semibold text-gray-900">
                                 Link-Level CTR Analysis
                             </p>
-
                             <select className="border border-gray-300 rounded-md text-xs px-3 py-1.5 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#2F6F6D]">
                                 <option value="">All Campaign Dates</option>
                                 {campaignDates.map(date => (
@@ -440,8 +438,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         </div>
                     </div>
 
-
-                    {/* ================= HISTORICAL ================= */}
+                    {/* ================= HISTORICAL TRENDS ================= */}
                     <div className="bg-white rounded-xl">
                         <div className="flex justify-between items-center mb-4">
                             <p className="text-sm font-semibold">Historical Trends</p>
@@ -494,6 +491,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             )}
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

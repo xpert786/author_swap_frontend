@@ -52,7 +52,7 @@ const getSwapRole = (data, currentUserId) => {
     return { isSender, isReceiver };
 };
 
-const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, setDetailsId, setIsTrackOpen }) => {
 
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
@@ -279,7 +279,8 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId }) 
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/track-swap/${data.id}`, { state: { data } });
+                        setDetailsId(data.id);
+                        setIsTrackOpen(true);
                     }}
                     className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
                 >
@@ -296,11 +297,11 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId }) 
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/track-swap/${data.id}`, { state: { data } });
+                            navigate(`/swap-history/${data.id}`);
                         }}
                         className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
                     >
-                        Track My Swap
+                        View swap history
                     </button>
                 );
             } else {
@@ -610,6 +611,8 @@ const SwapManagement = () => {
                                     key={swap.id}
                                     data={swap}
                                     currentUserId={currentUserId}
+                                    setDetailsId={setDetailsId}
+                                    setIsTrackOpen={setIsTrackOpen}
                                     onRefresh={(silent = false) => fetchSwaps(activeTab.key, silent)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);
