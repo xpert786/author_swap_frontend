@@ -703,7 +703,9 @@ const AccountSettings = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-900 capitalize">{t?.description || t?.transaction_type?.replace('_', ' ') || 'Transaction'}</p>
-                                                        <p className="text-xs text-gray-500">{t?.date}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(t?.updated_at).toLocaleString()}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>

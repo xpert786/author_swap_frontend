@@ -57,6 +57,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
         return val ?? fallback;
     };
 
+
+    const formatRate = (value) => {
+        if (value === null || value === undefined) return "—";
+        return `${value}%`;
+    };
+
     const navigate = useNavigate();
     const [pageTab, setPageTab] = useState("analytics");
     const [analytics, setAnalytics] = useState(null);
@@ -415,21 +421,41 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 filteredCampaigns.map((camp, idx) => (
                                     <div
                                         key={idx}
-                                        className={`flex justify-between px-6 py-5 ${idx === 0 ? "bg-[#FEF3F2]" : "bg-white"} border border-[#B5B5B5] rounded-lg`}
+                                        className={`flex items-center justify-between px-6 py-5 ${idx === 0 ? "bg-[#FEF3F2]" : "bg-white"
+                                            } border border-[#B5B5B5] rounded-lg`}
                                     >
-                                        <div>
+                                        {/* Left Content */}
+                                        <div className="flex-1">
                                             <p className="text-sm font-medium text-gray-900">
                                                 {camp.name}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {getStatValue(camp.status, "active")} • Sent to {getStatValue(camp.sent_to, "—")}
+                                                {getStatValue(camp.status, "active")} • Sent to{" "}
+                                                {getStatValue(camp.sent_to, "—")}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-semibold">
-                                                {getStatValue(camp.open_rate, "—")}
-                                            </p>
-                                            <p className="text-xs text-gray-500">Open Rate</p>
+
+                                        {/* Metrics */}
+                                        <div className="flex items-center justify-center gap-10">
+                                            {/* Open Rate */}
+                                            <div className="text-center min-w-[80px]">
+                                                <p className="text-sm font-semibold text-gray-900">
+                                                    {formatRate(camp.open_rate)}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Open Rate
+                                                </p>
+                                            </div>
+
+                                            {/* Click Rate */}
+                                            <div className="text-center min-w-[80px]">
+                                                <p className="text-sm font-semibold text-gray-900">
+                                                    {formatRate(camp.click_rate)}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Click Rate
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -447,7 +473,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             <p className="text-sm font-semibold text-gray-900">
                                 Link-Level CTR Analysis
                             </p>
-
                             {/* FIX 4: Clean dropdown — no duplicate header inside, uses ref for outside click */}
                             <div className="relative" ref={dropdownRef}>
                                 {/* Trigger button */}
@@ -494,8 +519,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                             {campaignDatesLoading ? (
                                                 <div className="px-4 py-3 text-sm text-gray-400 text-center flex items-center justify-center gap-2">
                                                     <svg className="animate-spin w-4 h-4 text-[#2F6F6D]" fill="none" viewBox="0 0 24 24">
-                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                                                     </svg>
                                                     Loading…
                                                 </div>
