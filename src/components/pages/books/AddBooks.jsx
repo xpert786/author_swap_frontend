@@ -510,7 +510,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 placeholder="Enter description..."
                 value={formData.description}
                 onChange={handleChange}
-                className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 required
               />
 
