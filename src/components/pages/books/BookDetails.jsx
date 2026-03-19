@@ -147,7 +147,7 @@ export default function BookDetails() {
                             <span>Published {formattedDate}</span>
                         </div>
 
-                        <span className="font-medium text-[#374151]">$ {book.price}</span>
+                        <span className="font-medium text-[#374151]">{book.price}</span>
                     </div>
 
                 </div>

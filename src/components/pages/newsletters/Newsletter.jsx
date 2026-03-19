@@ -1,4 +1,754 @@
-import React, { useState, useEffect, useMemo } from "react";
+// import React, { useState, useEffect, useMemo } from "react";
+// import {
+//     Plus,
+//     Download,
+//     ChevronDown,
+//     Trash2,
+//     Eye,
+//     Users,
+// } from "lucide-react";
+// import { Publish } from "../../icons";
+// import pendingSwapIcon from "../../../assets/pendingswap.png";
+// import confirmedSwapIcon from "../../../assets/confirmedswap.png";
+// import verifiedSentIcon from "../../../assets/acceptedswap.png";
+// import newsIcon from "../../../assets/newsicon.png";
+// import AddNewsSlot from "./AddNewsSlot";
+// import EditNewsSlot from "./EditNewsSlot";
+// import DeleteNewsSlot from "./DeleteNewsSlot";
+// import SlotDetails from "./SlotDetails";
+// import { MdOutlineRemoveRedEye } from "react-icons/md";
+// import Edit from "../../../assets/edit.png";
+// import Swap from "../../../assets/swap-bg.png";
+// import dayjs from "dayjs";
+// import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
+// import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
+// import { getGenres } from "../../../apis/genre";
+// import { exportGoogleCalendar, exportOutlookCalendar, exportICSCalendar } from "../../../apis/calendar";
+// import toast from "react-hot-toast";
+
+// const Newsletter = () => {
+//     const [open, setOpen] = useState(false);
+//     const [editOpen, setEditOpen] = useState(false);
+//     const [openDropdown, setOpenDropdown] = useState(null);
+//     const [deleteOpen, setDeleteOpen] = useState(false);
+//     const [detailsOpen, setDetailsOpen] = useState(false);
+//     const [currentMonth, setCurrentMonth] = useState(dayjs());
+//     const [visibility, setVisibility] = useState("All Visibility");
+//     const [status, setStatus] = useState("All Status");
+//     const [genre, setGenre] = useState("Genre");
+//     const [selectedGenre, setSelectedGenre] = useState("Genre");
+//     const [showGenreDropdown, setShowGenreDropdown] = useState(false);
+//     const [selectedSlot, setSelectedSlot] = useState(null);
+//     const [selectedDate, setSelectedDate] = useState(dayjs());
+//     const [slots, setSlots] = useState([]);
+//     const [loading, setLoading] = useState(false);
+//     const [selectedGenreValue, setSelectedGenreValue] = useState("");
+//     const [genres, setGenres] = useState([]);
+//     const [loadingGenres, setLoadingGenres] = useState(true);
+//     const [newsletterStats, setNewsletterStats] = useState({
+//         total_slots: 0,
+//         published_slots: 0,
+//         pending_swap_requests: 0,
+//         confirmed_swaps: 0,
+//         verified_sent: 0
+//     });
+//     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+//     const [calendarData, setCalendarData] = useState([]);
+
+//     const handleSlotExport = (slotId, format) => {
+//         const slot = slots.find(s => s.id === slotId);
+//         if (!slot) return;
+
+//         const { raw_data } = slot;
+//         const eventTitle = `Newsletter Slot: ${slot.genre}`;
+//         const eventDescription = `Newsletter promotion for ${slot.genre}. Audience size: ${slot.audience}. Status: ${slot.status}`;
+
+//         // Construct start and end times in local time from send_date and send_time
+//         let startMoment;
+//         const timeStr = raw_data.send_time || "10:00:00"; // Default to 10 AM if no time
+
+//         // Handle HH:mm AM/PM or HH:mm:ss formats
+//         if (timeStr.toLowerCase().includes("am") || timeStr.toLowerCase().includes("pm")) {
+//             startMoment = dayjs(`${raw_data.send_date} ${timeStr}`, "YYYY-MM-DD h:mm A");
+//         } else {
+//             startMoment = dayjs(`${raw_data.send_date} ${timeStr}`);
+//         }
+
+//         if (!startMoment.isValid()) {
+//             startMoment = dayjs(raw_data.send_date).set("hour", 10).set("minute", 0);
+//         }
+
+//         const endMoment = startMoment.add(1, "hour");
+
+//         // Format for URL and ICS
+//         const startTimeStr = startMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+//         const endTimeStr = endMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+//         if (format === "google") {
+//             const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startTimeStr}/${endTimeStr}&details=${encodeURIComponent(eventDescription)}&sf=true&output=xml`;
+//             window.open(url, "_blank");
+//         } else if (format === "outlook") {
+//             const url = `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`;
+//             window.open(url, "_blank");
+//         } else if (format === "ics") {
+//             const icsContent = [
+//                 "BEGIN:VCALENDAR",
+//                 "VERSION:2.0",
+//                 "PRODID:-//AuthorSwap//Newsletter Calendar//EN",
+//                 "BEGIN:VEVENT",
+//                 `UID:newsletter-slot-${slotId}@authorswap.com`,
+//                 `DTSTAMP:${dayjs().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+//                 `DTSTART:${startTimeStr}`,
+//                 `DTEND:${endTimeStr}`,
+//                 `SUMMARY:${eventTitle}`,
+//                 `DESCRIPTION:${eventDescription}`,
+//                 "END:VEVENT",
+//                 "END:VCALENDAR"
+//             ].join("\n");
+
+//             const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+//             const link = document.createElement("a");
+//             link.href = window.URL.createObjectURL(blob);
+//             link.setAttribute("download", `newsletter_slot_${slotId}.ics`);
+//             document.body.appendChild(link);
+//             link.click();
+//             document.body.removeChild(link);
+//         }
+//         setOpenDropdown(null);
+//     };
+
+
+//     const handleExportGoogle = async () => {
+//         try {
+//             const response = await exportGoogleCalendar();
+//             if (response?.calendar_url) {
+//                 window.open(response.calendar_url, "_blank");
+//             } else {
+//                 toast.error("Failed to get Google Calendar URL");
+//             }
+//         } catch (error) {
+//             toast.error("Failed to export to Google Calendar");
+//         }
+//         setExportDropdownOpen(false);
+//     };
+
+//     const handleExportOutlook = async () => {
+//         try {
+//             const response = await exportOutlookCalendar();
+//             if (response?.calendar_url) {
+//                 window.open(response.calendar_url, "_blank");
+//             } else {
+//                 toast.error("Failed to get Outlook URL");
+//             }
+//         } catch (error) {
+//             toast.error("Failed to export to Outlook");
+//         }
+//         setExportDropdownOpen(false);
+//     };
+
+//     const handleExportICS = async () => {
+//         try {
+//             const response = await exportICSCalendar();
+//             if (response?.content) {
+//                 const blob = new Blob([response.content], { type: "text/calendar;charset=utf-8" });
+//                 const link = document.createElement("a");
+//                 link.href = window.URL.createObjectURL(blob);
+//                 link.setAttribute("download", `newsletter_calendar.ics`);
+//                 document.body.appendChild(link);
+//                 link.click();
+//                 document.body.removeChild(link);
+//                 toast.success("ICS file downloaded");
+//             } else {
+//                 toast.error("Failed to get ICS content");
+//             }
+//         } catch (error) {
+//             toast.error("Failed to download ICS file");
+//         }
+//         setExportDropdownOpen(false);
+//     };
+
+
+//     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+//     const generateCalendar = () => {
+//         const startOfMonth = currentMonth.startOf("month");
+//         const endOfMonth = currentMonth.endOf("month");
+//         const startDate = startOfMonth.startOf("week");
+//         const endDate = endOfMonth.endOf("week");
+//         let date = startDate.clone();
+//         const days = [];
+//         while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+//             days.push(date.clone());
+//             date = date.add(1, "day");
+//         }
+//         return days;
+//     };
+
+//     const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
+//     const today = useMemo(() => dayjs(), []);
+
+//     useEffect(() => {
+//         const loadGenres = async () => {
+//             try {
+//                 const response = await getGenres();
+//                 setGenres(response);
+//             } catch (error) {
+//                 console.error(error);
+//                 toast.error("Failed to load genres");
+//             } finally {
+//                 setLoadingGenres(false);
+//             }
+//         };
+//         loadGenres();
+//     }, []);
+
+//     const formatLabel = (value) => {
+//         if (!value) return "";
+//         return value
+//             .replace(/_/g, " ")
+//             .toLowerCase()
+//             .replace(/\b\w/g, char => char.toUpperCase());
+//     };
+
+//     const getPeriod = (time) => {
+//         if (!time) return "Morning";
+//         let hour = parseInt(time.split(":")[0], 10);
+//         const lowerTime = time.toLowerCase();
+
+//         // Handle 12h format with AM/PM
+//         if (lowerTime.includes("pm") && hour < 12) hour += 12;
+//         if (lowerTime.includes("am") && hour === 12) hour = 0;
+
+//         if (hour < 12) return "Morning";
+//         if (hour < 17) return "Afternoon";
+//         return "Evening";
+//     };
+
+//     const fetchSlots = async () => {
+//         try {
+//             setLoading(true);
+//             const response = await getNewsSlot();
+//             // Robust data extraction
+//             const dataArray = Array.isArray(response.data)
+//                 ? response.data
+//                 : (response.data?.data || response.data?.results || []);
+
+//             const formatted = dataArray.map(item => {
+//                 // Determine display status and color from flags
+//                 let status = "Available";
+//                 let statusColor = "bg-[#16A34A33]";
+
+//                 if (item.has_published) {
+//                     status = "Published";
+//                     statusColor = "bg-[#F1B9AA]";
+//                 } else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) {
+//                     status = "Booked";
+//                     statusColor = "bg-[#F59E0B33]";
+//                 } else if (item.has_available) {
+//                     status = "Available";
+//                     statusColor = "bg-[#16A34A33]";
+//                 } else if (item.status) {
+//                     status = formatLabel(item.status);
+//                     statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
+//                 }
+
+//                 return {
+//                     id: item.id,
+//                     time: item.send_date
+//                         ? `${dayjs(item.send_date).format("MMM D, YYYY")} ${item.send_time ? `at ${item.send_time}` : ""}`
+//                         : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
+//                     period: getPeriod(item.send_time) || formatLabel(item.time_period),
+//                     genre: formatLabel(item.preferred_genre),
+//                     rawGenre: (item.preferred_genre || "").toLowerCase(),
+//                     partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
+//                     visibility: formatLabel(item.visibility),
+//                     rawVisibility: (item.visibility || "").toLowerCase(),
+//                     audience: item.audience_size,
+//                     status: status,
+//                     rawStatus: status.toLowerCase(),
+//                     statusColor: statusColor,
+//                     has_available: item.has_available || (item.status || "").toLowerCase() === "available",
+//                     has_booked: item.has_booked || item.has_confirmed || item.has_verified || item.has_pending,
+//                     raw_data: item,
+//                 };
+//             });
+//             setSlots(formatted);
+//         } catch (error) {
+//             console.error("Failed to fetch slots", error);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const fetchStats = async () => {
+//         try {
+//             const params = {
+//                 month: currentMonth.format("MM"),
+//                 year: currentMonth.format("YYYY"),
+//                 genre: selectedGenreValue || "all",
+//                 visibility: visibility === "All Visibility" ? "all" : (visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_")),
+//                 status: status === "All Status" ? "all" : (status === "Booked" ? "booked" : status.toLowerCase())
+//             };
+//             const response = await statsNewsSlot(params);
+//             const statsData = response.data?.stats_cards || {};
+//             const calData = response.data?.calendar?.days || [];
+
+//             setNewsletterStats(statsData);
+//             setCalendarData(calData);
+//         } catch (error) {
+//             console.error("Failed to fetch newsletter stats", error);
+//         }
+//     };
+
+//     useEffect(() => {
+//         fetchSlots();
+//     }, []);
+
+//     useEffect(() => {
+//         fetchStats();
+//     }, [genre, visibility, status, currentMonth]);
+
+//     const handleEditClick = (slot) => {
+//         setSelectedSlot(slot);
+//         setEditOpen(true);
+//     };
+
+//     const handleDeleteClick = (slot) => {
+//         setSelectedSlot(slot);
+//         setDeleteOpen(true);
+//     };
+
+//     const PendingSwapIcon = ({ size = 20 }) => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
+//     const ConfirmedSwapIcon = ({ size = 20 }) => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
+//     const VerifiedSentIcon = ({ size = 20 }) => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
+//     const NewsIcon = ({ size = 20 }) => <img src={newsIcon} alt="News" style={{ width: "33px", height: "32px" }} />;
+//     const SwapIcon = ({ width = 20, height = 20 }) => (
+//         <img
+//             src={Swap}
+//             alt="Swap"
+//             style={{
+//                 width: "31px",
+//                 height: "29px",
+//             }}
+//         />
+//     );
+
+//     const stats = [
+//         { label: "Total", value: String(newsletterStats.total ?? newsletterStats.total_slots ?? 0), icon: NewsIcon },
+//         { label: "Published Slots", value: String(newsletterStats.published_slots ?? 0), icon: SwapIcon },
+//         { label: "Pending swap requests", value: String(newsletterStats.pending_swaps ?? newsletterStats.pending_swap_requests ?? 0), icon: PendingSwapIcon },
+//         { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps ?? 0), icon: ConfirmedSwapIcon },
+//         { label: "Verified sent", value: String(newsletterStats.verified_sent ?? 0), icon: VerifiedSentIcon },
+//     ];
+
+//     return (
+//         <div className="pb-10 max-w-full overflow-hidden">
+//             <div className="mb-6">
+//                 <h1 className="text-2xl font-semibold">Newsletter & Slot Management</h1>
+//                 <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Schedule, manage, and track your newsletter promotions</p>
+//             </div>
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+//                 {stats.map((stat, index) => (
+//                     <div
+//                         key={index}
+//                         className="
+//                 bg-white rounded-[10px] 
+//                 border border-[#B5B5B5] 
+//                 p-4 flex flex-col gap-4 justify-between 
+//                 shadow-sm min-h-[110px]
+//                 transition-all duration-300
+//                 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+//                 hover:-translate-y-1
+//             "
+//                     >
+//                         <div className="flex justify-between items-start gap-2">
+//                             <div className="w-10 h-10 rounded-lg">
+//                                 <stat.icon size={24} />
+//                             </div>
+//                             <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">
+//                                 {stat.label}
+//                             </span>
+//                         </div>
+//                         <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
+//                             {stat.value}
+//                         </div>
+//                     </div>
+//                 ))}
+//             </div>
+//             <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
+//                 <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
+//                     All Slots for{" "}
+//                     {selectedDate.format("MMMM D, YYYY")}
+//                 </h2>
+//                 <div className="flex flex-wrap items-center gap-3">
+//                     <div className="flex flex-wrap items-center gap-2">
+//                         {/* Genre Filter */}
+//                         <div className="relative">
+//                             <button onClick={() => setOpenDropdown(openDropdown === "genre" ? null : "genre")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
+//                                 {genre}
+//                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "genre" ? "rotate-180" : ""}`} />
+//                             </button>
+//                             {openDropdown === "genre" && (
+//                                 <>
+//                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+//                                     <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+//                                         <button onClick={() => { setGenre("Genre"); setSelectedGenreValue(""); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
+//                                         {genres.map((g) => (
+//                                             <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
+//                                         ))}
+//                                     </div>
+//                                 </>
+//                             )}
+//                         </div>
+
+//                         {/* Visibility Filter */}
+//                         <div className="relative">
+//                             <button onClick={() => setOpenDropdown(openDropdown === "visibility" ? null : "visibility")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
+//                                 {visibility}
+//                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "visibility" ? "rotate-180" : ""}`} />
+//                             </button>
+//                             {openDropdown === "visibility" && (
+//                                 <>
+//                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+//                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+//                                         {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map((item) => (
+//                                             <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
+//                                         ))}
+//                                     </div>
+//                                 </>
+//                             )}
+//                         </div>
+
+//                         {/* Status Filter */}
+//                         <div className="relative">
+//                             <button onClick={() => setOpenDropdown(openDropdown === "status" ? null : "status")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
+//                                 {status}
+//                                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "status" ? "rotate-180" : ""}`} />
+//                             </button>
+//                             {openDropdown === "status" && (
+//                                 <>
+//                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+//                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+//                                         {["All Status", "Available", "Booked", "Published"].map((item) => (
+//                                             <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
+//                                         ))}
+//                                     </div>
+//                                 </>
+//                             )}
+//                         </div>
+
+//                         {/* Export Dropdown */}
+//                         <div className="relative">
+//                             <button
+//                                 onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+//                                 className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]"
+//                             >
+//                                 <Download size={16} />
+//                                 Export With
+//                                 <ChevronDown
+//                                     size={14}
+//                                     className={`text-gray-400 transition-transform ${exportDropdownOpen ? "rotate-180" : ""
+//                                         }`}
+//                                 />
+//                             </button>
+
+//                             {exportDropdownOpen && (
+//                                 <>
+//                                     <div className="fixed inset-0 z-[9998]" onClick={() => setExportDropdownOpen(false)} />
+//                                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
+//                                         <button
+//                                             onClick={handleExportGoogle}
+//                                             className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+//                                         >
+//                                             Google Calendar
+//                                         </button>
+
+//                                         <button
+//                                             onClick={handleExportOutlook}
+//                                             className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+//                                         >
+//                                             Outlook
+//                                         </button>
+
+//                                         <button
+//                                             onClick={handleExportICS}
+//                                             className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
+//                                         >
+//                                             Download ICS File
+//                                         </button>
+//                                     </div>
+//                                 </>
+//                             )}
+//                         </div>
+//                     </div>
+
+//                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">
+//                         <Plus size={16} />
+//                         Add New Slot
+//                     </button>
+
+//                     <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); }} />
+//                 </div>
+//             </div>
+
+//             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
+//                 {/* CALENDAR */}
+//                 <div className="xl:col-span-3 bg-white rounded-[12px] border border-[#B5B5B5] p-4 shadow-sm">
+//                     <div className="flex justify-between items-center mb-10">
+//                         <div className="flex items-center gap-4">
+//                             <button
+//                                 onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+//                                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+//                             >
+//                                 <IoChevronBack size={20} />
+//                             </button>
+//                             <h3 className="text-[17px] font-medium text-[#111827] tracking-tight">
+//                                 {currentMonth.format("MMMM YYYY")}
+//                             </h3>
+//                             <button
+//                                 onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+//                                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+//                             >
+//                                 <IoChevronForward size={20} />
+//                             </button>
+//                         </div>
+//                         <button
+//                             onClick={() => {
+//                                 const now = dayjs();
+//                                 setCurrentMonth(now);
+//                                 setSelectedDate(now);
+//                             }}
+//                             className="text-[17px] font-medium text-[#4B5563] hover:text-[#111827] transition-colors"
+//                         >
+//                             Today
+//                         </button>
+//                     </div>
+
+//                     <div className="grid grid-cols-7 border-l border-t border-gray-200 rounded-tl-xl overflow-hidden">
+//                         {days.map((day) => (
+//                             <div
+//                                 key={day}
+//                                 className="py-3 text-center text-[12px] font-medium text-gray-500 border-r border-b border-gray-100 bg-gray-50/10"
+//                             >
+//                                 {day}
+//                             </div>
+//                         ))}
+//                         {calendarDays.map((date, idx) => {
+//                             const isCurrentMonth = date.isSame(currentMonth, "month");
+//                             const isToday = date.isSame(today, "day");
+
+//                             // Get pre-calculated daily highlights from API response
+//                             const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
+
+//                             let bgColor = "bg-white";
+//                             if (!isCurrentMonth) {
+//                                 bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
+//                             } else if (dayApiData?.has_slots) {
+//                                 // Background Priority matching YOUR response keys
+//                                 if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
+//                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
+//                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
+//                                 else bgColor = "bg-[#F3F4F6]";
+//                             }
+
+//                             return (
+//                                 <div
+//                                     key={idx}
+//                                     onClick={() => setSelectedDate(date)}
+//                                     className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80
+//                                         ${bgColor} 
+//                                         ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""}
+//                                         ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}
+//                                     `}
+//                                 >
+//                                     <span
+//                                         className={`text-[12px] font-medium 
+//                                             ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} 
+//                                             ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""}
+//                                             ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}
+//                                         `}
+//                                     >
+//                                         {date.format("D")}
+//                                     </span>
+
+//                                 </div>
+//                             );
+//                         })}
+//                     </div>
+
+//                     {/* LEGEND */}
+//                     <div className="flex flex-wrap gap-x-8 gap-y-3 mt-8 justify-center">
+
+//                         {/* Available */}
+//                         <div className="flex items-center gap-2.5">
+//                             <div className="w-5 h-5 rounded-[4px] bg-[#16A34A33] border border-teal-100 shadow-sm" />
+//                             <span className="text-[14px] font-medium text-[#374151]">Available slots</span>
+//                         </div>
+
+//                         {/* Published */}
+//                         <div className="flex items-center gap-2.5">
+//                             <div className="w-5 h-5 rounded-[4px] bg-[#F1B9AA] shadow-sm" />
+//                             <span className="text-[14px] font-medium text-[#374151]">Published slots</span>
+//                         </div>
+
+//                         {/* Confirmed */}
+//                         <div className="flex items-center gap-2.5">
+//                             <div className="w-5 h-5 rounded-[4px] bg-[#F59E0B33] shadow-sm" />
+//                             <span className="text-[14px] font-medium text-[#374151]">Confirmed slots</span>
+//                         </div>
+
+//                         {/* Pending */}
+//                         <div className="flex items-center gap-2.5">
+//                             <div className="w-5 h-5 rounded-[4px] bg-[#EAD8B1] shadow-sm" />
+//                             <span className="text-[14px] font-medium text-[#374151]">Pending slots</span>
+//                         </div>
+
+//                         {/* Verified */}
+//                         <div className="flex items-center gap-2.5">
+//                             <div className="w-5 h-5 rounded-[4px] bg-[#9DB7B5] shadow-sm" />
+//                             <span className="text-[14px] font-medium text-[#374151]">Verified slots</span>
+//                         </div>
+
+//                     </div>
+//                 </div>
+
+//                 {/* SLOTS LIST */}
+//                 <div className="xl:col-span-2 flex flex-col gap-6 min-h-[500px] max-h-[600px] overflow-y-auto pr-2">
+//                     {["Morning", "Afternoon", "Evening"].map((period) => (
+//                         <div key={period}>
+//                             <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">{period}</h3>
+//                             <div className="space-y-4">
+//                                 {(() => {
+//                                     const periodSlots = slots
+//                                         .filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"))
+//                                         .filter(s => s.period === period)
+//                                         .filter(s => {
+//                                             if (genre === "Genre") return true;
+//                                             return s.rawGenre === selectedGenreValue.toLowerCase();
+//                                         })
+//                                         .filter(s => {
+//                                             if (visibility === "All Visibility") return true;
+//                                             const vKey = visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_");
+//                                             return s.rawVisibility === vKey.toLowerCase();
+//                                         })
+//                                         .filter(s => {
+//                                             if (status === "All Status") return true;
+//                                             const targetStatus = status.toLowerCase();
+//                                             if (targetStatus === "booked") {
+//                                                 return s.rawStatus === "booked" || s.rawStatus === "confirmed" || s.rawStatus === "verified" || s.rawStatus === "pending";
+//                                             }
+//                                             return s.rawStatus === targetStatus;
+//                                         });
+
+//                                     if (periodSlots.length === 0) {
+//                                         return (
+//                                             <div className="text-center py-10 text-gray-400 text-xs italic border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
+//                                                 No {period.toLowerCase()} slots available
+//                                             </div>
+//                                         );
+//                                     }
+
+//                                     return periodSlots.map((slot) => (
+//                                         <div key={slot.id} className="bg-white rounded-2xl border border-[#B5B5B5] p-5 hover:border-[#E07A5F]">
+//                                             <div className="flex flex-col gap-4">
+//                                                 <div className="flex items-start justify-between">
+//                                                     <h4 className="text-[15px] font-semibold text-[#111827]">{slot.time}</h4>
+//                                                     <span className={`px-3 py-1 text-[11px] font-normal rounded-full ${slot.statusColor}`}>{slot.status}</span>
+//                                                 </div>
+//                                                 <div className="flex flex-wrap items-center gap-2">
+//                                                     <span className="px-3 py-1 bg-[#16A34A33] rounded-full text-[11px] font-normal">{slot.genre}</span>
+//                                                     <span className="px-3 py-1 bg-[#E07A5F33] rounded-full text-[11px] font-normal flex items-center gap-1"><Users size={12} />{slot.partners}</span>
+//                                                     <span className="px-3 py-1 bg-[#E8E8E8] rounded-full text-[11px] font-normal flex items-center gap-1"><MdOutlineRemoveRedEye size={12} />{slot.visibility}</span>
+//                                                 </div>
+//                                                 <div className="flex items-end justify-between pt-3 border-t border-gray-100">
+//                                                     <div>
+//                                                         <p className="text-[12px] text-gray-500">Audience size:</p>
+//                                                         <p className="text-[16px] font-semibold text-gray-900">{Number(slot.audience).toLocaleString("en-US")}</p>
+//                                                     </div>
+//                                                 </div>
+
+//                                                 <div className="flex gap-2">
+//                                                     {slot.status !== "Available" && (
+//                                                         <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+//                                                             <Eye size={14} className="text-gray-600" />
+//                                                         </button>
+//                                                     )}
+//                                                     {slot.has_available && (
+//                                                         <>
+//                                                             <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+//                                                                 <img src={Edit} alt="Edit" className="w-5 h-5" />
+//                                                             </button>
+//                                                             <button onClick={() => handleDeleteClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+//                                                                 <Trash2 size={14} />
+//                                                             </button>
+//                                                         </>
+//                                                     )}
+
+//                                                 </div>
+
+//                                             </div>
+//                                         </div>
+//                                     ));
+//                                 })()}
+//                             </div>
+//                         </div>
+//                     ))}
+//                 </div>
+//             </div>
+
+//             {/* MODALS */}
+//             {selectedSlot && (
+//                 <>
+//                     <EditNewsSlot
+//                         isOpen={editOpen}
+//                         slotData={selectedSlot}
+//                         onClose={() => { setEditOpen(false); setSelectedSlot(null); }}
+//                         onSave={async () => {
+//                             await fetchSlots();
+//                             await fetchStats();
+//                             setEditOpen(false);
+//                             setSelectedSlot(null);
+//                         }}
+//                     />
+
+//                     <DeleteNewsSlot
+//                         isOpen={deleteOpen}
+//                         onClose={() => { setDeleteOpen(false); setSelectedSlot(null); }}
+//                         onConfirm={async () => {
+//                             try {
+//                                 await deleteNewsSlot(selectedSlot.id);
+//                                 await fetchSlots();
+//                                 await fetchStats();
+//                                 setDeleteOpen(false);
+//                                 setSelectedSlot(null);
+//                                 toast.success("Slot deleted successfully");
+//                             } catch (error) {
+//                                 console.error("Deletion failed", error);
+//                                 toast.error("Failed to delete slot");
+//                             }
+//                         }}
+//                         slotName={selectedSlot.time}
+//                     />
+
+//                     <SlotDetails
+//                         isOpen={detailsOpen}
+//                         onClose={() => { setDetailsOpen(false); setSelectedSlot(null); }}
+//                         slotId={selectedSlot.id}
+//                         onEdit={() => {
+//                             setDetailsOpen(false);
+//                             handleEditClick(selectedSlot);
+//                         }}
+//                     />
+//                 </>
+//             )}
+//         </div>
+//     );
+// };
+
+// export default Newsletter;
+
+
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
     Plus,
     Download,
@@ -20,7 +770,7 @@ import { MdOutlineRemoveRedEye } from "react-icons/md";
 import Edit from "../../../assets/edit.png";
 import Swap from "../../../assets/swap-bg.png";
 import dayjs from "dayjs";
-import { IoChevronDown, IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
 import { getGenres } from "../../../apis/genre";
 import { exportGoogleCalendar, exportOutlookCalendar, exportICSCalendar } from "../../../apis/calendar";
@@ -36,8 +786,6 @@ const Newsletter = () => {
     const [visibility, setVisibility] = useState("All Visibility");
     const [status, setStatus] = useState("All Status");
     const [genre, setGenre] = useState("Genre");
-    const [selectedGenre, setSelectedGenre] = useState("Genre");
-    const [showGenreDropdown, setShowGenreDropdown] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [selectedDate, setSelectedDate] = useState(dayjs());
     const [slots, setSlots] = useState([]);
@@ -46,142 +794,105 @@ const Newsletter = () => {
     const [genres, setGenres] = useState([]);
     const [loadingGenres, setLoadingGenres] = useState(true);
     const [newsletterStats, setNewsletterStats] = useState({
-        total_slots: 0,
-        published_slots: 0,
-        pending_swap_requests: 0,
-        confirmed_swaps: 0,
-        verified_sent: 0
+        total_slots: 0, published_slots: 0,
+        pending_swap_requests: 0, confirmed_swaps: 0, verified_sent: 0
     });
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
     const [calendarData, setCalendarData] = useState([]);
 
+    // ── Key fix: measure calendar height and apply it to slots panel ──────────
+    const calendarRef = useRef(null);
+    const slotsPanelRef = useRef(null);
+
+    useEffect(() => {
+        const syncHeight = () => {
+            if (calendarRef.current && slotsPanelRef.current) {
+                slotsPanelRef.current.style.maxHeight =
+                    calendarRef.current.offsetHeight + "px";
+            }
+        };
+        syncHeight();
+        window.addEventListener("resize", syncHeight);
+        return () => window.removeEventListener("resize", syncHeight);
+    }); // intentionally no dep array — re-runs after every render to stay in sync
+
     const handleSlotExport = (slotId, format) => {
         const slot = slots.find(s => s.id === slotId);
         if (!slot) return;
-
         const { raw_data } = slot;
         const eventTitle = `Newsletter Slot: ${slot.genre}`;
         const eventDescription = `Newsletter promotion for ${slot.genre}. Audience size: ${slot.audience}. Status: ${slot.status}`;
-
-        // Construct start and end times in local time from send_date and send_time
         let startMoment;
-        const timeStr = raw_data.send_time || "10:00:00"; // Default to 10 AM if no time
-
-        // Handle HH:mm AM/PM or HH:mm:ss formats
+        const timeStr = raw_data.send_time || "10:00:00";
         if (timeStr.toLowerCase().includes("am") || timeStr.toLowerCase().includes("pm")) {
             startMoment = dayjs(`${raw_data.send_date} ${timeStr}`, "YYYY-MM-DD h:mm A");
         } else {
             startMoment = dayjs(`${raw_data.send_date} ${timeStr}`);
         }
-
-        if (!startMoment.isValid()) {
-            startMoment = dayjs(raw_data.send_date).set("hour", 10).set("minute", 0);
-        }
-
+        if (!startMoment.isValid()) startMoment = dayjs(raw_data.send_date).set("hour", 10).set("minute", 0);
         const endMoment = startMoment.add(1, "hour");
-
-        // Format for URL and ICS
         const startTimeStr = startMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
         const endTimeStr = endMoment.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-
         if (format === "google") {
-            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startTimeStr}/${endTimeStr}&details=${encodeURIComponent(eventDescription)}&sf=true&output=xml`;
-            window.open(url, "_blank");
+            window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventTitle)}&dates=${startTimeStr}/${endTimeStr}&details=${encodeURIComponent(eventDescription)}&sf=true&output=xml`, "_blank");
         } else if (format === "outlook") {
-            const url = `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`;
-            window.open(url, "_blank");
+            window.open(`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`, "_blank");
         } else if (format === "ics") {
-            const icsContent = [
-                "BEGIN:VCALENDAR",
-                "VERSION:2.0",
-                "PRODID:-//AuthorSwap//Newsletter Calendar//EN",
-                "BEGIN:VEVENT",
-                `UID:newsletter-slot-${slotId}@authorswap.com`,
-                `DTSTAMP:${dayjs().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
-                `DTSTART:${startTimeStr}`,
-                `DTEND:${endTimeStr}`,
-                `SUMMARY:${eventTitle}`,
-                `DESCRIPTION:${eventDescription}`,
-                "END:VEVENT",
-                "END:VCALENDAR"
-            ].join("\n");
-
+            const icsContent = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//AuthorSwap//Newsletter Calendar//EN","BEGIN:VEVENT",`UID:newsletter-slot-${slotId}@authorswap.com`,`DTSTAMP:${dayjs().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART:${startTimeStr}`,`DTEND:${endTimeStr}`,`SUMMARY:${eventTitle}`,`DESCRIPTION:${eventDescription}`,"END:VEVENT","END:VCALENDAR"].join("\n");
             const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
             const link = document.createElement("a");
             link.href = window.URL.createObjectURL(blob);
             link.setAttribute("download", `newsletter_slot_${slotId}.ics`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
         setOpenDropdown(null);
     };
 
-
     const handleExportGoogle = async () => {
         try {
-            const response = await exportGoogleCalendar();
-            if (response?.calendar_url) {
-                window.open(response.calendar_url, "_blank");
-            } else {
-                toast.error("Failed to get Google Calendar URL");
-            }
-        } catch (error) {
-            toast.error("Failed to export to Google Calendar");
-        }
+            const r = await exportGoogleCalendar();
+            if (r?.calendar_url) window.open(r.calendar_url, "_blank");
+            else toast.error("Failed to get Google Calendar URL");
+        } catch { toast.error("Failed to export to Google Calendar"); }
         setExportDropdownOpen(false);
     };
 
     const handleExportOutlook = async () => {
         try {
-            const response = await exportOutlookCalendar();
-            if (response?.calendar_url) {
-                window.open(response.calendar_url, "_blank");
-            } else {
-                toast.error("Failed to get Outlook URL");
-            }
-        } catch (error) {
-            toast.error("Failed to export to Outlook");
-        }
+            const r = await exportOutlookCalendar();
+            if (r?.calendar_url) window.open(r.calendar_url, "_blank");
+            else toast.error("Failed to get Outlook URL");
+        } catch { toast.error("Failed to export to Outlook"); }
         setExportDropdownOpen(false);
     };
 
     const handleExportICS = async () => {
         try {
-            const response = await exportICSCalendar();
-            if (response?.content) {
-                const blob = new Blob([response.content], { type: "text/calendar;charset=utf-8" });
+            const r = await exportICSCalendar();
+            if (r?.content) {
+                const blob = new Blob([r.content], { type: "text/calendar;charset=utf-8" });
                 const link = document.createElement("a");
                 link.href = window.URL.createObjectURL(blob);
-                link.setAttribute("download", `newsletter_calendar.ics`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                link.setAttribute("download", "newsletter_calendar.ics");
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
                 toast.success("ICS file downloaded");
-            } else {
-                toast.error("Failed to get ICS content");
-            }
-        } catch (error) {
-            toast.error("Failed to download ICS file");
-        }
+            } else toast.error("Failed to get ICS content");
+        } catch { toast.error("Failed to download ICS file"); }
         setExportDropdownOpen(false);
     };
-
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     const generateCalendar = () => {
-        const startOfMonth = currentMonth.startOf("month");
-        const endOfMonth = currentMonth.endOf("month");
-        const startDate = startOfMonth.startOf("week");
-        const endDate = endOfMonth.endOf("week");
+        const startDate = currentMonth.startOf("month").startOf("week");
+        const endDate = currentMonth.endOf("month").endOf("week");
         let date = startDate.clone();
-        const days = [];
+        const result = [];
         while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
-            days.push(date.clone());
+            result.push(date.clone());
             date = date.add(1, "day");
         }
-        return days;
+        return result;
     };
 
     const calendarDays = useMemo(() => generateCalendar(), [currentMonth]);
@@ -189,36 +900,24 @@ const Newsletter = () => {
 
     useEffect(() => {
         const loadGenres = async () => {
-            try {
-                const response = await getGenres();
-                setGenres(response);
-            } catch (error) {
-                console.error(error);
-                toast.error("Failed to load genres");
-            } finally {
-                setLoadingGenres(false);
-            }
+            try { setGenres(await getGenres()); }
+            catch (e) { console.error(e); toast.error("Failed to load genres"); }
+            finally { setLoadingGenres(false); }
         };
         loadGenres();
     }, []);
 
     const formatLabel = (value) => {
         if (!value) return "";
-        return value
-            .replace(/_/g, " ")
-            .toLowerCase()
-            .replace(/\b\w/g, char => char.toUpperCase());
+        return value.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
     };
 
     const getPeriod = (time) => {
         if (!time) return "Morning";
         let hour = parseInt(time.split(":")[0], 10);
-        const lowerTime = time.toLowerCase();
-
-        // Handle 12h format with AM/PM
-        if (lowerTime.includes("pm") && hour < 12) hour += 12;
-        if (lowerTime.includes("am") && hour === 12) hour = 0;
-
+        const low = time.toLowerCase();
+        if (low.includes("pm") && hour < 12) hour += 12;
+        if (low.includes("am") && hour === 12) hour = 0;
         if (hour < 12) return "Morning";
         if (hour < 17) return "Afternoon";
         return "Evening";
@@ -228,110 +927,59 @@ const Newsletter = () => {
         try {
             setLoading(true);
             const response = await getNewsSlot();
-            // Robust data extraction
-            const dataArray = Array.isArray(response.data)
-                ? response.data
-                : (response.data?.data || response.data?.results || []);
-
+            const dataArray = Array.isArray(response.data) ? response.data : (response.data?.data || response.data?.results || []);
             const formatted = dataArray.map(item => {
-                // Determine display status and color from flags
-                let status = "Available";
-                let statusColor = "bg-[#16A34A33]";
-
-                if (item.has_published) {
-                    status = "Published";
-                    statusColor = "bg-[#F1B9AA]";
-                } else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) {
-                    status = "Booked";
-                    statusColor = "bg-[#F59E0B33]";
-                } else if (item.has_available) {
-                    status = "Available";
-                    statusColor = "bg-[#16A34A33]";
-                } else if (item.status) {
-                    status = formatLabel(item.status);
-                    statusColor = (item.status || "").toLowerCase() === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
-                }
-
+                let status = "Available", statusColor = "bg-[#16A34A33]";
+                if (item.has_published) { status = "Published"; statusColor = "bg-[#F1B9AA]"; }
+                else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) { status = "Booked"; statusColor = "bg-[#F59E0B33]"; }
+                else if (item.has_available) { status = "Available"; statusColor = "bg-[#16A34A33]"; }
+                else if (item.status) { status = formatLabel(item.status); statusColor = (item.status||"").toLowerCase()==="available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]"; }
                 return {
                     id: item.id,
-                    time: item.send_date
-                        ? `${dayjs(item.send_date).format("MMM D, YYYY")} ${item.send_time ? `at ${item.send_time}` : ""}`
-                        : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
+                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date||""} ${item.formatted_time||""}`.trim() || item.send_time || "",
                     period: getPeriod(item.send_time) || formatLabel(item.time_period),
                     genre: formatLabel(item.preferred_genre),
-                    rawGenre: (item.preferred_genre || "").toLowerCase(),
-                    partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
+                    rawGenre: (item.preferred_genre||"").toLowerCase(),
+                    partners: `${item.current_partners_count??item.partner_count??0}/${item.max_partners??0} Partners`,
                     visibility: formatLabel(item.visibility),
-                    rawVisibility: (item.visibility || "").toLowerCase(),
+                    rawVisibility: (item.visibility||"").toLowerCase(),
                     audience: item.audience_size,
-                    status: status,
-                    rawStatus: status.toLowerCase(),
-                    statusColor: statusColor,
-                    has_available: item.has_available || (item.status || "").toLowerCase() === "available",
+                    status, rawStatus: status.toLowerCase(), statusColor,
+                    has_available: item.has_available || (item.status||"").toLowerCase()==="available",
                     has_booked: item.has_booked || item.has_confirmed || item.has_verified || item.has_pending,
                     raw_data: item,
                 };
             });
             setSlots(formatted);
-        } catch (error) {
-            console.error("Failed to fetch slots", error);
-        } finally {
-            setLoading(false);
-        }
+        } catch (e) { console.error("Failed to fetch slots", e); }
+        finally { setLoading(false); }
     };
 
     const fetchStats = async () => {
         try {
             const params = {
-                month: currentMonth.format("MM"),
-                year: currentMonth.format("YYYY"),
+                month: currentMonth.format("MM"), year: currentMonth.format("YYYY"),
                 genre: selectedGenreValue || "all",
                 visibility: visibility === "All Visibility" ? "all" : (visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_")),
                 status: status === "All Status" ? "all" : (status === "Booked" ? "booked" : status.toLowerCase())
             };
-            const response = await statsNewsSlot(params);
-            const statsData = response.data?.stats_cards || {};
-            const calData = response.data?.calendar?.days || [];
-
-            setNewsletterStats(statsData);
-            setCalendarData(calData);
-        } catch (error) {
-            console.error("Failed to fetch newsletter stats", error);
-        }
+            const r = await statsNewsSlot(params);
+            setNewsletterStats(r.data?.stats_cards || {});
+            setCalendarData(r.data?.calendar?.days || []);
+        } catch (e) { console.error("Failed to fetch stats", e); }
     };
 
-    useEffect(() => {
-        fetchSlots();
-    }, []);
+    useEffect(() => { fetchSlots(); }, []);
+    useEffect(() => { fetchStats(); }, [genre, visibility, status, currentMonth]);
 
-    useEffect(() => {
-        fetchStats();
-    }, [genre, visibility, status, currentMonth]);
+    const handleEditClick = (slot) => { setSelectedSlot(slot); setEditOpen(true); };
+    const handleDeleteClick = (slot) => { setSelectedSlot(slot); setDeleteOpen(true); };
 
-    const handleEditClick = (slot) => {
-        setSelectedSlot(slot);
-        setEditOpen(true);
-    };
-
-    const handleDeleteClick = (slot) => {
-        setSelectedSlot(slot);
-        setDeleteOpen(true);
-    };
-
-    const PendingSwapIcon = ({ size = 20 }) => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
-    const ConfirmedSwapIcon = ({ size = 20 }) => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
-    const VerifiedSentIcon = ({ size = 20 }) => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
-    const NewsIcon = ({ size = 20 }) => <img src={newsIcon} alt="News" style={{ width: "33px", height: "32px" }} />;
-    const SwapIcon = ({ width = 20, height = 20 }) => (
-        <img
-            src={Swap}
-            alt="Swap"
-            style={{
-                width: "31px",
-                height: "29px",
-            }}
-        />
-    );
+    const PendingSwapIcon = () => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
+    const ConfirmedSwapIcon = () => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
+    const VerifiedSentIcon = () => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
+    const NewsIcon = () => <img src={newsIcon} alt="News" style={{ width: "33px", height: "32px" }} />;
+    const SwapIcon = () => <img src={Swap} alt="Swap" style={{ width: "31px", height: "29px" }} />;
 
     const stats = [
         { label: "Total", value: String(newsletterStats.total ?? newsletterStats.total_slots ?? 0), icon: NewsIcon },
@@ -345,276 +993,167 @@ const Newsletter = () => {
         <div className="pb-10 max-w-full overflow-hidden">
             <div className="mb-6">
                 <h1 className="text-2xl font-semibold">Newsletter & Slot Management</h1>
-                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">Schedule, manage, and track your newsletter promotions</p>
+                <p className="text-[12px] md:text-[13px] text-[#374151] font-medium mt-0.5">
+                    Schedule, manage, and track your newsletter promotions
+                </p>
             </div>
+
+            {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-                {stats.map((stat, index) => (
-                    <div
-                        key={index}
-                        className="
-                bg-white rounded-[10px] 
-                border border-[#B5B5B5] 
-                p-4 flex flex-col gap-4 justify-between 
-                shadow-sm min-h-[110px]
-                transition-all duration-300
-                hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
-                hover:-translate-y-1
-            "
-                    >
+                {stats.map((stat, i) => (
+                    <div key={i} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1">
                         <div className="flex justify-between items-start gap-2">
-                            <div className="w-10 h-10 rounded-lg">
-                                <stat.icon size={24} />
-                            </div>
-                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">
-                                {stat.label}
-                            </span>
+                            <div className="w-10 h-10 rounded-lg"><stat.icon /></div>
+                            <span className="text-[11px] md:text-[12px] font-medium text-[#374151] text-right mt-1.5 leading-tight flex-1">{stat.label}</span>
                         </div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">
-                            {stat.value}
-                        </div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900 leading-none">{stat.value}</div>
                     </div>
                 ))}
             </div>
+
+            {/* Toolbar */}
             <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
                 <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
-                    All Slots for{" "}
-                    {selectedDate.format("MMMM D, YYYY")}
+                    All Slots for {selectedDate.format("MMMM D, YYYY")}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                        {/* Genre Filter */}
+                        {/* Genre */}
                         <div className="relative">
                             <button onClick={() => setOpenDropdown(openDropdown === "genre" ? null : "genre")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
-                                {genre}
-                                <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "genre" ? "rotate-180" : ""}`} />
+                                {genre} <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "genre" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "genre" && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
                                         <button onClick={() => { setGenre("Genre"); setSelectedGenreValue(""); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Select Genre</button>
-                                        {genres.map((g) => (
-                                            <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>
-                                        ))}
+                                        {genres.map(g => <button key={g.value} onClick={() => { setGenre(g.label); setSelectedGenreValue(g.value); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{g.label}</button>)}
                                     </div>
                                 </>
                             )}
                         </div>
-
-                        {/* Visibility Filter */}
+                        {/* Visibility */}
                         <div className="relative">
                             <button onClick={() => setOpenDropdown(openDropdown === "visibility" ? null : "visibility")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
-                                {visibility}
-                                <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "visibility" ? "rotate-180" : ""}`} />
+                                {visibility} <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "visibility" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "visibility" && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map((item) => (
-                                            <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
-                                        ))}
+                                        {["All Visibility","Public","Friend Only","Hidden","Single Use Private Link"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
                         </div>
-
-                        {/* Status Filter */}
+                        {/* Status */}
                         <div className="relative">
                             <button onClick={() => setOpenDropdown(openDropdown === "status" ? null : "status")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
-                                {status}
-                                <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "status" ? "rotate-180" : ""}`} />
+                                {status} <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "status" ? "rotate-180" : ""}`} />
                             </button>
                             {openDropdown === "status" && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Status", "Available", "Booked", "Published"].map((item) => (
-                                            <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>
-                                        ))}
+                                        {["All Status","Available","Booked","Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
                         </div>
-
-                        {/* Export Dropdown */}
+                        {/* Export */}
                         <div className="relative">
-                            <button
-                                onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
-                                className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]"
-                            >
-                                <Download size={16} />
-                                Export With
-                                <ChevronDown
-                                    size={14}
-                                    className={`text-gray-400 transition-transform ${exportDropdownOpen ? "rotate-180" : ""
-                                        }`}
-                                />
+                            <button onClick={() => setExportDropdownOpen(!exportDropdownOpen)} className="flex items-center gap-2 px-5 py-2 bg-white border border-gray-200 rounded-[8px] text-[13px] font-medium text-[#111827]">
+                                <Download size={16} /> Export With <ChevronDown size={14} className={`text-gray-400 transition-transform ${exportDropdownOpen ? "rotate-180" : ""}`} />
                             </button>
-
                             {exportDropdownOpen && (
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setExportDropdownOpen(false)} />
                                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        <button
-                                            onClick={handleExportGoogle}
-                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                        >
-                                            Google Calendar
-                                        </button>
-
-                                        <button
-                                            onClick={handleExportOutlook}
-                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                        >
-                                            Outlook
-                                        </button>
-
-                                        <button
-                                            onClick={handleExportICS}
-                                            className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50"
-                                        >
-                                            Download ICS File
-                                        </button>
+                                        <button onClick={handleExportGoogle} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Google Calendar</button>
+                                        <button onClick={handleExportOutlook} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Outlook</button>
+                                        <button onClick={handleExportICS} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">Download ICS File</button>
                                     </div>
                                 </>
                             )}
                         </div>
                     </div>
-
                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">
-                        <Plus size={16} />
-                        Add New Slot
+                        <Plus size={16} /> Add New Slot
                     </button>
-
                     <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); }} />
                 </div>
             </div>
 
+            {/* ── Calendar + Slots ── */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
-                {/* CALENDAR */}
-                <div className="xl:col-span-3 bg-white rounded-[12px] border border-[#B5B5B5] p-4 shadow-sm">
+
+                {/* CALENDAR — ref measures its rendered height */}
+                <div ref={calendarRef} className="xl:col-span-3 bg-white rounded-[12px] border border-[#B5B5B5] p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-10">
                         <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
-                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-                            >
-                                <IoChevronBack size={20} />
-                            </button>
-                            <h3 className="text-[17px] font-medium text-[#111827] tracking-tight">
-                                {currentMonth.format("MMMM YYYY")}
-                            </h3>
-                            <button
-                                onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
-                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-                            >
-                                <IoChevronForward size={20} />
-                            </button>
+                            <button onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><IoChevronBack size={20} /></button>
+                            <h3 className="text-[17px] font-medium text-[#111827] tracking-tight">{currentMonth.format("MMMM YYYY")}</h3>
+                            <button onClick={() => setCurrentMonth(currentMonth.add(1, "month"))} className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"><IoChevronForward size={20} /></button>
                         </div>
-                        <button
-                            onClick={() => {
-                                const now = dayjs();
-                                setCurrentMonth(now);
-                                setSelectedDate(now);
-                            }}
-                            className="text-[17px] font-medium text-[#4B5563] hover:text-[#111827] transition-colors"
-                        >
-                            Today
-                        </button>
+                        <button onClick={() => { const now = dayjs(); setCurrentMonth(now); setSelectedDate(now); }} className="text-[17px] font-medium text-[#4B5563] hover:text-[#111827] transition-colors">Today</button>
                     </div>
 
                     <div className="grid grid-cols-7 border-l border-t border-gray-200 rounded-tl-xl overflow-hidden">
-                        {days.map((day) => (
-                            <div
-                                key={day}
-                                className="py-3 text-center text-[12px] font-medium text-gray-500 border-r border-b border-gray-100 bg-gray-50/10"
-                            >
-                                {day}
-                            </div>
+                        {days.map(day => (
+                            <div key={day} className="py-3 text-center text-[12px] font-medium text-gray-500 border-r border-b border-gray-100 bg-gray-50/10">{day}</div>
                         ))}
                         {calendarDays.map((date, idx) => {
                             const isCurrentMonth = date.isSame(currentMonth, "month");
                             const isToday = date.isSame(today, "day");
-
-                            // Get pre-calculated daily highlights from API response
                             const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
-
                             let bgColor = "bg-white";
-                            if (!isCurrentMonth) {
-                                bgColor = "bg-[#F3F4F64D]"; // Subtle light grey for other months
-                            } else if (dayApiData?.has_slots) {
-                                // Background Priority matching YOUR response keys
+                            if (!isCurrentMonth) bgColor = "bg-[#F3F4F64D]";
+                            else if (dayApiData?.has_slots) {
                                 if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";
                             }
-
                             return (
-                                <div
-                                    key={idx}
-                                    onClick={() => setSelectedDate(date)}
-                                    className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80
-                                        ${bgColor} 
-                                        ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""}
-                                        ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}
-                                    `}
+                                <div key={idx} onClick={() => setSelectedDate(date)}
+                                    className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80 ${bgColor} ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""} ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}`}
                                 >
-                                    <span
-                                        className={`text-[12px] font-medium 
-                                            ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} 
-                                            ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""}
-                                            ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}
-                                        `}
-                                    >
+                                    <span className={`text-[12px] font-medium ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""} ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}`}>
                                         {date.format("D")}
                                     </span>
-
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* LEGEND */}
                     <div className="flex flex-wrap gap-x-8 gap-y-3 mt-8 justify-center">
-
-                        {/* Available */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#16A34A33] border border-teal-100 shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Available slots</span>
-                        </div>
-
-                        {/* Published */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#F1B9AA] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Published slots</span>
-                        </div>
-
-                        {/* Confirmed */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#F59E0B33] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Confirmed slots</span>
-                        </div>
-
-                        {/* Pending */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#EAD8B1] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Pending slots</span>
-                        </div>
-
-                        {/* Verified */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-5 h-5 rounded-[4px] bg-[#9DB7B5] shadow-sm" />
-                            <span className="text-[14px] font-medium text-[#374151]">Verified slots</span>
-                        </div>
-
+                        {[
+                            { color: "bg-[#16A34A33] border border-teal-100", label: "Available slots" },
+                            { color: "bg-[#F1B9AA]", label: "Published slots" },
+                            { color: "bg-[#F59E0B33]", label: "Confirmed slots" },
+                            { color: "bg-[#EAD8B1]", label: "Pending slots" },
+                            { color: "bg-[#9DB7B5]", label: "Verified slots" },
+                        ].map(({ color, label }) => (
+                            <div key={label} className="flex items-center gap-2.5">
+                                <div className={`w-5 h-5 rounded-[4px] shadow-sm ${color}`} />
+                                <span className="text-[14px] font-medium text-[#374151]">{label}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* SLOTS LIST */}
-                <div className="xl:col-span-2 flex flex-col gap-6 max-h-[600px] overflow-y-auto pr-2">
-                    {["Morning", "Afternoon", "Evening"].map((period) => (
+                {/*
+                    SLOTS PANEL
+                    - maxHeight is set dynamically via JS to exactly match calendarRef.offsetHeight
+                    - overflow-y-auto adds scrollbar only when content exceeds that height
+                    - calendar height never changes — only the slots panel scrolls
+                */}
+                <div
+                    ref={slotsPanelRef}
+                    className="xl:col-span-2 flex flex-col gap-6 overflow-y-auto pr-2"
+                >
+                    {["Morning", "Afternoon", "Evening"].map(period => (
                         <div key={period}>
                             <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">{period}</h3>
                             <div className="space-y-4">
@@ -622,22 +1161,17 @@ const Newsletter = () => {
                                     const periodSlots = slots
                                         .filter(s => dayjs(s.raw_data.send_date).isSame(selectedDate, "day"))
                                         .filter(s => s.period === period)
-                                        .filter(s => {
-                                            if (genre === "Genre") return true;
-                                            return s.rawGenre === selectedGenreValue.toLowerCase();
-                                        })
+                                        .filter(s => genre === "Genre" || s.rawGenre === selectedGenreValue.toLowerCase())
                                         .filter(s => {
                                             if (visibility === "All Visibility") return true;
-                                            const vKey = visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_");
-                                            return s.rawVisibility === vKey.toLowerCase();
+                                            const vKey = visibility === "Public" ? "public" : visibility.toLowerCase().replace(/ /g, "_");
+                                            return s.rawVisibility === vKey;
                                         })
                                         .filter(s => {
                                             if (status === "All Status") return true;
-                                            const targetStatus = status.toLowerCase();
-                                            if (targetStatus === "booked") {
-                                                return s.rawStatus === "booked" || s.rawStatus === "confirmed" || s.rawStatus === "verified" || s.rawStatus === "pending";
-                                            }
-                                            return s.rawStatus === targetStatus;
+                                            const t = status.toLowerCase();
+                                            if (t === "booked") return ["booked","confirmed","verified","pending"].includes(s.rawStatus);
+                                            return s.rawStatus === t;
                                         });
 
                                     if (periodSlots.length === 0) {
@@ -648,7 +1182,7 @@ const Newsletter = () => {
                                         );
                                     }
 
-                                    return periodSlots.map((slot) => (
+                                    return periodSlots.map(slot => (
                                         <div key={slot.id} className="bg-white rounded-2xl border border-[#B5B5B5] p-5 hover:border-[#E07A5F]">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-start justify-between">
@@ -666,26 +1200,23 @@ const Newsletter = () => {
                                                         <p className="text-[16px] font-semibold text-gray-900">{Number(slot.audience).toLocaleString("en-US")}</p>
                                                     </div>
                                                 </div>
-
                                                 <div className="flex gap-2">
                                                     {slot.status !== "Available" && (
-                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+                                                        <button onClick={() => { setSelectedSlot(slot); setDetailsOpen(true); }} className="p-2 bg-[#2F6F6D33] rounded-[4px] transition">
                                                             <Eye size={14} className="text-gray-600" />
                                                         </button>
                                                     )}
                                                     {slot.has_available && (
                                                         <>
-                                                            <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+                                                            <button onClick={() => handleEditClick(slot)} className="p-2 bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <img src={Edit} alt="Edit" className="w-5 h-5" />
                                                             </button>
-                                                            <button onClick={() => handleDeleteClick(slot)} className="p-2 bg-[#2F6F6D33] hover:bg-[#2F6F6D33] rounded-[4px] transition">
+                                                            <button onClick={() => handleDeleteClick(slot)} className="p-2 bg-[#2F6F6D33] rounded-[4px] transition">
                                                                 <Trash2 size={14} />
                                                             </button>
                                                         </>
                                                     )}
-
                                                 </div>
-
                                             </div>
                                         </div>
                                     ));
@@ -696,48 +1227,29 @@ const Newsletter = () => {
                 </div>
             </div>
 
-            {/* MODALS */}
+            {/* Modals */}
             {selectedSlot && (
                 <>
-                    <EditNewsSlot
-                        isOpen={editOpen}
-                        slotData={selectedSlot}
+                    <EditNewsSlot isOpen={editOpen} slotData={selectedSlot}
                         onClose={() => { setEditOpen(false); setSelectedSlot(null); }}
-                        onSave={async () => {
-                            await fetchSlots();
-                            await fetchStats();
-                            setEditOpen(false);
-                            setSelectedSlot(null);
-                        }}
+                        onSave={async () => { await fetchSlots(); await fetchStats(); setEditOpen(false); setSelectedSlot(null); }}
                     />
-
-                    <DeleteNewsSlot
-                        isOpen={deleteOpen}
+                    <DeleteNewsSlot isOpen={deleteOpen}
                         onClose={() => { setDeleteOpen(false); setSelectedSlot(null); }}
                         onConfirm={async () => {
                             try {
                                 await deleteNewsSlot(selectedSlot.id);
-                                await fetchSlots();
-                                await fetchStats();
-                                setDeleteOpen(false);
-                                setSelectedSlot(null);
+                                await fetchSlots(); await fetchStats();
+                                setDeleteOpen(false); setSelectedSlot(null);
                                 toast.success("Slot deleted successfully");
-                            } catch (error) {
-                                console.error("Deletion failed", error);
-                                toast.error("Failed to delete slot");
-                            }
+                            } catch (e) { console.error(e); toast.error("Failed to delete slot"); }
                         }}
                         slotName={selectedSlot.time}
                     />
-
-                    <SlotDetails
-                        isOpen={detailsOpen}
+                    <SlotDetails isOpen={detailsOpen}
                         onClose={() => { setDetailsOpen(false); setSelectedSlot(null); }}
                         slotId={selectedSlot.id}
-                        onEdit={() => {
-                            setDetailsOpen(false);
-                            handleEditClick(selectedSlot);
-                        }}
+                        onEdit={() => { setDetailsOpen(false); handleEditClick(selectedSlot); }}
                     />
                 </>
             )}
