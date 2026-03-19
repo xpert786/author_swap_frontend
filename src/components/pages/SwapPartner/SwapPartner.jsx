@@ -33,7 +33,8 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const price = parseFloat(partner.price || 0);
     const isPaid = price > 0;
     const status = partner.status || "available";
-    const promotionType = partner.promotionType || partner.badge || null;   
+    const promotionType = partner.promotionType || partner.badge || null;
+
 
     // Status badges
     const getBadges = () => {
@@ -312,32 +313,49 @@ const SwapPartner = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
+    const [nextUrl, setNextUrl] = useState(null);
+    const [prevUrl, setPrevUrl] = useState(null);
 
 
-    const fetchSlots = async (page = 1) => {
+    const fetchSlots = async (url = null, page = 1) => {
         try {
             setLoading(true);
-            const response = await getExploreSlots({ page });
-            // Handle common DRF structures or direct arrays
+
+            const response = url
+                ? await getExploreSlots(null, url) // if your API supports full URL
+                : await getExploreSlots({ page });
+
             let data = response.data?.results || response.data || [];
-            // Handle camelCase conversion
             data = toCamel(data);
 
             setSlots(data);
             if (data.length > 0) setSelectedId(data[0].id);
-            
-            // Set pagination info from response
-            if (response.data?.pagination) {
-                setTotalPages(response.data.pagination.total_pages || 1);
-                setHasNext(response.data.pagination.has_next || false);
-                setHasPrevious(response.data.pagination.has_previous || false);
+
+            // ✅ USE BACKEND PAGINATION
+            const next = response.data?.next;
+            const prev = response.data?.previous;
+
+            setNextUrl(next);
+            setPrevUrl(prev);
+
+            // ✅ USE BACKEND VALUES DIRECTLY
+            setCurrentPage(response.data?.current_page || 1);
+            setTotalPages(response.data?.total_pages || 1);
+
+            setHasNext(!!next);
+            setHasPrevious(!!prev);
+
+            // extract current page from URL
+            if (url) {
+                const match = url.match(/page=(\d+)/);
+                setCurrentPage(match ? Number(match[1]) : 1);
             } else {
-                // Fallback if no pagination info in response
-                setTotalPages(1);
-                setHasNext(false);
-                setHasPrevious(page > 1);
+                setCurrentPage(page);
             }
-            setCurrentPage(page);
+
+            setHasNext(!!next);
+            setHasPrevious(!!prev);
+
         } catch (error) {
             console.error("Failed to fetch explore slots:", error);
             setSlots([]);
@@ -512,7 +530,7 @@ const SwapPartner = () => {
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-2 mt-6">
                             <button
-                                onClick={() => fetchSlots(currentPage - 1)}
+                                onClick={() => prevUrl && fetchSlots(prevUrl)}
                                 disabled={!hasPrevious || loading}
                                 className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                             >
@@ -522,7 +540,7 @@ const SwapPartner = () => {
                                 Page {currentPage} of {totalPages}
                             </span>
                             <button
-                                onClick={() => fetchSlots(currentPage + 1)}
+                                onClick={() => nextUrl && fetchSlots(nextUrl)}
                                 disabled={!hasNext || loading}
                                 className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                             >

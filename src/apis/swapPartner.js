@@ -1,8 +1,13 @@
 import apiClient from "./client";
 
-export const getExploreSlots = (params = {}) => {
+export const getExploreSlots = (params = {}, fullUrl = null) => {
+    if (fullUrl) {
+        return apiClient.get(fullUrl);
+    }
+
     const queryString = new URLSearchParams(params).toString();
     const url = queryString ? `slots/explore/?${queryString}` : "slots/explore/";
+
     return apiClient.get(url);
 };
 
