@@ -613,7 +613,7 @@ const Newsletter = () => {
                 </div>
 
                 {/* SLOTS LIST */}
-                <div className="xl:col-span-2 flex flex-col gap-6">
+                <div className="xl:col-span-2 flex flex-col gap-6 max-h-[600px] overflow-y-auto pr-2">
                     {["Morning", "Afternoon", "Evening"].map((period) => (
                         <div key={period}>
                             <h3 className="text-[11px] font-medium text-[#374151] mb-4 uppercase tracking-[0.2em] border-b border-[#2F6F6D33] pb-2">{period}</h3>

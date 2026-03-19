@@ -174,11 +174,23 @@ const AccountSettings = () => {
         try {
             setAddingFunds(true);
             const res = await addFunds(addFundsAmount);
-            const url = res.data?.url || res.data?.checkout_url;
-            if (url) {
-                window.location.href = url;
+            
+            // Check if funds were added directly (saved card scenario)
+            if (res.data?.detail && res.data?.new_balance) {
+                toast.success(res.data.detail);
+                // Close modal and clear amount
+                setIsAddFundsModalOpen(false);
+                setAddFundsAmount("");
+                // Refresh wallet balance
+                fetchWalletData();
             } else {
-                toast.error("Could not start checkout. Please try again.");
+                // Check for checkout URL (new card scenario)
+                const url = res.data?.url || res.data?.checkout_url;
+                if (url) {
+                    window.location.href = url;
+                } else {
+                    toast.error(res.data?.message || "Could not start checkout. Please try again.");
+                }
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to add funds");
