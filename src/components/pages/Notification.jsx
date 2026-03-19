@@ -209,6 +209,10 @@ const Notification = () => {
                                                         navigate('/subscription');
                                                     } else if (item.type === 'swap' || item.badge === 'swap') {
                                                         navigate('/swap-management');
+                                                    } else if (title.includes('email') || message.includes('email') || 
+                                                        title.includes('message') || message.includes('message') ||
+                                                        item.action_url?.includes('/communication-tools/email/')) {
+                                                        navigate('/communication-list');
                                                     } else if (item.action_url) {
                                                         // For swap notifications, override the action_url to go to swap-management
                                                         const isSwapRelated = item.action_url.includes('/swaps/') || item.action_url.includes('swap');
