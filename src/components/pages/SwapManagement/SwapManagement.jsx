@@ -291,26 +291,17 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
 
         // ── 3. COMPLETED ──────────────────────────────────────────────────
         if (isCompleted) {
-            // Show Track My Swap button for paid swaps, Swap Completed for free swaps
-            if (isPaidSwap) {
-                return (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/swap-history/${data.id}`);
-                        }}
-                        className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
-                    >
-                        View swap history
-                    </button>
-                );
-            } else {
-                return (
-                    <div className="bg-[#16A34A33] text-[#166534] text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
-                        Swap Completed
-                    </div>
-                );
-            }
+            return (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/swap-history/${data.id}`);
+                    }}
+                    className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
+                >
+                    View swap history
+                </button>
+            );
         }
 
         // ── 4. REJECTED ───────────────────────────────────────────────────

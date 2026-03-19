@@ -141,8 +141,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
 
     // FIX 3: linkAnalysis correctly returns flat link objects (with campaignName attached)
     const linkAnalysis = useMemo(() => {
-        const allLinks = Array.isArray(analytics?.link_level_ctr)
-            ? analytics.link_level_ctr
+        const allLinks = Array.isArray(analytics?.link_level_ctr?.results)
+            ? analytics.link_level_ctr.results
             : [];
 
         const filtered = selectedCampaignId
@@ -157,7 +157,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
             }));
             return [...acc, ...links];
         }, []);
-    }, [analytics?.link_level_ctr, selectedCampaignId]);
+    }, [analytics?.link_level_ctr?.results, selectedCampaignId]);
 
     const subGrowth = Array.isArray(analytics?.growth_chart) && analytics.growth_chart.length > 0
         ? analytics.growth_chart
