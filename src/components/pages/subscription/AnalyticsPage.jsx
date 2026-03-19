@@ -92,7 +92,9 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const listHealth = analytics?.list_health_metrics || {};
 
     const campaigns = analytics?.campaign_analytics || [];
-    const linkAnalysis = analytics?.link_level_ctr || [];
+    const linkAnalysis = Array.isArray(analytics?.link_level_ctr)
+        ? analytics.link_level_ctr
+        : [];
     const subGrowth = Array.isArray(analytics?.growth_chart) && analytics.growth_chart.length > 0
         ? analytics.growth_chart
         : defaultEmptyData;
@@ -406,34 +408,39 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                     <div className="text-right">Conversion</div>
                                 </div>
 
-                                {linkAnalysis.reduce((acc, campaign) => {
-                                    const links = campaign.links.map(link => ({
-                                        ...link,
-                                        campaignName: campaign.campaign_name
-                                    }));
-                                    return [...acc, ...links];
-                                }, []).map((link, idx) => (
-                                    <div key={idx} className="grid grid-cols-4 items-center px-6 py-4 border-t first:border-t-0 text-xs border-[#B5B5B5]">
-                                        <div>
-                                            <p className="text-gray-900 font-medium">{link.name}</p>
-                                            <p className="text-gray-400 text-[11px] mt-1 truncate">{link.url}</p>
+                                {linkAnalysis
+                                    .reduce((acc, campaign) => {
+                                        if (!campaign || !Array.isArray(campaign.links)) return acc;
+
+                                        const links = campaign.links.map(link => ({
+                                            ...link,
+                                            campaignName: campaign.campaign_name
+                                        }));
+
+                                        return [...acc, ...links];
+                                    }, [])
+                                    .map((link, idx) => (
+                                        <div key={idx} className="grid grid-cols-4 items-center px-6 py-4 border-t first:border-t-0 text-xs border-[#B5B5B5]">
+                                            <div>
+                                                <p className="text-gray-900 font-medium">{link.name}</p>
+                                                <p className="text-gray-400 text-[11px] mt-1 truncate">{link.url}</p>
+                                            </div>
+                                            <div className="text-center text-gray-700">
+                                                {link.clicks ?? 0}
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-gray-900">
+                                                    {link.ctr}
+                                                </p>
+                                                <p className={`text-[11px] ${parseFloat(link.ctr) > 0 ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                                    {link.ctr_label || (parseFloat(link.ctr) > 0 ? 'Excellent' : 'Improving')}
+                                                </p>
+                                            </div>
+                                            <div className="text-right text-gray-700">
+                                                {link.conversion}
+                                            </div>
                                         </div>
-                                        <div className="text-center text-gray-700">
-                                            {link.clicks ?? 0}
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-gray-900">
-                                                {link.ctr}
-                                            </p>
-                                            <p className={`text-[11px] ${parseFloat(link.ctr) > 0 ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                                {link.ctr_label || (parseFloat(link.ctr) > 0 ? 'Excellent' : 'Improving')}
-                                            </p>
-                                        </div>
-                                        <div className="text-right text-gray-700">
-                                            {link.conversion}
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         </div>
                     </div>

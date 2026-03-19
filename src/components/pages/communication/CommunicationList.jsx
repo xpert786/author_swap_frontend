@@ -329,9 +329,19 @@ const CommunicationList = () => {
                                       ? formatCamelCaseName(msg.recipient_name || msg.recipient_username || "Recipient")
                                       : formatCamelCaseName(msg.sender_name || msg.name || "User")}
                                   </h4>
-                                  <p className={`text-xs text-[#374151] truncate ${!msg.is_read ? "font-medium" : "font-normal"}`}>
-                                    {msg.subject} <span className="text-gray-400 font-normal truncate inline-block max-w-full">- {stripHtml(msg.snippet || msg.message)}</span>
-                                  </p>
+                                <p
+  className={`text-xs text-[#374151] flex items-center gap-1 min-w-0 ${
+    !msg.is_read ? "font-medium" : "font-normal"
+  }`}
+>
+  <span className="truncate">
+    {msg.subject}
+  </span>
+  <span className="text-gray-400 font-normal shrink-0">-</span>
+  <span className="text-gray-400 font-normal truncate">
+    {stripHtml(msg.snippet || msg.message)}
+  </span>
+</p>
                                 </div>
                               </div>
 

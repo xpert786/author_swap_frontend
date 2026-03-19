@@ -82,9 +82,9 @@ const CommunicationMail = ({ mail, folder, onBack, onReply, onForward, onReplyAl
         ? (fullMail.recipient_profile_picture || fullMail.recipient_avatar || `https://ui-avatars.com/api/?name=${fullMail.recipient_username || 'Recipient'}&background=random`)
         : (fullMail.sender_profile_picture || fullMail.sender_avatar || fullMail.avatar || `https://ui-avatars.com/api/?name=${fullMail.sender_name || fullMail.name || 'User'}&background=random`);
 
-    const displayEmail = isSentFolder
-        ? (fullMail.recipient_email || fullMail.recipient_username || fullMail.email)
-        : (fullMail.sender_email || fullMail.sender_username || fullMail.email);
+const displayEmail = isSentFolder
+    ? (fullMail.recipient_email || fullMail.recipient_username)
+    : (fullMail.sender_email || fullMail.sender_username);
 
     return (
         <div className="bg-white rounded-2xl border border-[#B5B5B5] shadow-sm overflow-hidden min-h-[500px]">
