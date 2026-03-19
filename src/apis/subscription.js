@@ -46,3 +46,7 @@ export const changePlanPreview = async (data) => {
 export const manualUpgrade = async (data) => {
     return apiClient.post("subscription/upgrade/", data);
 }
+
+export const getCampaignDates = async () => {
+    return apiClient.get("campaign-dates/");
+}

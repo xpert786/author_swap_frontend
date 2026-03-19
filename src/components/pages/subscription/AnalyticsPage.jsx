@@ -19,8 +19,8 @@ import openRate from "../../../assets/avgOpenRate.png";
 import { RxCursorArrow } from "react-icons/rx";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { getSubscriberAnalytics } from "../../../apis/subscription";
+import { useState, useEffect, useRef } from "react";
+import { getSubscriberAnalytics, getCampaignDates } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
@@ -64,6 +64,41 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const [activeCampaignTab, setActiveCampaignTab] = useState("Recent");
     const [activeGraphTab, setActiveGraphTab] = useState("Open Rate");
     const [isMounted, setIsMounted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
+    const [apiCampaignDates, setApiCampaignDates] = useState([]);
+    const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+    const [campaignDatesLoading, setCampaignDatesLoading] = useState(false);
+
+    // FIX 1: Use a ref for click-outside detection instead of a class-based approach
+    const dropdownRef = useRef(null);
+
+    const fetchCampaignDates = async () => {
+        try {
+            setCampaignDatesLoading(true);
+            const response = await getCampaignDates();
+
+            // Handle all common response shapes:
+            // 1. Raw fetch Response  → response.json()
+            // 2. Axios style         → response.data
+            // 3. Already plain obj   → response itself
+            let data;
+            if (response && typeof response.json === "function") {
+                data = await response.json();
+            } else if (response && response.data !== undefined) {
+                data = response.data;
+            } else {
+                data = response;
+            }
+
+            setApiCampaignDates(data?.campaign_dates || []);
+        } catch (error) {
+            console.error("Failed to fetch campaign dates:", error);
+            setApiCampaignDates([]);
+        } finally {
+            setCampaignDatesLoading(false);
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -82,6 +117,17 @@ const AnalyticsPage = ({ isChildView = false }) => {
         setIsMounted(true);
     }, []);
 
+    // FIX 2: Stable click-outside handler using ref — no isDropdownOpen in deps
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     const handleTabChange = (tab) => {
         if (tab === "subscription") {
             navigate("/subscription");
@@ -92,9 +138,27 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const listHealth = analytics?.list_health_metrics || {};
 
     const campaigns = analytics?.campaign_analytics || [];
-    const linkAnalysis = Array.isArray(analytics?.link_level_ctr)
-        ? analytics.link_level_ctr
-        : [];
+
+    // FIX 3: linkAnalysis correctly returns flat link objects (with campaignName attached)
+    const linkAnalysis = useMemo(() => {
+        const allLinks = Array.isArray(analytics?.link_level_ctr)
+            ? analytics.link_level_ctr
+            : [];
+
+        const filtered = selectedCampaignId
+            ? allLinks.filter(campaign => campaign.campaign_id === selectedCampaignId)
+            : allLinks;
+
+        return filtered.reduce((acc, campaign) => {
+            if (!campaign || !Array.isArray(campaign.links)) return acc;
+            const links = campaign.links.map(link => ({
+                ...link,
+                campaignName: campaign.campaign_name,
+            }));
+            return [...acc, ...links];
+        }, []);
+    }, [analytics?.link_level_ctr, selectedCampaignId]);
+
     const subGrowth = Array.isArray(analytics?.growth_chart) && analytics.growth_chart.length > 0
         ? analytics.growth_chart
         : defaultEmptyData;
@@ -105,16 +169,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const ALL_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     const normalizedSubGrowth = useMemo(() => {
-        // Build a lookup from whatever the API returns
         const lookup = {};
         subGrowth.forEach(item => {
             const key = item.month || item.label || "";
             const val = item.count ?? getStatValue(item.value, 0);
             if (key) lookup[key] = Number(val) || 0;
         });
-
-        // If API only returned a single data point, spread across all months with 0s
-        // so recharts can draw a real line
         return ALL_MONTHS.map(month => ({
             month,
             subscribers: lookup[month] ?? 0,
@@ -134,10 +194,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
             return { ...item, value };
         });
     }, [histTrend, activeGraphTab]);
-
-    const campaignDates = useMemo(() => {
-        return [...new Set(campaigns.map(c => getStatValue(c.date)).filter(Boolean))];
-    }, [campaigns]);
 
     const filteredCampaigns = useMemo(() => {
         return campaigns.filter(camp => {
@@ -391,12 +447,93 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             <p className="text-sm font-semibold text-gray-900">
                                 Link-Level CTR Analysis
                             </p>
-                            <select className="border border-gray-300 rounded-md text-xs px-3 py-1.5 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#2F6F6D]">
-                                <option value="">All Campaign Dates</option>
-                                {campaignDates.map(date => (
-                                    <option key={date} value={date}>{date}</option>
-                                ))}
-                            </select>
+
+                            {/* FIX 4: Clean dropdown — no duplicate header inside, uses ref for outside click */}
+                            <div className="relative" ref={dropdownRef}>
+                                {/* Trigger button */}
+                                <button
+                                    onClick={() => {
+                                        if (!isDropdownOpen) fetchCampaignDates();
+                                        setIsDropdownOpen(prev => !prev);
+                                    }}
+                                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 cursor-pointer flex items-center justify-between w-[260px] bg-white hover:border-gray-400 transition-colors"
+                                >
+                                    <span className={selectedCampaign ? "text-gray-900" : "text-gray-400"}>
+                                        {selectedCampaign ?? "Select Campaign"}
+                                    </span>
+                                    <svg
+                                        className={`w-4 h-4 ml-2 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Dropdown panel — no redundant header inside */}
+                                {isDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-[300px] bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                                        {/* Optional: clear selection */}
+                                        {selectedCampaign && (
+                                            <div
+                                                onClick={() => {
+                                                    setSelectedCampaign(null);
+                                                    setSelectedCampaignId(null);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className="px-4 py-2.5 text-xs text-gray-400 hover:bg-gray-50 cursor-pointer border-b border-gray-100 flex items-center gap-1"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Clear selection
+                                            </div>
+                                        )}
+
+                                        {/* Campaign list */}
+                                        <div className="max-h-60 overflow-y-auto py-1">
+                                            {campaignDatesLoading ? (
+                                                <div className="px-4 py-3 text-sm text-gray-400 text-center flex items-center justify-center gap-2">
+                                                    <svg className="animate-spin w-4 h-4 text-[#2F6F6D]" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                                    </svg>
+                                                    Loading…
+                                                </div>
+                                            ) : apiCampaignDates.length === 0 ? (
+                                                <div className="px-4 py-3 text-sm text-gray-400 text-center">
+                                                    No campaigns found.
+                                                </div>
+                                            ) : (
+                                                apiCampaignDates.map((campaign, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        onClick={() => {
+                                                            setSelectedCampaign(campaign.label);
+                                                            setSelectedCampaignId(campaign.campaign_id);
+                                                            setIsDropdownOpen(false);
+                                                        }}
+                                                        className={`flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer transition-colors
+                                                            ${selectedCampaignId === campaign.campaign_id
+                                                                ? "bg-[#2F6F6D10] text-[#2F6F6D] font-medium"
+                                                                : "text-gray-700 hover:bg-gray-50"
+                                                            }`}
+                                                    >
+                                                        <div>
+                                                            <p className="leading-snug">{campaign.label}</p>
+                                                            <p className="text-xs text-gray-400 mt-0.5">{campaign.type} · {campaign.date}</p>
+                                                        </div>
+                                                        {selectedCampaignId === campaign.campaign_id && (
+                                                            <svg className="w-4 h-4 text-[#2F6F6D] shrink-0 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto border border-[#B5B5B5] rounded-lg">
@@ -408,18 +545,9 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                     <div className="text-right">Conversion</div>
                                 </div>
 
-                                {linkAnalysis
-                                    .reduce((acc, campaign) => {
-                                        if (!campaign || !Array.isArray(campaign.links)) return acc;
-
-                                        const links = campaign.links.map(link => ({
-                                            ...link,
-                                            campaignName: campaign.campaign_name
-                                        }));
-
-                                        return [...acc, ...links];
-                                    }, [])
-                                    .map((link, idx) => (
+                                {/* FIX 5: linkAnalysis is already flat — no second .reduce() needed */}
+                                {linkAnalysis.length > 0 ? (
+                                    linkAnalysis.map((link, idx) => (
                                         <div key={idx} className="grid grid-cols-4 items-center px-6 py-4 border-t first:border-t-0 text-xs border-[#B5B5B5]">
                                             <div>
                                                 <p className="text-gray-900 font-medium">{link.name}</p>
@@ -429,9 +557,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                                 {link.clicks ?? 0}
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-gray-900">
-                                                    {link.ctr}
-                                                </p>
+                                                <p className="text-gray-900">{link.ctr}</p>
                                                 <p className={`text-[11px] ${parseFloat(link.ctr) > 0 ? 'text-emerald-600' : 'text-amber-500'}`}>
                                                     {link.ctr_label || (parseFloat(link.ctr) > 0 ? 'Excellent' : 'Improving')}
                                                 </p>
@@ -440,7 +566,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                                 {link.conversion}
                                             </div>
                                         </div>
-                                    ))}
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-sm text-gray-400">
+                                        {selectedCampaignId ? "No links found for this campaign." : "Select a campaign to view link-level data."}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

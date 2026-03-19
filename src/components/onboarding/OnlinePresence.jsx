@@ -15,7 +15,12 @@ const OnlinePresence = ({ next, prev }) => {
 
   const urlPattern = {
     value: /^(https?:\/\/)?([\w\d-]+\.)+\w{2,}(\/.*)?$/,
-    message: "Please enter a valid URL",
+    message: "Please enter a valid website URL (e.g., https://example.com)",
+  };
+
+  const socialPattern = {
+    value: /^(https?:\/\/)?(www\.)?([\w\d-]+\.)+\w{2,}(\/.*)?$/,
+    message: "Please enter a valid social media URL (e.g., https://instagram.com/username)",
   };
 
   useEffect(() => {
@@ -88,10 +93,11 @@ const onSubmit = async (data) => {
           <div>
             <label className="block text-sm mb-2">Website URL</label>
             <input
-              {...register("website")}
+              {...register("website", urlPattern)}
               placeholder="Enter Website URL"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.website && <p className="text-red-500">{errors.website.message}</p>}
           </div>
 
 
@@ -99,10 +105,11 @@ const onSubmit = async (data) => {
           <div>
             <label className="block text-sm mb-2">Instagram</label>
             <input
-              {...register("instagram")}
+              {...register("instagram", socialPattern)}
               placeholder="Enter Instagram link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.instagram && <p className="text-red-500">{errors.instagram.message}</p>}
           </div>
 
 
@@ -110,10 +117,11 @@ const onSubmit = async (data) => {
           <div>
             <label className="block text-sm mb-2">TikTok</label>
             <input
-              {...register("tiktok")}
+              {...register("tiktok", socialPattern)}
               placeholder="Enter TikTok link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.tiktok && <p className="text-red-500">{errors.tiktok.message}</p>}
           </div>
 
 
@@ -121,10 +129,11 @@ const onSubmit = async (data) => {
           <div>
             <label className="block text-sm mb-2">Facebook</label>
             <input
-              {...register("facebook")}
+              {...register("facebook", socialPattern)}
               placeholder="Enter Facebook link"
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             />
+            {errors.facebook && <p className="text-red-500">{errors.facebook.message}</p>}
           </div>
 
 
