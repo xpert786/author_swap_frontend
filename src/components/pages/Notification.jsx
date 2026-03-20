@@ -194,8 +194,15 @@ const Notification = () => {
                                                     const title = (item.title || "").toLowerCase();
                                                     const message = (item.message || item.text || "").toLowerCase();
                                                     
-                                                    // Check for payment/wallet related notifications
-                                                    if (title.includes('money') && title.includes('received') || 
+                                                    // Check for swap related notifications first to avoid being caught by general payment keywords
+                                                    if (item.type === 'swap' || item.badge === 'swap' || 
+                                                        title.includes('swap') || message.includes('swap')) {
+                                                        navigate('/swap-management');
+                                                    } else if (title.includes('subscription') || message.includes('subscription') ||
+                                                        title.includes('plan') || message.includes('plan') ||
+                                                        title.includes('billing') || message.includes('billing')) {
+                                                        navigate('/subscription');
+                                                    } else if (title.includes('money') && title.includes('received') || 
                                                         title.includes('payment') && title.includes('received') ||
                                                         message.includes('money') && message.includes('received') ||
                                                         message.includes('payment') && message.includes('received') ||
@@ -203,12 +210,6 @@ const Notification = () => {
                                                         message.includes('payment') || message.includes('wallet') ||
                                                         title.includes('funds') || message.includes('funds')) {
                                                         navigate('/account-settings');
-                                                    } else if (title.includes('subscription') || message.includes('subscription') ||
-                                                        title.includes('plan') || message.includes('plan') ||
-                                                        title.includes('billing') || message.includes('billing')) {
-                                                        navigate('/subscription');
-                                                    } else if (item.type === 'swap' || item.badge === 'swap') {
-                                                        navigate('/swap-management');
                                                     } else if (title.includes('email') || message.includes('email') || 
                                                         title.includes('message') || message.includes('message') ||
                                                         item.action_url?.includes('/communication-tools/email/')) {
