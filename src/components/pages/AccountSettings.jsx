@@ -518,7 +518,7 @@ const AccountSettings = () => {
 
                 {/* Payment Methods Section */}
                 <div className="mt-12 pt-8 border-t border-gray-100">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between md:items-center mb-6 ">
                         <div>
                             <h2 className="text-xl font-semibold text-black">Payment Methods</h2>
                             <p className="text-[12px] text-gray-500 font-medium">Manage your cards for subscription renewals</p>
@@ -655,13 +655,13 @@ const AccountSettings = () => {
                             <h2 className="text-xl font-semibold text-black">My Wallet</h2>
                             <p className="text-[12px] text-gray-500 font-medium">Manage your earnings and withdrawals</p>
                         </div>
-                        <button
+                        {/* <button
                             onClick={() => setIsAddFundsModalOpen(true)}
                             className="flex items-center gap-2 bg-[#2F6F6D] text-white px-4 py-2 rounded-[6px] text-[12px] font-medium hover:bg-[#255755] transition-all shadow-sm"
                         >
                             <Plus size={16} />
                             Add Funds
-                        </button>
+                        </button> */}
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

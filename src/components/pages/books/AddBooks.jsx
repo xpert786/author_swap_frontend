@@ -303,7 +303,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* Book Info Grid */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 
               {/* Book Title */}
               <div>
@@ -448,7 +448,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
             </div>
 
             {/* Availability + Publish Date */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Availability
@@ -522,7 +522,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 Retailer Links
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="url"
                   name="amazonUrl"

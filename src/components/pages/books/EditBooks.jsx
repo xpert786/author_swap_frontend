@@ -368,7 +368,7 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Book Info Grid */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Book Title
@@ -492,7 +492,7 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
             </div>
 
             {/* Availability + Ratings + Date */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="text-[13px] font-medium text-gray-600">
                   Availability
@@ -558,7 +558,7 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
               <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
                 Retailer Links
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input type="url" name="amazonUrl" value={formData.amazonUrl} onChange={handleChange} placeholder="Amazon URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
                 <input type="url" name="appleUrl" value={formData.appleUrl} onChange={handleChange} placeholder="Apple Books URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />
                 <input type="url" name="koboUrl" value={formData.koboUrl} onChange={handleChange} placeholder="Kobo URL" className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]" />

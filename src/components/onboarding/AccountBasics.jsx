@@ -7,9 +7,10 @@ import { onboardingStep1, getProfile, editPenName } from "../../apis/onboarding"
 import { useState, useEffect, useRef } from "react";
 import { getGenres } from "../../apis/genre"; // adjust path
 import { formatCamelCaseName } from "../../utils/formatName";
-
+import { useNavigate } from "react-router-dom";
 
 const AccountBasics = ({ next }) => {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -24,6 +25,21 @@ const AccountBasics = ({ next }) => {
   const [dropdownDirection, setDropdownDirection] = useState("down");
   const [isDragging, setIsDragging] = useState(false);
   const genreRef = useRef(null);
+
+  const handleBackToLogin = () => {
+    // Clear all cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    // Clear localStorage
+    localStorage.clear();
+    // Clear sessionStorage
+    sessionStorage.clear();
+    // Navigate to login
+    navigate("/login");
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -247,33 +263,42 @@ const AccountBasics = ({ next }) => {
 
 
   return (
-    <div className="bg-white w-full max-w-[600px] p-6 md:p-8">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <p className="text-sm text-gray-500 mb-1">Step 1 of 3</p>
-        <h2 className="text-2xl font-semibold mb-6">Account Basics</h2>
+    <>
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          onClick={handleBackToLogin}
+          className="text-md text-[#255856] hover:text-[#255856] transition-colors"
+        >
+          ← Back to Login
+        </button>
+      </div>
+      <div className="bg-white w-full max-w-[600px] p-6 md:p-8">
+        <div className="flex justify-end mb-4">
+          <p className="text-sm text-gray-500">Step 1 of 3</p>
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <h2 className="text-2xl font-semibold mb-6">Account Basics</h2>
 
-        <div className="bg-white w-full p-6 md:p-8 rounded-xl shadow-sm border border-[#7C7C7C]">
-
-          {/* Pen Name */}
-          <div className="mb-4">
-            <label className="block text-sm mb-2">Pen Name *</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newPenName}
-                onChange={(e) => setNewPenName(e.target.value)}
-                placeholder="Enter Pen Name"
-                className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleAddPenName}
-                className="bg-[#2F6F6D] text-white px-5 py-2 rounded-lg hover:bg-[#255856] transition-colors"
-              >
-                Add
-              </button>
-            </div>
-
+          <div className="bg-white w-full p-6 md:p-8 rounded-xl shadow-sm border border-[#7C7C7C]">
+            {/* Pen Name */}
+            <div className="mb-4">
+              <label className="block text-sm mb-2">Pen Name *</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPenName}
+                  onChange={(e) => setNewPenName(e.target.value)}
+                  placeholder="Enter Pen Name"
+                  className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddPenName}
+                  className="bg-[#2F6F6D] text-white px-5 py-2 rounded-lg hover:bg-[#255856] transition-colors"
+                >
+                  Add
+                </button>
+              </div>
 
             {/* Added Pen Names List */}
             <div className="flex flex-wrap gap-2 mt-3">
@@ -497,6 +522,7 @@ const AccountBasics = ({ next }) => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 
