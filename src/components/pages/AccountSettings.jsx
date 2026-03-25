@@ -33,7 +33,7 @@ const Input = ({ label, name, value, onChange, type = "text", disabled }) => (
 
 const defaultProfile = {
     name: "",
-    pen_names: [],
+    pen_name: [],
     email: "",
     location: "",
     genres: [],
@@ -86,7 +86,7 @@ const AccountSettings = () => {
             const { data } = await getProfile();
             setFormData({
                 name: data.name || "",
-                pen_names: data.pen_names ? data.pen_names.split(",") : [],
+                pen_name: data.pen_name ? data.pen_name.split(",") : [],
                 email: data.email || "",
                 location: data.location || "",
                 genres: data.primary_genre ? data.primary_genre.split(",") : [],
@@ -260,8 +260,8 @@ const AccountSettings = () => {
             formPayload.append("name", formData.name);
             
             // Send each pen name individually
-            formData.pen_names.forEach(pn => {
-                formPayload.append("pen_names", pn);
+            formData.pen_name.forEach(pn => {
+                formPayload.append("pen_name", pn);
             });
 
             formPayload.append("email", formData.email);
@@ -333,7 +333,7 @@ const AccountSettings = () => {
     const handleCancel = () => {
         setFormData({
             name: originalData.name || "",
-            pen_names: originalData.pen_names ? originalData.pen_names.split(",") : [],
+            pen_name: originalData.pen_name ? originalData.pen_name.split(",") : [],
             email: originalData.email || "",
             location: originalData.location || "",
             genres: originalData.primary_genre ? originalData.primary_genre.split(",") : [],
@@ -423,10 +423,10 @@ const AccountSettings = () => {
                                     if (e.key === 'Enter' && e.target.value.trim()) {
                                         e.preventDefault();
                                         const val = e.target.value.trim();
-                                        if (!formData.pen_names.includes(val)) {
+                                        if (!formData.pen_name.includes(val)) {
                                             setFormData(prev => ({
                                                 ...prev,
-                                                pen_names: [...prev.pen_names, val]
+                                                pen_name: [...prev.pen_name, val]
                                             }));
                                         }
                                         e.target.value = "";
@@ -438,7 +438,7 @@ const AccountSettings = () => {
 
                         {/* Pen Names Chips */}
                         <div className="flex flex-wrap gap-2 mt-2">
-                            {formData.pen_names.map((pn, index) => (
+                            {formData.pen_name.map((pn, index) => (
                                 <div
                                     key={index}
                                     className="flex items-center gap-1.5 bg-[#E07A5F1A] text-black px-3 py-1.5 rounded-full border border-[#E07A5F33] text-sm"
@@ -449,7 +449,7 @@ const AccountSettings = () => {
                                             type="button"
                                             onClick={() => setFormData(prev => ({
                                                 ...prev,
-                                                pen_names: prev.pen_names.filter(p => p !== pn)
+                                                pen_name: prev.pen_name.filter(p => p !== pn)
                                             }))}
                                             className="text-gray-500 hover:text-red-500 transition-colors"
                                         >
