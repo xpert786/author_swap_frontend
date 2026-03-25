@@ -10,6 +10,7 @@ import EditBooks from "./EditBooks";
 import toast from "react-hot-toast";
 import edit from "../../../assets/edit.png";
 import { LuBookOpen } from "react-icons/lu";
+import dummyBook from "../../../assets/dummy-book.jpg";
 
 export default function BookDetails() {
     const { id } = useParams();
@@ -32,9 +33,12 @@ export default function BookDetails() {
                     availability: data.availability || "",
                     publishDate: data.publish_date || "",
                     description: data.description || "",
-                    coverImage: data.book_cover?.startsWith("http")
-                        ? data.book_cover
-                        : `${import.meta.env.VITE_BACKEND_URL}${data.book_cover}`,
+                    coverImage:
+                        data.book_cover && data.book_cover !== "null"
+                            ? data.book_cover.startsWith("http")
+                                ? data.book_cover
+                                : `${import.meta.env.VITE_BACKEND_URL}${data.book_cover}`
+                            : null,
                     amazonUrl: data.amazon_url || "",
                     appleUrl: data.apple_url || "",
                     koboUrl: data.kobo_url || "",
@@ -181,9 +185,12 @@ export default function BookDetails() {
                     <div className="w-full lg:w-80 xl:w-96 shrink-0 lg:sticky lg:top-8">
                         <div className="rounded-[10px] overflow-hidden shadow-md">
                             <img
-                                src={book.coverImage || "/placeholder.jpg"}
+                                src={book?.coverImage || dummyBook}
                                 alt="Book Cover"
                                 className="w-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.src = dummyBook;
+                                }}
                             />
                         </div>
                     </div>
@@ -300,7 +307,7 @@ function PlatformCard({ name, url, icon, active = false }) {
             <p className="font-medium text-gray-900">{name}</p>
 
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#16A34A1A] text-[#16A34A]">
-               Live
+                Live
             </span>
         </div>
     );

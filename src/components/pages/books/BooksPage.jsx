@@ -26,6 +26,7 @@ import Swap from "../../../assets/swap.png";
 import { getBooks, bookCardData, deleteBook, updateBook } from "../../../apis/bookManegment";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
+import dummyBook from "../../../assets/dummy-book.jpg";
 
 const BooksPage = () => {
     const [books, setBooks] = useState([]);
@@ -62,9 +63,12 @@ const BooksPage = () => {
                 ...book,
 
                 // Fix cover (only if relative URL)
-                book_cover: book.book_cover?.startsWith("http")
-                    ? book.book_cover
-                    : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`,
+                book_cover:
+                    book.book_cover && book.book_cover !== "null"
+                        ? book.book_cover.startsWith("http")
+                            ? book.book_cover
+                            : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`
+                        : null,
 
                 // Fix date properly
                 publish_date: book.publish_date || null,
@@ -450,9 +454,12 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 </div>
 
                 <img
-                    src={book.book_cover || "/placeholder.jpg"}
+                    src={book?.book_cover || dummyBook}
                     alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => {
+                        e.currentTarget.src = dummyBook;
+                    }}
                 />
             </div>
 
