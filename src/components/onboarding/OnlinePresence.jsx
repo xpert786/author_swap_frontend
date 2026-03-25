@@ -49,11 +49,11 @@ const OnlinePresence = ({ next, prev }) => {
 
 const onSubmit = async (data) => {
   try {
-    // ✅ check if all urls are empty
-    if (!data.website && !data.instagram && !data.tiktok && !data.facebook) {
-      toast.error("Please add at least one online presence link.");
-      return;
-    }
+    // // ✅ check if all urls are empty
+    // if (!data.website && !data.instagram && !data.tiktok && !data.facebook) {
+    //   toast.error("Please add at least one online presence link.");
+    //   return;
+    // }
 
     setLoading(true);
 
@@ -144,7 +144,6 @@ const onSubmit = async (data) => {
               {...register("collaborationStatus")}
               className="w-full border border-[#B5B5B5] rounded-lg px-3 py-2 focus:outline-none"
             >
-              <option value="">Select an option</option>
               <option value="open to swap">Open to swaps</option>
               <option value="invite only">Invite only</option>
             </select>

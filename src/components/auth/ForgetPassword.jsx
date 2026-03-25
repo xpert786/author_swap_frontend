@@ -45,7 +45,7 @@ const ForgetPassword = () => {
   return (
     <div
       className="min-h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 md:p-6"
-      style={{ backgroundImage: `url(${LoginBg})`, backgroundColor: "#3a8d8b" }}
+      style={{ backgroundImage: `url(${LoginBg})`}}
     >
       <div className="w-full max-w-[1100px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
 
