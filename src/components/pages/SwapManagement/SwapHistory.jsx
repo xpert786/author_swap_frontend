@@ -78,7 +78,7 @@ const SwapHistory = () => {
                             <p className="text-base font-medium text-[#111827]">{data.request_date || "N/A"}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-[#374151] font-medium mb-1.5">Competed Date</p>
+                            <p className="text-xs text-[#374151] font-medium mb-1.5">Completed Date</p>
                             <p className="text-base font-medium text-[#111827]">{data.completed_date || "N/A"}</p>
                         </div>
                     </div>
