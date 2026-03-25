@@ -209,7 +209,7 @@ const Mailerlite = ({ next, prev }) => {
                                     </h4>
                                     <ul className="space-y-3">
                                         {[
-                                            "Click the orange 'Generate new token' button.",
+                                            "Click the green 'Generate new token' button.",
                                             "Name your token (e.g., 'Author Swap').",
                                             "Agree to the Terms of Use.",
                                             "Click 'Create token' to see your key."

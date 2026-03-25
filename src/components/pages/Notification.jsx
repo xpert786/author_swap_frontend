@@ -200,7 +200,8 @@ const Notification = () => {
                                                         navigate('/swap-management');
                                                     } else if (title.includes('subscription') || message.includes('subscription') ||
                                                         title.includes('plan') || message.includes('plan') ||
-                                                        title.includes('billing') || message.includes('billing')) {
+                                                        title.includes('billing') || message.includes('billing') ||
+                                                        title.includes('mailerlite') || message.includes('mailerlite')) {
                                                         navigate('/subscription');
                                                     } else if (title.includes('money') && title.includes('received') || 
                                                         title.includes('payment') && title.includes('received') ||

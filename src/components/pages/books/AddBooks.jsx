@@ -53,7 +53,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
   }, [preview]);
 
   useEffect(() => {
-  
+
     if (!formData.genre) {
       setSubGenres([]);
       return;
@@ -229,11 +229,11 @@ const AddBooks = ({ onClose, onSubmit }) => {
       payload.append("is_primary_promo", formData.isPrimary);
       payload.append("rating", formData.ratings || "");
 
-      if (!formData.coverImage) {
-        toast.error("Please upload a book cover image");
-        setLoading(false);
-        return;
-      }
+      // if (!formData.coverImage) {
+      //   toast.error("Please upload a book cover image");
+      //   setLoading(false);
+      //   return;
+      // }
 
       payload.append("book_cover", formData.coverImage);
 
@@ -493,7 +493,6 @@ const AddBooks = ({ onClose, onSubmit }) => {
                   value={formData.publishDate}
                   onChange={handleChange}
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-[13px] outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                  required
                 />
 
               </div>
@@ -529,30 +528,37 @@ const AddBooks = ({ onClose, onSubmit }) => {
                   placeholder="Amazon URL"
                   value={formData.amazonUrl}
                   onChange={handleChange}
+                  maxLength={2000}
                   className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
+
                 <input
                   type="url"
                   name="appleUrl"
                   placeholder="Apple Books URL"
                   value={formData.appleUrl}
                   onChange={handleChange}
+                  maxLength={2000}
                   className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
+
                 <input
                   type="url"
                   name="koboUrl"
                   placeholder="Kobo URL"
                   value={formData.koboUrl}
                   onChange={handleChange}
+                  maxLength={2000}
                   className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
+
                 <input
                   type="url"
                   name="barnesUrl"
                   placeholder="Barnes & Noble URL"
                   value={formData.barnesUrl}
                   onChange={handleChange}
+                  maxLength={2000}
                   className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
               </div>

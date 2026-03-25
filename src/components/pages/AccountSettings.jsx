@@ -33,6 +33,7 @@ const Input = ({ label, name, value, onChange, type = "text", disabled }) => (
 
 const defaultProfile = {
     name: "",
+    pen_names: [],
     email: "",
     location: "",
     genres: [],
@@ -85,6 +86,7 @@ const AccountSettings = () => {
             const { data } = await getProfile();
             setFormData({
                 name: data.name || "",
+                pen_names: data.pen_names ? data.pen_names.split(",") : [],
                 email: data.email || "",
                 location: data.location || "",
                 genres: data.primary_genre ? data.primary_genre.split(",") : [],
@@ -256,6 +258,12 @@ const AccountSettings = () => {
             setSaving(true);
             const formPayload = new FormData();
             formPayload.append("name", formData.name);
+            
+            // Send each pen name individually
+            formData.pen_names.forEach(pn => {
+                formPayload.append("pen_names", pn);
+            });
+
             formPayload.append("email", formData.email);
             formPayload.append("location", formData.location || "");
             formPayload.append("bio", formData.bio || "");
@@ -325,6 +333,7 @@ const AccountSettings = () => {
     const handleCancel = () => {
         setFormData({
             name: originalData.name || "",
+            pen_names: originalData.pen_names ? originalData.pen_names.split(",") : [],
             email: originalData.email || "",
             location: originalData.location || "",
             genres: originalData.primary_genre ? originalData.primary_genre.split(",") : [],
@@ -403,6 +412,54 @@ const AccountSettings = () => {
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                     <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-medium text-[#111827]">Pen Name(s)</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={isEditing ? "Type and press Enter to add..." : ""}
+                                disabled={!isEditing}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && e.target.value.trim()) {
+                                        e.preventDefault();
+                                        const val = e.target.value.trim();
+                                        if (!formData.pen_names.includes(val)) {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                pen_names: [...prev.pen_names, val]
+                                            }));
+                                        }
+                                        e.target.value = "";
+                                    }
+                                }}
+                                className={`w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                            />
+                        </div>
+
+                        {/* Pen Names Chips */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {formData.pen_names.map((pn, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-1.5 bg-[#E07A5F1A] text-black px-3 py-1.5 rounded-full border border-[#E07A5F33] text-sm"
+                                >
+                                    <span>{pn}</span>
+                                    {isEditing && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({
+                                                ...prev,
+                                                pen_names: prev.pen_names.filter(p => p !== pn)
+                                            }))}
+                                            className="text-gray-500 hover:text-red-500 transition-colors"
+                                        >
+                                            <FiX size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     <Input label="Email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!isEditing} />
                     <Input label="Location" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} />
                     <div className="space-y-1.5">
