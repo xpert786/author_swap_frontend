@@ -86,20 +86,21 @@ const AccountSettings = () => {
     const fetchProfile = async () => {
         try {
             const { data } = await getProfile();
+            const profile = Array.isArray(data) ? data[0] : data;
             setFormData({
-                name: data.name || "",
-                pen_name: data.pen_name ? data.pen_name.split(",") : [],
-                email: data.email || "",
-                location: data.location || "",
-                genres: data.primary_genre ? data.primary_genre.split(",") : [],
-                website: data.website || "",
-                instagram: data.instagram_url || "",
-                tiktok: data.tiktok_url || "",
-                facebook: data.facebook_url || "",
-                bio: data.bio || "",
+                name: profile.name || "",
+                pen_name: profile.pen_name ? profile.pen_name.split(",") : [],
+                email: profile.email || "",
+                location: profile.location || "",
+                genres: profile.primary_genre ? profile.primary_genre.split(",") : [],
+                website: profile.website || "",
+                instagram: profile.instagram_url || "",
+                tiktok: profile.tiktok_url || "",
+                facebook: profile.facebook_url || "",
+                bio: profile.bio || "",
             });
-            setOriginalData(data);
-            setProfileImage(data.profile_picture);
+            setOriginalData(profile);
+            setProfileImage(profile.profile_picture);
         } catch (err) {
             console.error(err);
             toast.error("Failed to load profile");
@@ -178,7 +179,7 @@ const AccountSettings = () => {
         try {
             setAddingFunds(true);
             const res = await addFunds(addFundsAmount);
-            
+
             // Check if funds were added directly (saved card scenario)
             if (res.data?.detail && res.data?.new_balance) {
                 toast.success(res.data.detail);
@@ -260,7 +261,7 @@ const AccountSettings = () => {
             setSaving(true);
             const formPayload = new FormData();
             formPayload.append("name", formData.name);
-            
+
             // Send each pen name individually
             formData.pen_name.forEach(pn => {
                 formPayload.append("pen_name", pn);
