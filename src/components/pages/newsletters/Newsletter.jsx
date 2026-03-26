@@ -180,10 +180,26 @@ const Newsletter = () => {
             const dataArray = Array.isArray(response.data) ? response.data : (response.data?.data || response.data?.results || []);
             const formatted = dataArray.map(item => {
                 let status = "Available", statusColor = "bg-[#16A34A33]";
-                if (item.has_published) { status = "Published"; statusColor = "bg-[#F1B9AA]"; }
-                else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) { status = "Booked"; statusColor = "bg-[#F59E0B33]"; }
-                else if (item.has_available) { status = "Available"; statusColor = "bg-[#16A34A33]"; }
-                else if (item.status) { status = formatLabel(item.status); statusColor = (item.status||"").toLowerCase()==="available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]"; }
+                if (item.has_verified) { status = "Verified"; statusColor = "bg-[#9DB7B5]"; }
+                else if (item.has_confirmed) { status = "Confirmed"; statusColor = "bg-[#F59E0B33]"; }
+                else if (item.has_pending) { status = "Pending"; statusColor = "bg-[#EAD8B1]"; }
+                else if (item.has_published) { 
+                    status = item.has_booked ? "Booked" : "Published";
+                    statusColor = "bg-[#F1B9AA]"; 
+                }
+                else if (item.has_available) { 
+                    status = item.has_booked ? "Booked" : "Available";
+                    statusColor = "bg-[#16A34A33]"; 
+                }
+                else if (item.status) { 
+                    status = formatLabel(item.status); 
+                    const s = (item.status||"").toLowerCase();
+                    if (s === "published") statusColor = "bg-[#F1B9AA]";
+                    else if (s === "verified") statusColor = "bg-[#9DB7B5]";
+                    else if (s === "pending") statusColor = "bg-[#EAD8B1]";
+                    else if (s === "confirmed") statusColor = "bg-[#F59E0B33]";
+                    else statusColor = s === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]"; 
+                }
                 return {
                     id: item.id,
                     time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date||""} ${item.formatted_time||""}`.trim() || item.send_time || "",
@@ -360,7 +376,9 @@ const Newsletter = () => {
                             let bgColor = "bg-white";
                             if (!isCurrentMonth) bgColor = "bg-[#F3F4F64D]";
                             else if (dayApiData?.has_slots) {
-                                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
+                                if (dayApiData.has_verified) bgColor = "bg-[#9DB7B5]";
+                                else if (dayApiData.has_confirmed) bgColor = "bg-[#F59E0B33]";
+                                else if (dayApiData.has_pending) bgColor = "bg-[#EAD8B1]";
                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";

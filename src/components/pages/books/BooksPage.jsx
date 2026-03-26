@@ -90,7 +90,8 @@ const BooksPage = () => {
     const fetchStats = async () => {
         try {
             const response = await bookCardData();
-            const data = response?.data || {};
+            const responseData = response?.data || {};
+            const data = Array.isArray(responseData) ? responseData[0] : responseData;
 
             setStats({
                 total: data.total_books ?? 0,
