@@ -430,7 +430,7 @@ const AccountSettings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                     <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-medium text-[#111827]">Pen Name(s)</label>
+                        <label className="text-[12px] font-medium text-[#111827]">Pen Names</label>
                         <div className="flex gap-2">
                             <div className="relative flex-1">
                                 <input
