@@ -81,6 +81,8 @@ const AccountSettings = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const [penNameInput, setPenNameInput] = useState("");
+
     const fetchProfile = async () => {
         try {
             const { data } = await getProfile();
@@ -329,6 +331,20 @@ const AccountSettings = () => {
         }
     };
 
+    const handleAddPenName = (e) => {
+        if (e) e.preventDefault();
+        const val = penNameInput.trim();
+        if (val) {
+            if (!formData.pen_name.includes(val)) {
+                setFormData(prev => ({
+                    ...prev,
+                    pen_name: [...prev.pen_name, val]
+                }));
+            }
+            setPenNameInput("");
+        }
+    };
+
     const handleEdit = () => setIsEditing(true);
     const handleCancel = () => {
         setFormData({
@@ -414,26 +430,32 @@ const AccountSettings = () => {
                     <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
                     <div className="space-y-1.5">
                         <label className="text-[12px] font-medium text-[#111827]">Pen Name(s)</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder={isEditing ? "Type and press Enter to add..." : ""}
-                                disabled={!isEditing}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && e.target.value.trim()) {
-                                        e.preventDefault();
-                                        const val = e.target.value.trim();
-                                        if (!formData.pen_name.includes(val)) {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                pen_name: [...prev.pen_name, val]
-                                            }));
+                        <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder={isEditing ? "Type and press Enter to add..." : ""}
+                                    disabled={!isEditing}
+                                    value={penNameInput}
+                                    onChange={(e) => setPenNameInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleAddPenName(e);
                                         }
-                                        e.target.value = "";
-                                    }
-                                }}
-                                className={`w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                            />
+                                    }}
+                                    className={`w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                />
+                            </div>
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={handleAddPenName}
+                                    className="bg-[#2F6F6D] text-white px-4 py-[9px] rounded-[6px] text-[13px] font-medium hover:bg-[#255755] transition-all flex items-center gap-1"
+                                >
+                                    <Plus size={16} />
+                                    Add
+                                </button>
+                            )}
                         </div>
 
                         {/* Pen Names Chips */}
