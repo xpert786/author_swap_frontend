@@ -221,7 +221,7 @@ const AddBooks = ({ onClose, onSubmit }) => {
       payload.append("description", formData.description);
       formData.siteLinks.forEach((link) => {
         if (link) {
-          payload.append("site_name", link);
+          payload.append("site_url", link);
         }
       });
       payload.append("is_primary_promo", formData.isPrimary);
