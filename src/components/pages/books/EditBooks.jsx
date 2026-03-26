@@ -19,14 +19,11 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
     availability: "",
     publishDate: "",
     description: "",
-    amazonUrl: "",
-    appleUrl: "",
-    koboUrl: "",
-    barnesUrl: "",
     coverImage: null,
     preview: null,
     isPrimary: false,
     ratings: "",
+    siteLinks: [""],
   });
 
   // Fetch book data by ID when modal opens
@@ -62,10 +59,10 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
             availability: bookData.availability || "",
             publishDate: bookData.publish_date || "",
             description: bookData.description || "",
-            amazonUrl: bookData.amazon_url || "",
-            appleUrl: bookData.apple_url || "",
-            koboUrl: bookData.kobo_url || "",
-            barnesUrl: bookData.barnes_noble_url || "",
+            siteLinks:
+              bookData.site_name && bookData.site_name.length
+                ? bookData.site_name
+                : [""],
             coverImage: bookData.book_cover || null,
             preview: bookData.book_cover
               ? (bookData.book_cover.startsWith("http")
@@ -285,10 +282,11 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
       payload.append("availability", formData.availability);
       payload.append("publish_date", formData.publishDate);
       payload.append("description", formData.description);
-      payload.append("amazon_url", formData.amazonUrl);
-      payload.append("apple_url", formData.appleUrl);
-      payload.append("kobo_url", formData.koboUrl);
-      payload.append("barnes_noble_url", formData.barnesUrl);
+      formData.siteLinks.forEach((link) => {
+        if (link) {
+          payload.append("site_name", link);
+        }
+      });
       payload.append("is_primary_promo", formData.isPrimary);
       payload.append("rating", formData.ratings || "");
 
@@ -343,6 +341,37 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
       </div>
     );
   }
+
+
+  const handleLinkChange = (index, value) => {
+    const updatedLinks = [...formData.siteLinks];
+    updatedLinks[index] = value;
+
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: updatedLinks,
+    }));
+  };
+
+  const addNewLink = () => {
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: [...prev.siteLinks, ""],
+    }));
+  };
+
+  const removeLink = (index) => {
+    const updatedLinks = formData.siteLinks.filter(
+      (_, i) => i !== index
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: updatedLinks.length
+        ? updatedLinks
+        : [""],
+    }));
+  };
 
   return (
     <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
@@ -553,51 +582,54 @@ const EditBooks = ({ bookId, onClose, onSubmit }) => {
               />
             </div>
 
+
             {/* Retail Links */}
             <div>
               <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
                 Retailer Links
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="url"
-                  name="amazonUrl"
-                  value={formData.amazonUrl}
-                  onChange={handleChange}
-                  placeholder="Amazon URL"
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
 
-                <input
-                  type="url"
-                  name="appleUrl"
-                  value={formData.appleUrl}
-                  onChange={handleChange}
-                  placeholder="Apple Books URL"
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+              <div className="space-y-3">
 
-                <input
-                  type="url"
-                  name="koboUrl"
-                  value={formData.koboUrl}
-                  onChange={handleChange}
-                  placeholder="Kobo URL"
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                {formData.siteLinks.map((link, index) => (
+                  <div key={index} className="flex gap-2">
 
-                <input
-                  type="url"
-                  name="barnesUrl"
-                  value={formData.barnesUrl}
-                  onChange={handleChange}
-                  placeholder="Barnes & Noble URL"
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                    <input
+                      type="url"
+                      placeholder="Enter site link"
+                      value={link}
+                      onChange={(e) =>
+                        handleLinkChange(index, e.target.value)
+                      }
+                      maxLength={2000}
+                      className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                    />
+
+                    {/* Remove */}
+                    {formData.siteLinks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLink(index)}
+                        className="px-3 text-red-500 border rounded-lg hover:bg-red-50"
+                      >
+                        ✕
+                      </button>
+                    )}
+
+                    {/* Add */}
+                    {index === formData.siteLinks.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={addNewLink}
+                        className="px-3 bg-[#2F6F6D] text-white rounded-lg hover:opacity-90"
+                      >
+                        +
+                      </button>
+                    )}
+
+                  </div>
+                ))}
+
               </div>
             </div>
 

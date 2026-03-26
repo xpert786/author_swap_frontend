@@ -88,7 +88,7 @@ const Newsletter = () => {
         } else if (format === "outlook") {
             window.open(`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`, "_blank");
         } else if (format === "ics") {
-            const icsContent = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//AuthorSwap//Newsletter Calendar//EN","BEGIN:VEVENT",`UID:newsletter-slot-${slotId}@authorswap.com`,`DTSTAMP:${dayjs().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART:${startTimeStr}`,`DTEND:${endTimeStr}`,`SUMMARY:${eventTitle}`,`DESCRIPTION:${eventDescription}`,"END:VEVENT","END:VCALENDAR"].join("\n");
+            const icsContent = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AuthorSwap//Newsletter Calendar//EN", "BEGIN:VEVENT", `UID:newsletter-slot-${slotId}@authorswap.com`, `DTSTAMP:${dayjs().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`, `DTSTART:${startTimeStr}`, `DTEND:${endTimeStr}`, `SUMMARY:${eventTitle}`, `DESCRIPTION:${eventDescription}`, "END:VEVENT", "END:VCALENDAR"].join("\n");
             const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
             const link = document.createElement("a");
             link.href = window.URL.createObjectURL(blob);
@@ -118,16 +118,33 @@ const Newsletter = () => {
 
     const handleExportICS = async () => {
         try {
-            const r = await exportICSCalendar();
-            if (r?.content) {
-                const blob = new Blob([r.content], { type: "text/calendar;charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.setAttribute("download", "newsletter_calendar.ics");
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                toast.success("ICS file downloaded");
-            } else toast.error("Failed to get ICS content");
-        } catch { toast.error("Failed to download ICS file"); }
+            const icsData = await exportICSCalendar();
+
+            // Create file blob
+            const blob = new Blob([icsData], {
+                type: "text/calendar;charset=utf-8",
+            });
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "newsletter_calendar.ics");
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success("ICS file downloaded successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to download ICS file");
+        }
+
         setExportDropdownOpen(false);
     };
 
@@ -183,35 +200,35 @@ const Newsletter = () => {
                 if (item.has_verified) { status = "Verified"; statusColor = "bg-[#9DB7B5]"; }
                 else if (item.has_confirmed) { status = "Confirmed"; statusColor = "bg-[#F59E0B33]"; }
                 else if (item.has_pending) { status = "Pending"; statusColor = "bg-[#EAD8B1]"; }
-                else if (item.has_published) { 
+                else if (item.has_published) {
                     status = item.has_booked ? "Booked" : "Published";
-                    statusColor = "bg-[#F1B9AA]"; 
+                    statusColor = "bg-[#F1B9AA]";
                 }
-                else if (item.has_available) { 
+                else if (item.has_available) {
                     status = item.has_booked ? "Booked" : "Available";
-                    statusColor = "bg-[#16A34A33]"; 
+                    statusColor = "bg-[#16A34A33]";
                 }
-                else if (item.status) { 
-                    status = formatLabel(item.status); 
-                    const s = (item.status||"").toLowerCase();
+                else if (item.status) {
+                    status = formatLabel(item.status);
+                    const s = (item.status || "").toLowerCase();
                     if (s === "published") statusColor = "bg-[#F1B9AA]";
                     else if (s === "verified") statusColor = "bg-[#9DB7B5]";
                     else if (s === "pending") statusColor = "bg-[#EAD8B1]";
                     else if (s === "confirmed") statusColor = "bg-[#F59E0B33]";
-                    else statusColor = s === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]"; 
+                    else statusColor = s === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
                 }
                 return {
                     id: item.id,
-                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date||""} ${item.formatted_time||""}`.trim() || item.send_time || "",
+                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
                     period: getPeriod(item.send_time) || formatLabel(item.time_period),
                     genre: formatLabel(item.preferred_genre),
-                    rawGenre: (item.preferred_genre||"").toLowerCase(),
-                    partners: `${item.current_partners_count??item.partner_count??0}/${item.max_partners??0} Partners`,
+                    rawGenre: (item.preferred_genre || "").toLowerCase(),
+                    partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
                     visibility: formatLabel(item.visibility),
-                    rawVisibility: (item.visibility||"").toLowerCase(),
+                    rawVisibility: (item.visibility || "").toLowerCase(),
                     audience: item.audience_size,
                     status, rawStatus: status.toLowerCase(), statusColor,
-                    has_available: item.has_available || (item.status||"").toLowerCase()==="available",
+                    has_available: item.has_available || (item.status || "").toLowerCase() === "available",
                     has_booked: item.has_booked || item.has_confirmed || item.has_verified || item.has_pending,
                     raw_data: item,
                 };
@@ -308,7 +325,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Visibility","Public","Friend Only","Hidden","Single Use Private Link"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                        {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
@@ -322,7 +339,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Status","Available","Booked","Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                        {["All Status", "Available", "Booked", "Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
@@ -438,7 +455,7 @@ const Newsletter = () => {
                                         .filter(s => {
                                             if (status === "All Status") return true;
                                             const t = status.toLowerCase();
-                                            if (t === "booked") return ["booked","confirmed","verified","pending"].includes(s.rawStatus);
+                                            if (t === "booked") return ["booked", "confirmed", "verified", "pending"].includes(s.rawStatus);
                                             return s.rawStatus === t;
                                         });
 
