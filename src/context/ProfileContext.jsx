@@ -31,8 +31,8 @@ export const ProfileProvider = ({ children }) => {
                 })
             ]);
             
-            const profile = Array.isArray(profileData) ? profileData[0] : profileData;
-            setProfile(profile);
+            const fetchedProfile = Array.isArray(profileData) ? profileData[0] : profileData;
+            setProfile(fetchedProfile);
             // The subscription is directly in subData.subscription, not nested further
             const subscriptionData = subData?.subscription || null;
             setSubscription(subscriptionData);
@@ -49,7 +49,7 @@ export const ProfileProvider = ({ children }) => {
                 localStorage.removeItem("subscription_expiry");
             }
             
-            return { profile: profile, subscription: subscriptionData };
+            return { profile: fetchedProfile, subscription: subscriptionData };
         } catch (error) {
             console.error("Failed to fetch profile:", error);
             return null;

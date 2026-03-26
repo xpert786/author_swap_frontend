@@ -14,7 +14,9 @@ const Confirmation = ({ prev, finish, goToStep }) => {
     const fetchProfile = async () => {
       try {
         const response = await getProfile();
-        setProfile(response.data);
+        const responseData = response.data || response;
+        const profileData = Array.isArray(responseData) ? responseData[0] : responseData;
+        setProfile(profileData);
       } catch (error) {
         toast.error(
           error?.response?.data?.message || "Failed to load profile"
