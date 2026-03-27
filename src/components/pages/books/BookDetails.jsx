@@ -283,7 +283,7 @@ function PlatformCard({ url }) {
     return (
         <div
             onClick={() => window.open(url, "_blank")}
-            className="w-full sm:w-44 rounded-[10px] border p-4 sm:p-6 flex flex-row sm:flex-col items-center gap-4 sm:gap-3 cursor-pointer hover:border-[#E07A5F] hover:bg-[#E07A5F0D]"
+            className="w-full sm:w-44 rounded-[10px] border border-[#B5B5B5] p-4 sm:p-6 flex flex-row sm:flex-col items-center gap-4 sm:gap-3 cursor-pointer hover:border-[#E07A5F] hover:bg-[#E07A5F0D]"
         >
 
             <div className="w-12 h-12 rounded-[6px] flex items-center justify-center shadow-md border border-[#2F6F6D] p-1">

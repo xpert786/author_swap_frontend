@@ -325,7 +325,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Visibility", "Public", "Friend Only", "Hidden", "Single Use Private Link"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                        {["All Visibility", "Public", "Friend Only"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
