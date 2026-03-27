@@ -4,6 +4,7 @@ import { CheckBadgeIcon } from "../../icons";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { getBooks } from "../../../apis/bookManegment";
 import { toast } from "react-hot-toast";
+import dummyBook from "../../../assets/dummy-book.jpg";
 
 
 
@@ -13,12 +14,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
     const [placement, setPlacement] = useState("Top");
     const [message, setMessage] = useState("");
     const [maxPartners, setMaxPartners] = useState("5 Partners");
-    const [retailerLinks, setRetailerLinks] = useState({
-        amazonUrl: "",
-        appleUrl: "",
-        koboUrl: "",
-        barnesNobleUrl: ""
-    });
+    const [siteUrls, setSiteUrls] = useState([""]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [compatibility, setCompatibility] = useState({
@@ -29,18 +25,28 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
     const handleBookSelect = (book) => {
         setSelectedBook(book.id);
-        setRetailerLinks({
-            amazonUrl: book.amazon_url || "",
-            appleUrl: book.apple_url || "",
-            koboUrl: book.kobo_url || "",
-            barnesNobleUrl: book.barnes_noble_url || ""
-        });
+        setSiteUrls(book.site_url && book.site_url.length > 0 ? book.site_url : [""]);
 
         // Use embedded compatibility data if available
         if (book.compatibility) {
             setCompatibility(book.compatibility);
         }
         // Removed auto-filling message from description
+    };
+
+    const handleLinkChange = (index, value) => {
+        const updatedLinks = [...siteUrls];
+        updatedLinks[index] = value;
+        setSiteUrls(updatedLinks);
+    };
+
+    const addNewLink = () => {
+        setSiteUrls([...siteUrls, ""]);
+    };
+
+    const removeLink = (index) => {
+        const updatedLinks = siteUrls.filter((_, i) => i !== index);
+        setSiteUrls(updatedLinks.length ? updatedLinks : [""]);
     };
 
     useEffect(() => {
@@ -97,10 +103,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                 placement,
                 message,
                 max_partners: parseInt(maxPartners),
-                amazon_url: retailerLinks.amazonUrl,
-                apple_url: retailerLinks.appleUrl,
-                kobo_url: retailerLinks.koboUrl,
-                barnes_noble_url: retailerLinks.barnesNobleUrl
+                site_url: siteUrls.filter(link => link.trim() !== "")
             };
             await sendSwapRequest(id, payload);
             toast.success("Swap request sent successfully!");
@@ -169,7 +172,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                                 }`}
                                         >
                                             <img
-                                                src={book.book_cover || book.cover}
+                                                src={book.book_cover || book.cover || dummyBook}
                                                 alt={book.title}
                                                 className="w-full h-20 object-cover rounded-lg mb-2 shadow-sm"
                                             />
@@ -298,58 +301,39 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                 </div>
                             </div>
                             <div>
-                                <h3 className="text-[13px] font-medium text-[#111827] mb-3">
+                                <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
                                     Retailer Links
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[11px] font-medium text-[#111827] mb-1 block">
-                                            Amazon URL
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={retailerLinks.amazonUrl}
-                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, amazonUrl: e.target.value })}
-                                            placeholder="Amazon URL"
-                                            className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[11px] font-medium text-[#111827] mb-1 block">
-                                            Apple URL
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={retailerLinks.appleUrl}
-                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, appleUrl: e.target.value })}
-                                            placeholder="Apple Books URL"
-                                            className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[11px] font-medium text-[#111827] mb-1 block">
-                                            Kobo URL
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={retailerLinks.koboUrl}
-                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, koboUrl: e.target.value })}
-                                            placeholder="Kobo URL"
-                                            className="w-full border border-[#B5B5B5] rounded-[10px] px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[11px] font-medium text-[#111827] mb-1 block">
-                                            Barnes & Noble URL
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={retailerLinks.barnesNobleUrl}
-                                            onChange={(e) => setRetailerLinks({ ...retailerLinks, barnesNobleUrl: e.target.value })}
-                                            placeholder="Barnes & Noble URL"
-                                            className="w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                                        />
-                                    </div>
+                                <div className="space-y-3">
+                                    {siteUrls.map((link, index) => (
+                                        <div key={index} className="flex gap-2">
+                                            <input
+                                                type="url"
+                                                placeholder="Enter site link"
+                                                value={link}
+                                                onChange={(e) => handleLinkChange(index, e.target.value)}
+                                                className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                                            />
+                                            {siteUrls.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeLink(index)}
+                                                    className="px-3 text-red-500 border rounded-lg hover:bg-red-50"
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                            {index === siteUrls.length - 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={addNewLink}
+                                                    className="px-3 bg-[#2F6F6D] text-white rounded-lg hover:opacity-90"
+                                                >
+                                                    +
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 

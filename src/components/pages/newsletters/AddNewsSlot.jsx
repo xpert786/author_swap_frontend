@@ -259,8 +259,6 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
                 >
                   <option value="Public">Public</option>
                   <option value="friend_only">Friend Only</option>
-                  <option value="single_use_private_link">Single-use private link</option>
-                  <option value="hidden">Hidden</option>
                 </select>
               </div>
 
