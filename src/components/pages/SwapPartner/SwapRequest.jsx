@@ -4,7 +4,7 @@ import { CheckBadgeIcon } from "../../icons";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { getBooks } from "../../../apis/bookManegment";
 import { toast } from "react-hot-toast";
-import dummyBook from "../../../assets/dummy-book.jpg";
+import dummyBook from "../../../assets/dummy-book.png";
 
 
 

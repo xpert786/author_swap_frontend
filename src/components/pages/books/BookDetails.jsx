@@ -6,7 +6,7 @@ import EditBooks from "./EditBooks";
 import toast from "react-hot-toast";
 import edit from "../../../assets/edit.png";
 import { LuBookOpen } from "react-icons/lu";
-import dummyBook from "../../../assets/dummy-book.jpg";
+import dummyBook from "../../../assets/dummy-book.png";
 
 export default function BookDetails() {
     const { id } = useParams();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiX, FiChevronDown, FiRefreshCw, FiCheck } from "react-icons/fi";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { toast } from "react-hot-toast";
-import dummyBook from "../../../assets/dummy-book.jpg";
+import dummyBook from "../../../assets/dummy-book.png";
 
 const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
     const [selectedBook, setSelectedBook] = useState(null);

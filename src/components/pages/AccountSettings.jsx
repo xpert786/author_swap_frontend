@@ -800,8 +800,13 @@ const AccountSettings = () => {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {parseFloat(t?.amount) < 0 ? t?.amount : '+' + t?.amount}
+                                                <div
+                                                    className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount || 0) < 0
+                                                            ? 'text-red-600'
+                                                            : 'text-green-600'
+                                                        }`}
+                                                >
+                                                    {t?.amount ?? '0'}
                                                 </div>
                                             </div>
                                         ))}

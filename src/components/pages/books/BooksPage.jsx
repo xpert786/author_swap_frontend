@@ -22,7 +22,7 @@ import Swap from "../../../assets/swap.png";
 import { getBooks, bookCardData, deleteBook, updateBook } from "../../../apis/bookManegment";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
-import dummyBook from "../../../assets/dummy-book.jpg";
+import dummyBook from "../../../assets/dummy-book.png";
 
 const BooksPage = () => {
     const [books, setBooks] = useState([]);
