@@ -131,13 +131,13 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Audience</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
-                                            {data?.audience_size || "N/A"}
+                                            {data?.audience || "N/A"}
                                         </p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Reliability</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
-                                            {data?.reliability_score || "N/A"}
+                                            {data?.reliability || "N/A"}
                                         </p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
