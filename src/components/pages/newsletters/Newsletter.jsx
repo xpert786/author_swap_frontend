@@ -258,6 +258,22 @@ const Newsletter = () => {
     const handleEditClick = (slot) => { setSelectedSlot(slot); setEditOpen(true); };
     const handleDeleteClick = (slot) => { setSelectedSlot(slot); setDeleteOpen(true); };
 
+    const handleDateClick = (date) => {
+        setSelectedDate(date);
+        
+        // Check if the date is in the past (before today)
+        if (date.isBefore(today, 'day')) {
+            return; // Don't open modal for past dates
+        }
+        
+        // Check if the date has no slots (empty date)
+        const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
+        if (!dayApiData?.has_slots) {
+            // Open the add slot modal for empty dates
+            setOpen(true);
+        }
+    };
+
     const PendingSwapIcon = () => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
     const ConfirmedSwapIcon = () => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
     const VerifiedSentIcon = () => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
@@ -401,7 +417,7 @@ const Newsletter = () => {
                                 else bgColor = "bg-[#F3F4F6]";
                             }
                             return (
-                                <div key={idx} onClick={() => setSelectedDate(date)}
+                                <div key={idx} onClick={() => handleDateClick(date)}
                                     className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80 ${bgColor} ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""} ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}`}
                                 >
                                     <span className={`text-[12px] font-medium ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""} ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}`}>
