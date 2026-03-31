@@ -4,7 +4,7 @@ import { getGenres, audienceSize } from "../../../apis/genre";
 import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 
-const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
+const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
   const [formData, setFormData] = useState({
     send_date: "",
     send_time: "",
@@ -39,8 +39,15 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit }) => {
 
     if (isOpen) {
       fetchData();
+      // If prefillDate is provided, set it in the form
+      if (prefillDate) {
+        setFormData(prev => ({
+          ...prev,
+          send_date: prefillDate
+        }));
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, prefillDate]);
 
   // Handle click outside to close dropdown
   useEffect(() => {

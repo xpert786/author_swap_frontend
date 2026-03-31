@@ -28,6 +28,7 @@ import toast from "react-hot-toast";
 
 const Newsletter = () => {
     const [open, setOpen] = useState(false);
+    const [prefillDate, setPrefillDate] = useState("");
     const [editOpen, setEditOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
@@ -269,7 +270,8 @@ const Newsletter = () => {
         // Check if the date has no slots (empty date)
         const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
         if (!dayApiData?.has_slots) {
-            // Open the add slot modal for empty dates
+            // Set the prefill date and open the add slot modal for empty dates
+            setPrefillDate(date.format("YYYY-MM-DD"));
             setOpen(true);
         }
     };
@@ -380,7 +382,7 @@ const Newsletter = () => {
                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">
                         <Plus size={16} /> Add New Slot
                     </button>
-                    <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); }} />
+                    <AddNewsSlot isOpen={open} onClose={() => { setOpen(false); setPrefillDate(""); }} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); setPrefillDate(""); }} prefillDate={prefillDate} />
                 </div>
             </div>
 
