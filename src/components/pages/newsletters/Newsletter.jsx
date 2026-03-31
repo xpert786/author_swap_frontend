@@ -287,7 +287,6 @@ const Newsletter = () => {
         { label: "Published Slots", value: String(newsletterStats.published_slots ?? 0), icon: SwapIcon },
         { label: "Pending swap requests", value: String(newsletterStats.pending_swaps ?? newsletterStats.pending_swap_requests ?? 0), icon: PendingSwapIcon },
         { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps ?? 0), icon: ConfirmedSwapIcon },
-        { label: "Verified sent", value: String(newsletterStats.verified_sent ?? 0), icon: VerifiedSentIcon },
     ];
 
     return (
@@ -300,7 +299,7 @@ const Newsletter = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-8">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1">
                         <div className="flex justify-between items-start gap-2">
@@ -436,7 +435,6 @@ const Newsletter = () => {
                             { color: "bg-[#F1B9AA]", label: "Published slots" },
                             { color: "bg-[#F59E0B33]", label: "Confirmed slots" },
                             { color: "bg-[#EAD8B1]", label: "Pending slots" },
-                            { color: "bg-[#9DB7B5]", label: "Verified slots" },
                         ].map(({ color, label }) => (
                             <div key={label} className="flex items-center gap-2.5">
                                 <div className={`w-5 h-5 rounded-[4px] shadow-sm ${color}`} />

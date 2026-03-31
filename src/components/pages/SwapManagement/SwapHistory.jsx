@@ -68,6 +68,7 @@ const SwapHistory = () => {
                             <span className="text-[11px] text-[#111827]">({data.partner_label || "Swap Partner"})</span>
                         </div>
                         <p className="text-xs text-[#374151] font-medium">{data.partner_genre || "Author"}</p>
+                         <p className="text-xs text-[#374151] font-medium">{data.partner_email || "Author"}</p>
                     </div>
                 </div>
 
