@@ -280,7 +280,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
                         {/* Form Fields */}
                         <div className="space-y-4">
-                            <div>
+                            {/* <div>
                                 <label className="text-[13px] font-medium text-[#111827] mb-1.5 block">
                                     Max Partners Allowed
                                 </label>
@@ -292,14 +292,13 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                     >
                                         <option value="5 Partners">5 Partners</option>
                                         <option value="10 Partners">10 Partners</option>
-                                        {/* Dynamic option if slot has different max_partners */}
                                         {maxPartners !== "5 Partners" && maxPartners !== "10 Partners" && (
                                             <option value={maxPartners}>{maxPartners}</option>
                                         )}
                                     </select>
                                     <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 </div>
-                            </div>
+                            </div> */}
                             <div>
                                 <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
                                     Retailer Links

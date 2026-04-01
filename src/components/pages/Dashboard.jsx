@@ -394,10 +394,10 @@ const Dashboard = () => {
             </div>
 
             {/* Verified */}
-            <div className="flex items-center gap-1.5">
+            {/* <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#9DB7B5]" />
               <span className="text-[10px] font-medium text-gray-600">Verified</span>
-            </div>
+            </div> */}
 
           </div>
         </div>

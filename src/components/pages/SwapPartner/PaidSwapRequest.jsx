@@ -275,7 +275,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
 
                         {/* Form Fields */}
                         <div className="space-y-4">
-                            <div>
+                            {/* <div>
                                 <label className="text-[13px] font-medium text-[#111827] mb-1.5 block">
                                     Max Partners Allowed
                                 </label>
@@ -293,7 +293,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                                     </select>
                                     <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <h3 className="text-[13px] font-bold text-gray-700 mb-3 uppercase tracking-wider">
