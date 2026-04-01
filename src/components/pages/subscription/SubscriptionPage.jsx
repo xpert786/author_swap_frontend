@@ -159,7 +159,18 @@ export default function SubscriptionPage() {
         const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
         if (isCurrent) return "Current Plan";
         if (!subscription) return "Get Started";
-        return `Upgrade to ${tier.name}`;
+        
+        // Check if this is an upgrade or downgrade
+        const currentTierId = parseInt(subscription?.tier);
+        const targetTierId = parseInt(tier.id);
+        
+        if (targetTierId > currentTierId) {
+            return `Upgrade to ${tier.name}`;
+        } else if (targetTierId < currentTierId) {
+            return `Downgrade to ${tier.name}`;
+        } else {
+            return `Change to ${tier.name}`;
+        }
     };
 
     if (loading) {
@@ -400,7 +411,7 @@ export default function SubscriptionPage() {
                                         Confirm Plan Change
                                     </h2>
                                     <p className="text-[13px] text-gray-500 mt-0.5">
-                                        Review the details of your plan upgrade
+                                        Review the details of your plan {previewData.is_upgrade ? "upgrade" : "downgrade"}
                                     </p>
                                 </div>
                                 <button
@@ -475,7 +486,7 @@ export default function SubscriptionPage() {
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
-                                            Upgrade Now
+                                            Change Plan Now
                                             <Rocket size={14} />
 
                                         </>

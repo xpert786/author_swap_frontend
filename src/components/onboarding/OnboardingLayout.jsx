@@ -20,12 +20,15 @@ const OnboardingLayout = () => {
   useEffect(() => {
     const fetchExisting = async () => {
       try {
-        const res = await getProfile();
-        if (res.data.mailerlite_api_key) {
+        const response = await getProfile();
+        const responseData = response.data || response;
+        const data = Array.isArray(responseData) ? responseData[0] : responseData;
+        
+        if (data.mailerlite_api_key) {
           setIsMailerliteConnected(true);
           setFormData((prev) => ({
             ...prev,
-            mailerlite_api_key: res.data.mailerlite_api_key,
+            mailerlite_api_key: data.mailerlite_api_key,
           }));
         }
       } catch (e) {}

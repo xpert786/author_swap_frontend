@@ -9,10 +9,6 @@ import {
     Globe,
     ChevronDown
 } from "lucide-react";
-import amazonIcon from "../../../assets/amazon.png";
-import appleIcon from "../../../assets/apple.png";
-import koboIcon from "../../../assets/kobo.png";
-import bnIcon from "../../../assets/b-n.png";
 import { useNavigate } from "react-router-dom";
 import AddBooks from "./AddBooks";
 import EditBooks from "./EditBooks";
@@ -26,6 +22,7 @@ import Swap from "../../../assets/swap.png";
 import { getBooks, bookCardData, deleteBook, updateBook } from "../../../apis/bookManegment";
 import { getGenres } from "../../../apis/genre";
 import toast from "react-hot-toast";
+import dummyBook from "../../../assets/dummy-book.png";
 
 const BooksPage = () => {
     const [books, setBooks] = useState([]);
@@ -62,9 +59,12 @@ const BooksPage = () => {
                 ...book,
 
                 // Fix cover (only if relative URL)
-                book_cover: book.book_cover?.startsWith("http")
-                    ? book.book_cover
-                    : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`,
+                book_cover:
+                    book.book_cover && book.book_cover !== "null"
+                        ? book.book_cover.startsWith("http")
+                            ? book.book_cover
+                            : `${import.meta.env.VITE_BACKEND_URL}${book.book_cover}`
+                        : null,
 
                 // Fix date properly
                 publish_date: book.publish_date || null,
@@ -86,7 +86,8 @@ const BooksPage = () => {
     const fetchStats = async () => {
         try {
             const response = await bookCardData();
-            const data = response?.data || {};
+            const responseData = response?.data || {};
+            const data = Array.isArray(responseData) ? responseData[0] : responseData;
 
             setStats({
                 total: data.total_books ?? 0,
@@ -450,9 +451,12 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                 </div>
 
                 <img
-                    src={book.book_cover || "/placeholder.jpg"}
+                    src={book?.book_cover || dummyBook}
                     alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => {
+                        e.currentTarget.src = dummyBook;
+                    }}
                 />
             </div>
 
@@ -543,29 +547,47 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                         </p>
 
                         <div className="flex gap-2">
-                            {book.amazon_url && (
-                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
-                                    <img src={amazonIcon} alt="Amazon" className="w-full h-full object-contain" />
-                                </div>
-                            )}
 
-                            {book.apple_url && (
-                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
-                                    <img src={appleIcon} alt="Apple Books" className="w-full h-full object-contain" />
-                                </div>
-                            )}
+                            {Array.isArray(book.site_url) &&
+                                book.site_url.map((url, index) => {
 
-                            {book.kobo_url && (
-                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
-                                    <img src={koboIcon} alt="Kobo" className="w-full h-full object-contain" />
-                                </div>
-                            )}
+                                    let favicon = null;
 
-                            {book.barnes_noble_url && (
-                                <div className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]">
-                                    <img src={bnIcon} alt="Barnes & Noble" className="w-full h-full object-contain" />
-                                </div>
-                            )}
+                                    try {
+                                        const domain = new URL(url).hostname;
+                                        favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                                    } catch {
+                                        favicon = null;
+                                    }
+
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                window.open(url, "_blank");
+                                            }}
+                                        >
+
+                                            {favicon ? (
+                                                <img
+                                                    src={favicon}
+                                                    alt="platform"
+                                                    className="w-full h-full object-contain"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = "none";
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Globe size={14} />
+                                            )}
+
+                                        </div>
+                                    );
+
+                                })}
+
                         </div>
                     </div>
 

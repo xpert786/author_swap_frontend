@@ -19,7 +19,8 @@ export const ProfileProvider = ({ children }) => {
                 return null;
             }
 
-            setLoading(true);
+            // Only set global loading for initial fetch
+            if (!profile) setLoading(true);
             
             // Fetch both profile and subscription data
             const [{ data: profileData }, { data: subData }] = await Promise.all([
@@ -30,7 +31,8 @@ export const ProfileProvider = ({ children }) => {
                 })
             ]);
             
-            setProfile(profileData);
+            const fetchedProfile = Array.isArray(profileData) ? profileData[0] : profileData;
+            setProfile(fetchedProfile);
             // The subscription is directly in subData.subscription, not nested further
             const subscriptionData = subData?.subscription || null;
             setSubscription(subscriptionData);
@@ -47,7 +49,7 @@ export const ProfileProvider = ({ children }) => {
                 localStorage.removeItem("subscription_expiry");
             }
             
-            return { profile: profileData, subscription: subscriptionData };
+            return { profile: fetchedProfile, subscription: subscriptionData };
         } catch (error) {
             console.error("Failed to fetch profile:", error);
             return null;

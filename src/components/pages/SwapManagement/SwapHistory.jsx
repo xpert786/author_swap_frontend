@@ -68,6 +68,7 @@ const SwapHistory = () => {
                             <span className="text-[11px] text-[#111827]">({data.partner_label || "Swap Partner"})</span>
                         </div>
                         <p className="text-xs text-[#374151] font-medium">{data.partner_genre || "Author"}</p>
+                         <p className="text-xs text-[#374151] font-medium">{data.partner_email || "Author"}</p>
                     </div>
                 </div>
 
@@ -78,7 +79,7 @@ const SwapHistory = () => {
                             <p className="text-base font-medium text-[#111827]">{data.request_date || "N/A"}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-[#374151] font-medium mb-1.5">Competed Date</p>
+                            <p className="text-xs text-[#374151] font-medium mb-1.5">Completed Date</p>
                             <p className="text-base font-medium text-[#111827]">{data.completed_date || "N/A"}</p>
                         </div>
                     </div>
@@ -101,28 +102,31 @@ const SwapHistory = () => {
                 </div>
             </div>
 
-            {/* Links Container */}
-            <div className="bg-white border border-[#B5B5B5] rounded-[8px] p-4 mb-6">
-                <h3 className="text-lg font-medium text-black mb-3">Links</h3>
-                <div className="space-y-3">
-                    <div className="flex text-sm">
-                        <span className="w-24 text-[#374151] font-normal">Website:</span>
-                        <span className="text-[#374151] font-normal">{data.partner_links?.website || "N/A"}</span>
-                    </div>
-                    <div className="flex text-sm">
-                        <span className="w-24 text-[#374151] font-normal">Facebook:</span>
-                        <span className="text-[#374151] font-normal">{data.partner_links?.facebook || "N/A"}</span>
-                    </div>
-                    <div className="flex text-sm">
-                        <span className="w-24 text-[#374151] font-normal">Instagram:</span>
-                        <span className="text-[#374151] font-normal">{data.partner_links?.instagram || "N/A"}</span>
-                    </div>
-                    <div className="flex text-sm">
-                        <span className="w-24 text-[#374151] font-normal">Twitter:</span>
-                        <span className="text-[#374151] font-normal">{data.partner_links?.twitter || "N/A"}</span>
+            {/* Site URLs */}
+            {data.site_url && data.site_url.length > 0 && (
+                <div className="bg-white border border-[#B5B5B5] rounded-[8px] p-4 mb-6">
+                    <h3 className="text-lg font-medium text-black mb-3">Site URLs</h3>
+                    <div className="space-y-2">
+                        {data.site_url.map((url, idx) => {
+                            const cleanUrl = url.split(' ')[0];
+                            return (
+                                <a
+                                    key={idx}
+                                    href={cleanUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-[#2F6F6D08] hover:bg-[#2F6F6D15] transition-colors border border-[#2F6F6D20] text-[#2F6F6D] font-medium"
+                                >
+                                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    <span className="truncate">{cleanUrl}</span>
+                                </a>
+                            );
+                        })}
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Promoting Book Container */}
             <div className="bg-white border border-[#B5B5B5] rounded-[8px] p-4 mb-6">
@@ -168,7 +172,7 @@ const SwapHistory = () => {
                                 <th className="p-4 text-left text-[11px] font-medium text-[#111827] border-b border-[#B5B5B5]">Link / Destination</th>
                                 <th className="p-4 text-left text-[11px] font-medium text-[#111827] border-b border-[#B5B5B5]">Clicks</th>
                                 <th className="p-4 text-left text-[11px] font-medium text-[#111827] border-b border-[#B5B5B5]">CTR</th>
-                                <th className="p-4 text-left text-[11px] font-medium text-[#111827] border-b border-[#B5B5B5]">Conversion</th>
+                                <th className="p-4 text-left text-[11px] font-medium text-[#111827] border-b border-[#B5B5B5]">Conversions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -176,17 +180,19 @@ const SwapHistory = () => {
                                 data.link_ctr_analysis.map((row, idx) => (
                                     <tr key={idx}>
                                         <td className="p-4 border-b border-[#B5B5B5]">
-                                            <p className="text-xs font-medium text-gray-800">{row.name}</p>
-                                            <p className="text-[10px] text-[#374151]">{row.url}</p>
+                                            <p className="text-xs font-medium text-gray-800">{row.link_name}</p>
+                                            <p className="text-[10px] text-[#374151]">{row.destination_url}</p>
                                         </td>
-                                        <td className="p-4 text-sm font-medium text-gray-700 border-b border-[#B5B5B5]">{row.clicks}</td>
+                                        <td className="p-4 text-sm font-medium text-gray-700 border-b border-[#B5B5B5]">{row.clicks || 0}</td>
                                         <td className="p-4 border-b border-[#B5B5B5]">
-                                            <p className="text-xs font-medium text-gray-700">{row.ctr}</p>
-                                            <p className={`text-[10px] font-medium ${row.ctrStatus === "Excellent" ? "text-green-600" : "text-orange-500"}`}>
-                                                {row.ctrStatus}
-                                            </p>
+                                            <p className="text-xs font-medium text-gray-700">{row.ctr !== undefined ? `${row.ctr}%` : "0%"}</p>
+                                            {row.ctr_label && (
+                                                <p className={`text-[10px] font-medium ${row.ctr_label === "Excellent" ? "text-green-600" : row.ctr_label === "Average" ? "text-orange-500" : "text-gray-500"}`}>
+                                                    {row.ctr_label}
+                                                </p>
+                                            )}
                                         </td>
-                                        <td className="p-4 text-xs font-medium text-gray-700 border-b border-[#B5B5B5]">{row.conv}</td>
+                                        <td className="p-4 text-xs font-medium text-gray-700 border-b border-[#B5B5B5]">{row.conversions || 0}</td>
                                     </tr>
                                 ))
                             ) : (

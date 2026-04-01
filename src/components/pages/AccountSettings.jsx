@@ -33,7 +33,7 @@ const Input = ({ label, name, value, onChange, type = "text", disabled }) => (
 
 const defaultProfile = {
     name: "",
-    pen_names: [],
+    pen_name: [],
     email: "",
     location: "",
     genres: [],
@@ -81,23 +81,26 @@ const AccountSettings = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const [penNameInput, setPenNameInput] = useState("");
+
     const fetchProfile = async () => {
         try {
             const { data } = await getProfile();
+            const profile = Array.isArray(data) ? data[0] : data;
             setFormData({
-                name: data.name || "",
-                pen_names: data.pen_names ? data.pen_names.split(",") : [],
-                email: data.email || "",
-                location: data.location || "",
-                genres: data.primary_genre ? data.primary_genre.split(",") : [],
-                website: data.website || "",
-                instagram: data.instagram_url || "",
-                tiktok: data.tiktok_url || "",
-                facebook: data.facebook_url || "",
-                bio: data.bio || "",
+                name: profile.name || "",
+                pen_name: profile.pen_name ? profile.pen_name.split(",") : [],
+                email: profile.email || "",
+                location: profile.location || "",
+                genres: profile.primary_genre ? profile.primary_genre.split(",") : [],
+                website: profile.website || "",
+                instagram: profile.instagram_url || "",
+                tiktok: profile.tiktok_url || "",
+                facebook: profile.facebook_url || "",
+                bio: profile.bio || "",
             });
-            setOriginalData(data);
-            setProfileImage(data.profile_picture);
+            setOriginalData(profile);
+            setProfileImage(profile.profile_picture);
         } catch (err) {
             console.error(err);
             toast.error("Failed to load profile");
@@ -176,7 +179,7 @@ const AccountSettings = () => {
         try {
             setAddingFunds(true);
             const res = await addFunds(addFundsAmount);
-            
+
             // Check if funds were added directly (saved card scenario)
             if (res.data?.detail && res.data?.new_balance) {
                 toast.success(res.data.detail);
@@ -258,10 +261,10 @@ const AccountSettings = () => {
             setSaving(true);
             const formPayload = new FormData();
             formPayload.append("name", formData.name);
-            
+
             // Send each pen name individually
-            formData.pen_names.forEach(pn => {
-                formPayload.append("pen_names", pn);
+            formData.pen_name.forEach(pn => {
+                formPayload.append("pen_name", pn);
             });
 
             formPayload.append("email", formData.email);
@@ -329,11 +332,25 @@ const AccountSettings = () => {
         }
     };
 
+    const handleAddPenName = (e) => {
+        if (e) e.preventDefault();
+        const val = penNameInput.trim();
+        if (val) {
+            if (!formData.pen_name.includes(val)) {
+                setFormData(prev => ({
+                    ...prev,
+                    pen_name: [...prev.pen_name, val]
+                }));
+            }
+            setPenNameInput("");
+        }
+    };
+
     const handleEdit = () => setIsEditing(true);
     const handleCancel = () => {
         setFormData({
             name: originalData.name || "",
-            pen_names: originalData.pen_names ? originalData.pen_names.split(",") : [],
+            pen_name: originalData.pen_name ? originalData.pen_name.split(",") : [],
             email: originalData.email || "",
             location: originalData.location || "",
             genres: originalData.primary_genre ? originalData.primary_genre.split(",") : [],
@@ -413,32 +430,38 @@ const AccountSettings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                     <Input label="Name" name="name" value={formData.name} onChange={handleChange} disabled={!isEditing} />
                     <div className="space-y-1.5">
-                        <label className="text-[12px] font-medium text-[#111827]">Pen Name(s)</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder={isEditing ? "Type and press Enter to add..." : ""}
-                                disabled={!isEditing}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && e.target.value.trim()) {
-                                        e.preventDefault();
-                                        const val = e.target.value.trim();
-                                        if (!formData.pen_names.includes(val)) {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                pen_names: [...prev.pen_names, val]
-                                            }));
+                        <label className="text-[12px] font-medium text-[#111827]">Pen Names</label>
+                        <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder={isEditing ? "Type and press Enter to add..." : ""}
+                                    disabled={!isEditing}
+                                    value={penNameInput}
+                                    onChange={(e) => setPenNameInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleAddPenName(e);
                                         }
-                                        e.target.value = "";
-                                    }
-                                }}
-                                className={`w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                            />
+                                    }}
+                                    className={`w-full border border-[#B5B5B5] rounded-[6px] px-3 py-[9px] text-[13px] focus:outline-none focus:ring-1 focus:ring-[#2F6F6D] ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                                />
+                            </div>
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={handleAddPenName}
+                                    className="bg-[#2F6F6D] text-white px-4 py-[9px] rounded-[6px] text-[13px] font-medium hover:bg-[#255755] transition-all flex items-center gap-1"
+                                >
+                                    <Plus size={16} />
+                                    Add
+                                </button>
+                            )}
                         </div>
 
                         {/* Pen Names Chips */}
                         <div className="flex flex-wrap gap-2 mt-2">
-                            {formData.pen_names.map((pn, index) => (
+                            {formData.pen_name.map((pn, index) => (
                                 <div
                                     key={index}
                                     className="flex items-center gap-1.5 bg-[#E07A5F1A] text-black px-3 py-1.5 rounded-full border border-[#E07A5F33] text-sm"
@@ -449,7 +472,7 @@ const AccountSettings = () => {
                                             type="button"
                                             onClick={() => setFormData(prev => ({
                                                 ...prev,
-                                                pen_names: prev.pen_names.filter(p => p !== pn)
+                                                pen_name: prev.pen_name.filter(p => p !== pn)
                                             }))}
                                             className="text-gray-500 hover:text-red-500 transition-colors"
                                         >
@@ -777,8 +800,13 @@ const AccountSettings = () => {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount) < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {parseFloat(t?.amount) < 0 ? t?.amount : '+' + t?.amount}
+                                                <div
+                                                    className={`text-sm font-bold ${t?.amount_color === 'red' || parseFloat(t?.amount || 0) < 0
+                                                            ? 'text-red-600'
+                                                            : 'text-green-600'
+                                                        }`}
+                                                >
+                                                    {t?.amount ?? '0'}
                                                 </div>
                                             </div>
                                         ))}

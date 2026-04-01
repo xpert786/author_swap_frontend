@@ -80,7 +80,7 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
     const authorImage = data?.partner_profile_picture || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
     const authorRole = data?.partner_genre || "Author";
     const book = data?.promoting_book || {};
-    const links = data?.partner_links || {};
+    const siteUrls = data?.site_url || [];
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4">
@@ -168,32 +168,31 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                     </div>
                                 </div>
 
-                                {/* Links */}
-                                <div className="pt-2">
-                                    <h3 className="text-base font-medium text-[#111827] mb-4">Links</h3>
-                                    <div className="space-y-3">
-                                        {[
-                                            { label: "Website:", value: links.website },
-                                            { label: "Facebook:", value: links.facebook },
-                                            { label: "Instagram:", value: links.instagram },
-                                            { label: "Twitter:", value: links.twitter }
-                                        ]
-                                            .filter(link => link.value && link.value !== "NA")
-                                            .map((link, idx) => (
-                                                <div key={idx} className="flex items-center text-[12px]">
-                                                    <span className="w-24 text-[#374151] font-normal">{link.label}</span>
+                                {/* Site URLs */}
+                                {siteUrls.length > 0 && (
+                                    <div className="pt-2">
+                                        <h3 className="text-base font-medium text-[#111827] mb-4">Site URLs</h3>
+                                        <div className="space-y-2">
+                                            {siteUrls.map((url, idx) => {
+                                                const cleanUrl = url.split(' ')[0];
+                                                return (
                                                     <a
-                                                        href={link.value}
+                                                        key={idx}
+                                                        href={cleanUrl}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="font-normal text-[#2F6F6D] hover:underline truncate flex-1"
+                                                        className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-[#2F6F6D08] hover:bg-[#2F6F6D15] transition-colors border border-[#2F6F6D20] text-[#2F6F6D] font-medium"
                                                     >
-                                                        {link.value}
+                                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                        <span className="truncate">{cleanUrl}</span>
                                                     </a>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 <div className="flex justify-end pt-6 border-t border-gray-100">
                                     <button

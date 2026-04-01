@@ -35,28 +35,28 @@ const Dashboard = () => {
   const stats = [
     {
       label: "Book",
-      value: dashboardData?.stats_cards?.book || "0",
+      value: dashboardData?.stats_cards?.verified_sent || dashboardData?.stats_cards?.book || "0",
       icon: OpenBook,
       color: "bg-[#9DB7B5]", // neutral (similar to verified)
       path: "/books",
     },
     {
       label: "Newsletter Slots",
-      value: dashboardData?.stats_cards?.newsletter_slots || "0",
+      value: dashboardData?.stats_cards?.published_slots || dashboardData?.stats_cards?.newsletter_slots || "0",
       icon: OpenBook,
       color: "bg-[#F1B9AA]", // published
       path: "/newsletter",
     },
     {
       label: "Completed Swaps",
-      value: dashboardData?.stats_cards?.completed_swaps || "0",
+      value: dashboardData?.stats_cards?.confirmed_swaps || dashboardData?.stats_cards?.completed_swaps || "0",
       icon: OpenBook,
       color: "bg-[#87D1A1]", // confirmed
       path: "/swap-management",
     },
     {
       label: "Reliability",
-      value: dashboardData?.stats_cards?.reliability || "0",
+      value: dashboardData?.stats_cards?.pending_swaps || dashboardData?.stats_cards?.reliability || "0",
       icon: OpenBook,
       color: "bg-[#EAD8B1]", // pending-style soft tone (less aggressive than red)
       path: "/reputation",
@@ -336,8 +336,11 @@ const Dashboard = () => {
               if (!isCurrentMonth) {
                 bgColor = "bg-gray-50/30";
               } else if (dayApiData?.has_slots) {
-                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#87D1A1]";
+                if (dayApiData.has_verified) bgColor = "bg-[#9DB7B5]";
+                else if (dayApiData.has_confirmed) bgColor = "bg-[#87D1A1]";
+                else if (dayApiData.has_pending) bgColor = "bg-[#EAD8B1]";
                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
+                else if (dayApiData.has_booked) bgColor = "bg-[#EAD8B1]";
                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                 else bgColor = "bg-[#F3F4F6]";
               }
@@ -391,10 +394,10 @@ const Dashboard = () => {
             </div>
 
             {/* Verified */}
-            <div className="flex items-center gap-1.5">
+            {/* <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-[#9DB7B5]" />
               <span className="text-[10px] font-medium text-gray-600">Verified</span>
-            </div>
+            </div> */}
 
           </div>
         </div>

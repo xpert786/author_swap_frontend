@@ -233,6 +233,24 @@ const Mailerlite = ({ next, prev }) => {
                                     </p>
                                 </div>
                             </div>
+
+                            {/* IP Allowlist Security Notice */}
+                            <div className="bg-[#EFF6FF] border border-[#BFDBFE] p-4 rounded-xl flex gap-3 items-start">
+                                <div className="text-[#1D4ED8] mt-0.5 text-lg">🔒</div>
+                                <div>
+                                    <p className="text-sm font-semibold text-[#1E40AF]">IP Allowlist Enabled</p>
+                                    <p className="text-sm text-[#3B82F6] leading-relaxed mt-1">
+                                        Only authorized hosts can access the application.
+                                    </p>
+                                    <p className="text-xs text-[#1E40AF] mt-2 font-medium">Allowed:</p>
+                                    <ul className="text-xs text-[#3B82F6] mt-1 space-y-0.5">
+                                        <li>• 72.61.251.114</li>
+                                        <li>• authorswap.com</li>
+                                        <li>• www.authorswap.com</li>
+                                    </ul>
+                                    <p className="text-xs text-[#3B82F6] mt-2 italic">Security monitoring is active.</p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Footer */}

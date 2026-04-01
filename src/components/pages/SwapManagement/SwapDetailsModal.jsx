@@ -51,7 +51,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
 
     const partnerGenre = formatGenre(data?.partner_genre) || "Mystery Author";
     const book = data?.promoting_book || {};
-    const links = data?.partner_links || {};
+    const siteUrls = data?.site_url || [];
 
     return (
         <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
@@ -131,13 +131,13 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Audience</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
-                                            {data?.audience_size || "N/A"}
+                                            {data?.audience || "N/A"}
                                         </p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Reliability</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
-                                            {data?.reliability_score || "N/A"}
+                                            {data?.reliability || "N/A"}
                                         </p>
                                     </div>
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
@@ -148,23 +148,32 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                     </div>
                                 </div>
 
-                                {/* Links */}
-                                <div>
-                                    <h4 className="text-md font-medium text-[#111827] mb-3">Links</h4>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {[
-                                            { label: "Website", value: links.website },
-                                            { label: "Facebook", value: links.facebook },
-                                            { label: "Instagram", value: links.instagram },
-                                            { label: "Twitter", value: links.twitter }
-                                        ].map((link, idx) => (
-                                            <div key={idx} className="flex items-center text-[12px] px-3 py-1.5 rounded-lg">
-                                                <span className="w-20 font-medium text-[#374151] text-[10px]">{link.label}</span>
-                                                <span className="font-medium text-[#374151] truncate flex-1">{link.value || "NA"}</span>
-                                            </div>
-                                        ))}
+                                {/* Site URLs */}
+                                {siteUrls.length > 0 && (
+                                    <div>
+                                        <h4 className="text-md font-medium text-[#111827] mb-3">Site URLs</h4>
+                                        <div className="space-y-2">
+                                            {siteUrls.map((url, idx) => {
+                                                // Extract clean URL (handle cases where URL has extra text)
+                                                const cleanUrl = url.split(' ')[0];
+                                                return (
+                                                    <a
+                                                        key={idx}
+                                                        href={cleanUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 text-[12px] px-3 py-2 rounded-lg bg-[#2F6F6D08] hover:bg-[#2F6F6D15] transition-colors border border-[#2F6F6D20] text-[#2F6F6D] font-medium"
+                                                    >
+                                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                        </svg>
+                                                        <span className="truncate">{cleanUrl}</span>
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Message */}
                                 <div>

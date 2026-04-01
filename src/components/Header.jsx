@@ -30,7 +30,20 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const dropdownRef = useRef(null);
     const searchRef = useRef(null);
-    const { profile } = useProfile();
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const { data } = await getProfile();
+                const profileData = Array.isArray(data) ? data[0] : data;
+                setProfile(profileData);
+            } catch (error) {
+                console.error("Failed to fetch profile in Header:", error);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -164,7 +177,7 @@ export default function Header({ onMenuClick, isOpen, onToggle }) {
                         <div className="flex items-center gap-2">
                             <div className="hidden md:flex flex-col">
                                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                                    {formatCamelCaseName(profile?.pen_name || profile?.name || profile?.username || "User")}
+                                    {formatCamelCaseName(profile?.name || profile?.pen_name || profile?.username || "User")}
                                 </p>
                                 <p className="text-[11px] text-gray-500">
                                     {profile?.primary_genre

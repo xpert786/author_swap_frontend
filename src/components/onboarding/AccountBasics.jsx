@@ -55,7 +55,8 @@ const AccountBasics = ({ next }) => {
     const loadProfile = async () => {
       try {
         const response = await getProfile();
-        const data = response.data;
+        const responseData = response.data || response;
+        const data = Array.isArray(responseData) ? responseData[0] : responseData;
 
         reset({
           bio: data.author_bio || "",

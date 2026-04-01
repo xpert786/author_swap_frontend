@@ -56,6 +56,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
 
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     const [isPaid, setIsPaid] = useState(() => {
         return localStorage.getItem(`paid_${data.id}`) === 'true';
@@ -141,15 +142,21 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
         }
     };
 
-    const handlePayNow = async (e) => {
+    const handlePayNow = (e) => {
         e.stopPropagation();
+        setShowPaymentModal(true);
+    };
+
+    const handlePayWithCard = async () => {
         try {
-            setActionLoading("pay");
+            setActionLoading("pay_card");
+            setShowPaymentModal(false);
 
             const payload = {
                 receiver_id: data.receiver_id,
                 amount: data.price ? String(data.price) : "0.00",
-                description: `Internal payment for Swap ID: ${data.id}`
+                description: `Internal payment for Swap ID: ${data.id}`,
+                payment_method: "card"
             };
 
             const response = await directPayment(payload);
@@ -167,8 +174,30 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                 onRefresh?.(true);
             }
         } catch (err) {
-            console.error("Payment error:", err);
-            toast.error(err?.response?.data?.message || "Failed to process payment");
+            console.error("Card payment error:", err);
+            toast.error(err?.response?.data?.message || "Failed to process card payment");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handlePayWithFunds = async () => {
+        try {
+            setActionLoading("pay_funds");
+            setShowPaymentModal(false);
+
+            // Using payForSwap API for wallet funds payment
+            const response = await payForSwap(data.id);
+
+            if (response.data) {
+                toast.success(response.data.message || "Payment successful using wallet funds!");
+                setIsPaid(true);
+                localStorage.setItem(`paid_${data.id}`, 'true');
+                onRefresh?.(true);
+            }
+        } catch (err) {
+            console.error("Funds payment error:", err);
+            toast.error(err?.response?.data?.message || "Failed to process payment from funds. Please check your wallet balance.");
         } finally {
             setActionLoading(null);
         }
@@ -459,6 +488,79 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
             <div className="mt-auto pt-2">
                 {renderActions()}
             </div>
+
+            {/* ── Payment Method Modal ── */}
+            {showPaymentModal && (
+                <div 
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowPaymentModal(false);
+                    }}
+                >
+                    <div 
+                        className="bg-white w-[400px] rounded-[12px] shadow-xl p-6 m-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-800">Choose Payment Method</h2>
+                                <p className="text-[13px] text-gray-500 mt-1">
+                                    Amount: <span className="font-semibold text-[#2F6F6D]">${data.price || "0.00"}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="text-gray-400 hover:text-gray-600 text-lg transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <button
+                                onClick={handlePayWithCard}
+                                disabled={actionLoading === "pay_card"}
+                                className="w-full p-4 border-2 border-[#2F6F6D] rounded-[10px] hover:bg-[#2F6F6D] hover:text-white transition-all group text-left"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-[#2F6F6D33] group-hover:bg-white/20 flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Pay with Card</p>
+                                        <p className="text-xs opacity-80">Use your saved card or add a new one</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={handlePayWithFunds}
+                                disabled={actionLoading === "pay_funds"}
+                                className="w-full p-4 border-2 border-[#16A34A] text-[#16A34A] rounded-[10px] hover:bg-[#16A34A] hover:text-white transition-all group text-left"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-[#16A34A33] group-hover:bg-white/20 flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Pay from Wallet Funds</p>
+                                        <p className="text-xs opacity-80">Use your available balance</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <p className="text-[11px] text-gray-400 text-center mt-6">
+                            You will be redirected to complete the payment
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -22,13 +22,10 @@ const AddBooks = ({ onClose, onSubmit }) => {
     availability: "",
     publishDate: "",
     description: "",
-    amazonUrl: "",
-    appleUrl: "",
-    koboUrl: "",
-    barnesUrl: "",
     coverImage: null,
     isPrimary: false,
     ratings: "",
+    siteLinks: [""]
   });
 
   useEffect(() => {
@@ -222,10 +219,11 @@ const AddBooks = ({ onClose, onSubmit }) => {
       payload.append("availability", formData.availability);
       payload.append("publish_date", formData.publishDate);
       payload.append("description", formData.description);
-      payload.append("amazon_url", formData.amazonUrl);
-      payload.append("apple_url", formData.appleUrl);
-      payload.append("kobo_url", formData.koboUrl);
-      payload.append("barnes_noble_url", formData.barnesUrl);
+      formData.siteLinks.forEach((link) => {
+        if (link) {
+          payload.append("site_url", link);
+        }
+      });
       payload.append("is_primary_promo", formData.isPrimary);
       payload.append("rating", formData.ratings || "");
 
@@ -276,6 +274,35 @@ const AddBooks = ({ onClose, onSubmit }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+
+  const handleLinkChange = (index, value) => {
+    const updatedLinks = [...formData.siteLinks];
+    updatedLinks[index] = value;
+
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: updatedLinks,
+    }));
+  };
+
+  const addNewLink = () => {
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: [...prev.siteLinks, ""],
+    }));
+  };
+
+  const removeLink = (index) => {
+    const updatedLinks = formData.siteLinks.filter(
+      (_, i) => i !== index
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      siteLinks: updatedLinks.length ? updatedLinks : [""],
+    }));
   };
 
   return (
@@ -521,46 +548,46 @@ const AddBooks = ({ onClose, onSubmit }) => {
                 Retailer Links
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="url"
-                  name="amazonUrl"
-                  placeholder="Amazon URL"
-                  value={formData.amazonUrl}
-                  onChange={handleChange}
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+              <div className="space-y-3">
 
-                <input
-                  type="url"
-                  name="appleUrl"
-                  placeholder="Apple Books URL"
-                  value={formData.appleUrl}
-                  onChange={handleChange}
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                {formData.siteLinks.map((link, index) => (
+                  <div key={index} className="flex gap-2">
 
-                <input
-                  type="url"
-                  name="koboUrl"
-                  placeholder="Kobo URL"
-                  value={formData.koboUrl}
-                  onChange={handleChange}
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                    <input
+                      type="url"
+                      placeholder="Enter site link"
+                      value={link}
+                      onChange={(e) =>
+                        handleLinkChange(index, e.target.value)
+                      }
+                      className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                    />
 
-                <input
-                  type="url"
-                  name="barnesUrl"
-                  placeholder="Barnes & Noble URL"
-                  value={formData.barnesUrl}
-                  onChange={handleChange}
-                  maxLength={2000}
-                  className="border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                />
+                    {/* Remove button */}
+                    {formData.siteLinks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLink(index)}
+                        className="px-3 text-red-500 border rounded-lg hover:bg-red-50"
+                      >
+                        ✕
+                      </button>
+                    )}
+
+                    {/* Add button */}
+                    {index === formData.siteLinks.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={addNewLink}
+                        className="px-3 bg-[#2F6F6D] text-white rounded-lg hover:opacity-90"
+                      >
+                        +
+                      </button>
+                    )}
+
+                  </div>
+                ))}
+
               </div>
             </div>
 

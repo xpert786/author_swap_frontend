@@ -28,6 +28,7 @@ import toast from "react-hot-toast";
 
 const Newsletter = () => {
     const [open, setOpen] = useState(false);
+    const [prefillDate, setPrefillDate] = useState("");
     const [editOpen, setEditOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
@@ -88,7 +89,7 @@ const Newsletter = () => {
         } else if (format === "outlook") {
             window.open(`https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${encodeURIComponent(eventTitle)}&startdt=${startMoment.toISOString()}&enddt=${endMoment.toISOString()}&body=${encodeURIComponent(eventDescription)}`, "_blank");
         } else if (format === "ics") {
-            const icsContent = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//AuthorSwap//Newsletter Calendar//EN","BEGIN:VEVENT",`UID:newsletter-slot-${slotId}@authorswap.com`,`DTSTAMP:${dayjs().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART:${startTimeStr}`,`DTEND:${endTimeStr}`,`SUMMARY:${eventTitle}`,`DESCRIPTION:${eventDescription}`,"END:VEVENT","END:VCALENDAR"].join("\n");
+            const icsContent = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AuthorSwap//Newsletter Calendar//EN", "BEGIN:VEVENT", `UID:newsletter-slot-${slotId}@authorswap.com`, `DTSTAMP:${dayjs().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`, `DTSTART:${startTimeStr}`, `DTEND:${endTimeStr}`, `SUMMARY:${eventTitle}`, `DESCRIPTION:${eventDescription}`, "END:VEVENT", "END:VCALENDAR"].join("\n");
             const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
             const link = document.createElement("a");
             link.href = window.URL.createObjectURL(blob);
@@ -118,16 +119,33 @@ const Newsletter = () => {
 
     const handleExportICS = async () => {
         try {
-            const r = await exportICSCalendar();
-            if (r?.content) {
-                const blob = new Blob([r.content], { type: "text/calendar;charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.setAttribute("download", "newsletter_calendar.ics");
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                toast.success("ICS file downloaded");
-            } else toast.error("Failed to get ICS content");
-        } catch { toast.error("Failed to download ICS file"); }
+            const icsData = await exportICSCalendar();
+
+            // Create file blob
+            const blob = new Blob([icsData], {
+                type: "text/calendar;charset=utf-8",
+            });
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "newsletter_calendar.ics");
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success("ICS file downloaded successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to download ICS file");
+        }
+
         setExportDropdownOpen(false);
     };
 
@@ -180,22 +198,38 @@ const Newsletter = () => {
             const dataArray = Array.isArray(response.data) ? response.data : (response.data?.data || response.data?.results || []);
             const formatted = dataArray.map(item => {
                 let status = "Available", statusColor = "bg-[#16A34A33]";
-                if (item.has_published) { status = "Published"; statusColor = "bg-[#F1B9AA]"; }
-                else if (item.has_verified || item.has_confirmed || item.has_pending || item.has_booked) { status = "Booked"; statusColor = "bg-[#F59E0B33]"; }
-                else if (item.has_available) { status = "Available"; statusColor = "bg-[#16A34A33]"; }
-                else if (item.status) { status = formatLabel(item.status); statusColor = (item.status||"").toLowerCase()==="available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]"; }
+                if (item.has_verified) { status = "Verified"; statusColor = "bg-[#9DB7B5]"; }
+                else if (item.has_confirmed) { status = "Confirmed"; statusColor = "bg-[#F59E0B33]"; }
+                else if (item.has_pending) { status = "Pending"; statusColor = "bg-[#EAD8B1]"; }
+                else if (item.has_published) {
+                    status = item.has_booked ? "Booked" : "Published";
+                    statusColor = "bg-[#F1B9AA]";
+                }
+                else if (item.has_available) {
+                    status = item.has_booked ? "Booked" : "Available";
+                    statusColor = "bg-[#16A34A33]";
+                }
+                else if (item.status) {
+                    status = formatLabel(item.status);
+                    const s = (item.status || "").toLowerCase();
+                    if (s === "published") statusColor = "bg-[#F1B9AA]";
+                    else if (s === "verified") statusColor = "bg-[#9DB7B5]";
+                    else if (s === "pending") statusColor = "bg-[#EAD8B1]";
+                    else if (s === "confirmed") statusColor = "bg-[#F59E0B33]";
+                    else statusColor = s === "available" ? "bg-[#16A34A33]" : "bg-[#F59E0B33]";
+                }
                 return {
                     id: item.id,
-                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date||""} ${item.formatted_time||""}`.trim() || item.send_time || "",
+                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
                     period: getPeriod(item.send_time) || formatLabel(item.time_period),
                     genre: formatLabel(item.preferred_genre),
-                    rawGenre: (item.preferred_genre||"").toLowerCase(),
-                    partners: `${item.current_partners_count??item.partner_count??0}/${item.max_partners??0} Partners`,
+                    rawGenre: (item.preferred_genre || "").toLowerCase(),
+                    partners: `${item.current_partners_count ?? item.partner_count ?? 0}/${item.max_partners ?? 0} Partners`,
                     visibility: formatLabel(item.visibility),
-                    rawVisibility: (item.visibility||"").toLowerCase(),
+                    rawVisibility: (item.visibility || "").toLowerCase(),
                     audience: item.audience_size,
                     status, rawStatus: status.toLowerCase(), statusColor,
-                    has_available: item.has_available || (item.status||"").toLowerCase()==="available",
+                    has_available: item.has_available || (item.status || "").toLowerCase() === "available",
                     has_booked: item.has_booked || item.has_confirmed || item.has_verified || item.has_pending,
                     raw_data: item,
                 };
@@ -225,6 +259,23 @@ const Newsletter = () => {
     const handleEditClick = (slot) => { setSelectedSlot(slot); setEditOpen(true); };
     const handleDeleteClick = (slot) => { setSelectedSlot(slot); setDeleteOpen(true); };
 
+    const handleDateClick = (date) => {
+        setSelectedDate(date);
+        
+        // Check if the date is in the past (before today)
+        if (date.isBefore(today, 'day')) {
+            return; // Don't open modal for past dates
+        }
+        
+        // Check if the date has no slots (empty date)
+        const dayApiData = calendarData.find(d => d.date === date.format("YYYY-MM-DD"));
+        if (!dayApiData?.has_slots) {
+            // Set the prefill date and open the add slot modal for empty dates
+            setPrefillDate(date.format("YYYY-MM-DD"));
+            setOpen(true);
+        }
+    };
+
     const PendingSwapIcon = () => <img src={pendingSwapIcon} alt="Pending" style={{ width: "28px", height: "29px" }} />;
     const ConfirmedSwapIcon = () => <img src={confirmedSwapIcon} alt="Confirmed" style={{ width: "31px", height: "30px" }} />;
     const VerifiedSentIcon = () => <img src={verifiedSentIcon} alt="Verified" style={{ width: "31px", height: "30px" }} />;
@@ -236,7 +287,6 @@ const Newsletter = () => {
         { label: "Published Slots", value: String(newsletterStats.published_slots ?? 0), icon: SwapIcon },
         { label: "Pending swap requests", value: String(newsletterStats.pending_swaps ?? newsletterStats.pending_swap_requests ?? 0), icon: PendingSwapIcon },
         { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps ?? 0), icon: ConfirmedSwapIcon },
-        { label: "Verified sent", value: String(newsletterStats.verified_sent ?? 0), icon: VerifiedSentIcon },
     ];
 
     return (
@@ -249,7 +299,7 @@ const Newsletter = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-8">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-white rounded-[10px] border border-[#B5B5B5] p-4 flex flex-col gap-4 justify-between shadow-sm min-h-[110px] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:-translate-y-1">
                         <div className="flex justify-between items-start gap-2">
@@ -292,7 +342,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Visibility","Public","Friend Only","Hidden","Single Use Private Link"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                        {["All Visibility", "Public", "Friend Only"].map(item => <button key={item} onClick={() => { setVisibility(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
@@ -306,7 +356,7 @@ const Newsletter = () => {
                                 <>
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
-                                        {["All Status","Available","Booked","Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                        {["All Status", "Available", "Booked", "Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
                                     </div>
                                 </>
                             )}
@@ -331,7 +381,7 @@ const Newsletter = () => {
                     <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-5 py-2 bg-[#2F6F6D] text-white rounded-[8px] text-[13px] font-medium">
                         <Plus size={16} /> Add New Slot
                     </button>
-                    <AddNewsSlot isOpen={open} onClose={() => setOpen(false)} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); }} />
+                    <AddNewsSlot isOpen={open} onClose={() => { setOpen(false); setPrefillDate(""); }} onSubmit={async () => { await fetchSlots(); await fetchStats(); setOpen(false); setPrefillDate(""); }} prefillDate={prefillDate} />
                 </div>
             </div>
 
@@ -360,13 +410,15 @@ const Newsletter = () => {
                             let bgColor = "bg-white";
                             if (!isCurrentMonth) bgColor = "bg-[#F3F4F64D]";
                             else if (dayApiData?.has_slots) {
-                                if (dayApiData.has_verified || dayApiData.has_confirmed || dayApiData.has_pending || dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
+                                if (dayApiData.has_verified) bgColor = "bg-[#9DB7B5]";
+                                else if (dayApiData.has_confirmed) bgColor = "bg-[#F59E0B33]";
+                                else if (dayApiData.has_pending) bgColor = "bg-[#EAD8B1]";
                                 else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";
                             }
                             return (
-                                <div key={idx} onClick={() => setSelectedDate(date)}
+                                <div key={idx} onClick={() => handleDateClick(date)}
                                     className={`h-24 md:h-28 p-2 border-r border-b border-gray-100 relative transition-all cursor-pointer hover:opacity-80 ${bgColor} ${isToday ? "ring-1 ring-inset ring-[#E07A5F33]" : ""} ${date.isSame(selectedDate, "day") ? "ring-2 ring-inset ring-[#2F6F6D] z-10" : ""}`}
                                 >
                                     <span className={`text-[12px] font-medium ${!isCurrentMonth ? "text-gray-300" : "text-gray-500"} ${isToday ? "text-[#E07A5F] font-bold underline decoration-2 underline-offset-4" : ""} ${date.isSame(selectedDate, "day") ? "text-[#2F6F6D]" : ""}`}>
@@ -383,7 +435,6 @@ const Newsletter = () => {
                             { color: "bg-[#F1B9AA]", label: "Published slots" },
                             { color: "bg-[#F59E0B33]", label: "Confirmed slots" },
                             { color: "bg-[#EAD8B1]", label: "Pending slots" },
-                            { color: "bg-[#9DB7B5]", label: "Verified slots" },
                         ].map(({ color, label }) => (
                             <div key={label} className="flex items-center gap-2.5">
                                 <div className={`w-5 h-5 rounded-[4px] shadow-sm ${color}`} />
@@ -420,7 +471,7 @@ const Newsletter = () => {
                                         .filter(s => {
                                             if (status === "All Status") return true;
                                             const t = status.toLowerCase();
-                                            if (t === "booked") return ["booked","confirmed","verified","pending"].includes(s.rawStatus);
+                                            if (t === "booked") return ["booked", "confirmed", "verified", "pending"].includes(s.rawStatus);
                                             return s.rawStatus === t;
                                         });
 
