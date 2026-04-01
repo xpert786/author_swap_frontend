@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiChevronDown, FiRefreshCw, FiMessageSquare, FiCalendar } from "react-icons/fi";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
@@ -43,15 +44,61 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
     const [loading, setLoading] = useState(false);
     const [slots, setSlots] = useState([]);
     const [currentMonth, setCurrentMonth] = useState(dayjs());
+    const [position, setPosition] = useState({ top: 0, left: 0 });
     const ref = React.useRef(null);
+    const buttonRef = React.useRef(null);
 
     React.useEffect(() => {
         const handler = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+            if (ref.current && !ref.current.contains(e.target) &&
+                buttonRef.current && !buttonRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        const scrollHandler = () => {
+            if (open) setOpen(false);
         };
         document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
+        document.addEventListener("scroll", scrollHandler, true);
+        return () => {
+            document.removeEventListener("mousedown", handler);
+            document.removeEventListener("scroll", scrollHandler, true);
+        };
+    }, [open]);
+
+    React.useEffect(() => {
+        if (open && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const popoverWidth = 320;
+            const popoverHeight = 360;
+            const sidebarWidth = 280; // Approximate sidebar width
+
+            let left = rect.left + rect.width / 2 - popoverWidth / 2;
+            let top = rect.bottom + 8;
+
+            // Ensure it doesn't overlap sidebar - minimum left position
+            if (left < sidebarWidth + 16) {
+                left = sidebarWidth + 16;
+            }
+
+            // Prevent going off-screen on right
+            if (left + popoverWidth > window.innerWidth - 16) {
+                left = window.innerWidth - popoverWidth - 16;
+            }
+
+            // If not enough space below, show above
+            if (top + popoverHeight > window.innerHeight - 16) {
+                top = rect.top - popoverHeight - 8;
+            }
+
+            // If still off-screen at top, show below anyway
+            if (top < 16) {
+                top = rect.bottom + 8;
+            }
+
+            setPosition({ top, left });
+        }
+    }, [open]);
 
     const fetchAvailability = async () => {
         if (slots.length > 0) {
@@ -91,7 +138,7 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
     const today = dayjs();
 
     return (
-        <div ref={ref} className="relative">
+        <div ref={buttonRef} className="relative">
             <button
                 onClick={(e) => {
                     e.stopPropagation();
@@ -104,8 +151,17 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                 Availability
             </button>
 
-            {open && (
-                <div className="absolute bottom-full left-[-80px] mb-2 w-[280px] bg-white border border-[#B5B5B5] rounded-2xl shadow-2xl z-[150] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            {open && createPortal(
+                <div
+                    ref={ref}
+                    style={{
+                        position: 'fixed',
+                        top: position.top,
+                        left: position.left,
+                        zIndex: 9999,
+                    }}
+                    className="w-[320px] bg-white border border-[#B5B5B5] rounded-2xl shadow-2xl p-4"
+                >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
@@ -139,8 +195,7 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                             const hasSlots = daySlots.length > 0;
                             const isCurrent = daySlots.some(s => s.id === currentSlotId);
                             const isToday = date.isSame(today, "day");
-                            
-                            // Check for availability
+
                             const allBooked = hasSlots && daySlots.every(s => (s.status || "").toLowerCase() !== "available");
                             const anyAvailable = hasSlots && daySlots.some(s => (s.status || "").toLowerCase() === "available");
 
@@ -150,19 +205,16 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                                     onClick={(e) => {
                                         if (hasSlots) {
                                             e.stopPropagation();
-                                            // Prefer navigating to an available slot if multiple exist
-                                            const targetSlot = daySlots.find(s => (s.status || "").toLowerCase() === "available") || daySlots[0];
-                                            navigate("/swap-details", { state: { ...targetSlot } });
                                         }
                                     }}
                                     className={`
-                                        h-8 flex items-center justify-center rounded-lg text-[11px] font-medium relative transition-all
+                                        h-9 flex items-center justify-center rounded-lg text-[12px] font-medium relative transition-all
                                         ${!isCurrentMonth ? "text-gray-200" : "text-gray-600"}
                                         ${hasSlots ? "cursor-pointer hover:scale-105" : ""}
-                                        ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" : 
-                                          anyAvailable ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" :
-                                          allBooked ? "bg-[#EF44441A] text-[#EF4444] font-bold" : 
-                                          "hover:bg-gray-50"}
+                                        ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" :
+                                            anyAvailable ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" :
+                                                allBooked ? "bg-[#EF44441A] text-[#EF4444] font-bold" :
+                                                    "hover:bg-gray-50"}
                                         ${isToday && !isCurrent ? "border border-[#E07A5F] border-dashed" : ""}
                                     `}
                                 >
@@ -177,24 +229,25 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                         })}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col gap-2">
-                        <div className="flex items-center gap-3 justify-center">
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-[#2F6F6D1A]" />
-                                <span className="text-[8px] text-gray-500 font-medium">Available</span>
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                        <div className="flex items-center gap-4 justify-center">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-[#2F6F6D1A]" />
+                                <span className="text-[10px] text-gray-600 font-medium">Available</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-[#EF444433]" />
-                                <span className="text-[8px] text-gray-500 font-medium">Booked</span>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-[#EF444433]" />
+                                <span className="text-[10px] text-gray-600 font-medium">Booked</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-[#2F6F6D]" />
-                                <span className="text-[8px] text-gray-500 font-medium">Current</span>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-[#2F6F6D]" />
+                                <span className="text-[10px] text-gray-600 font-medium">Current</span>
                             </div>
                         </div>
-                        <p className="text-[9px] text-[#374151] italic text-center">Click a highlighted date for details</p>
+                        {/* <p className="text-[10px] text-gray-500 text-center mt-1">Click a highlighted date for details</p> */}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
@@ -407,7 +460,7 @@ const PartnerRow = ({ partner, onSendRequest }) => {
             ? partner.author.profilePicture
             : `http://72.61.251.114${partner.author.profilePicture}`)
         : partner.photo || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
-    
+
     const genre = partner.preferredGenre || partner.genre || "N/A";
     const sendDate = partner.sendDate || partner.date || null;
     const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
@@ -415,7 +468,7 @@ const PartnerRow = ({ partner, onSendRequest }) => {
     const isPaid = price > 0;
 
     return (
-        <tr className="border-b border-[#B5B5B5] hover:bg-gray-50 transition-colors cursor-pointer" 
+        <tr className="border-b border-[#B5B5B5] hover:bg-gray-50 transition-colors cursor-pointer"
             onClick={() => {
                 navigate("/swap-details", { state: { ...partner } });
             }}>
@@ -627,7 +680,7 @@ const SwapPartner = () => {
             if (search) params.search = search;
 
             const response = url
-                ? await getExploreSlots(null, url) 
+                ? await getExploreSlots(null, url)
                 : await getExploreSlots(params);
 
             let data = response.data?.results || response.data || [];
@@ -737,10 +790,11 @@ const SwapPartner = () => {
             </div>
 
             {/* Filter Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4 w-full">
+            <div className="flex flex-col mb-6">
+                {/* Row 1: Search + Filters */}
+                <div className="flex items-center justify-between gap-4">
                     {/* Search Input */}
-                    <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white flex-1 lg:max-w-[250px]">
+                    <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white flex-1 max-w-[250px]">
                         <FiSearch size={14} className="text-gray-400" />
                         <input
                             type="text"
@@ -751,15 +805,40 @@ const SwapPartner = () => {
                         />
                     </div>
 
-                    {/* View Toggle */}
+                    {/* Filter Controls */}
+                    <div className="flex items-center gap-2">
+                        <FilterDropdown
+                            label="Genre"
+                            options={["All", ...(genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"])]}
+                            selected={selectedGenre}
+                            onSelect={setSelectedGenre}
+                        />
+                        <FilterDropdown
+                            label="Date"
+                            options={["All", "Today", "This Week", "Next Week", "This Month"]}
+                            selected={selectedDate}
+                            onSelect={setSelectedDate}
+                        />
+                        <FilterDropdown
+                            label="Free / Paid"
+                            options={["All", "Free", "Paid", "Genre-Specific"]}
+                            selected={selectedPaid}
+                            onSelect={setSelectedPaid}
+                            align="right"
+                        />
+                    </div>
+                </div>
+
+                {/* Row 2: Grid/List Toggle below search */}
+                <div className="flex items-center mt-5">
                     <div className="flex items-center bg-gray-100 p-1 rounded-lg">
-                        <button 
+                        <button
                             onClick={() => { setViewType("grid"); localStorage.setItem("swapDiscoveryView", "grid"); }}
                             className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${viewType === "grid" ? "bg-white shadow-sm text-[#2F6F6D]" : "text-gray-500 hover:text-gray-700"}`}
                         >
                             Grid
                         </button>
-                        <button 
+                        <button
                             onClick={() => { setViewType("list"); localStorage.setItem("swapDiscoveryView", "list"); }}
                             className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${viewType === "list" ? "bg-white shadow-sm text-[#2F6F6D]" : "text-gray-500 hover:text-gray-700"}`}
                         >
@@ -767,31 +846,9 @@ const SwapPartner = () => {
                         </button>
                     </div>
                 </div>
-
-                {/* Filter Controls */}
-                <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-                    <FilterDropdown
-                        label="Genre"
-                        options={["All", ...(genres.length > 0 ? genres : ["Fantasy", "Mystery", "Nonfiction", "Romance", "Scifi", "Thriller"])]}
-                        selected={selectedGenre}
-                        onSelect={setSelectedGenre}
-                    />
-                    <FilterDropdown
-                        label="Date"
-                        options={["All", "Today", "This Week", "Next Week", "This Month"]}
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
-                    />
-                    <FilterDropdown
-                        label="Free / Paid"
-                        options={["All", "Free", "Paid", "Genre-Specific"]}
-                        selected={selectedPaid}
-                        onSelect={setSelectedPaid}
-                        align="right"
-                    />
-
-                </div>
             </div>
+
+
 
             {/* Content Section */}
             {loading ? (
@@ -859,7 +916,7 @@ const SwapPartner = () => {
                                 </thead>
                                 <tbody>
                                     {(slots || []).map((partner) => (
-                                        <PartnerRow 
+                                        <PartnerRow
                                             key={partner.id}
                                             partner={{
                                                 ...partner,
