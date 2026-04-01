@@ -11,6 +11,30 @@ import { formatCamelCaseName } from "../../../utils/formatName";
 import "./SwapPartner.css";
 import dayjs from "dayjs";
 import messageIcon from "../../../assets/message.png";
+// ─── Utilities ─────────────────────────────────────────────────────────────
+const toCamel = (obj) => {
+    if (Array.isArray(obj)) return obj.map(v => toCamel(v));
+    if (obj !== null && obj?.constructor === Object) {
+        return Object.keys(obj).reduce(
+            (result, key) => ({
+                ...result,
+                [key.replace(/(_\w)/g, k => k[1].toUpperCase())]: toCamel(obj[key]),
+            }),
+            {}
+        );
+    }
+    return obj;
+};
+
+const formatLabel = (str) => {
+    if (!str) return "N/A";
+    return str
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
 // ─── Availability Popover ──────────────────────────────────────────────────
 const AvailabilityPopover = ({ userId, currentSlotId }) => {
     const [open, setOpen] = useState(false);
@@ -35,7 +59,8 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
             setLoading(true);
             setOpen(true);
             const response = await getPublicProfile(userId);
-            const availableSlots = response.data?.availableSlots || [];
+            const camelData = toCamel(response.data);
+            const availableSlots = camelData?.availableSlots || [];
             setSlots(availableSlots);
         } catch (error) {
             console.error("Failed to fetch availability:", error);
@@ -466,25 +491,8 @@ const FilterDropdown = ({ label, options, selected, onSelect, align = "left" }) 
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-const toCamel = (obj) => {
-    if (Array.isArray(obj)) return obj.map(v => toCamel(v));
-    if (obj !== null && obj.constructor === Object) {
-        return Object.keys(obj).reduce((result, key) => ({
-            ...result,
-            [key.replace(/_([a-z])/g, g => g[1].toUpperCase())]: toCamel(obj[key]),
-        }), {});
-    }
-    return obj;
-};
+// utils moved to top
 
-const formatLabel = (str) => {
-    if (!str) return "N/A";
-    return str
-        .replace(/_/g, " ")
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-};
 
 const SwapPartner = () => {
     const [slots, setSlots] = useState([]);
