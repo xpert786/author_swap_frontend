@@ -68,21 +68,38 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                         {loading && <FiRefreshCw size={10} className="animate-spin text-[#2F6F6D]" />}
                     </div>
                     
-                    <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
                         {slots.length > 0 ? (
                             slots.map(s => (
-                                <div key={s.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
-                                    <div>
-                                        <p className="text-[11px] font-bold text-[#111827]">{dayjs(s.sendDate).format("DD MMM YYYY")}</p>
-                                        <p className="text-[9px] text-gray-500">{s.preferredGenre}</p>
+                                <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#2F6F6D33] hover:bg-white transition-all shadow-sm">
+                                    <div className="w-10 h-10 flex flex-col items-center justify-center rounded-lg bg-white border border-gray-200 text-[#2F6F6D]">
+                                        <span className="text-[10px] font-bold uppercase leading-none">{dayjs(s.sendDate).format("MMM")}</span>
+                                        <span className="text-[14px] font-black leading-none">{dayjs(s.sendDate).format("DD")}</span>
                                     </div>
-                                    <span className="text-[10px] font-medium text-[#2F6F6D]">
-                                        {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)}
-                                    </span>
+                                    <div className="flex-1">
+                                        <p className="text-[11px] font-bold text-[#111827]">{dayjs(s.sendDate).format("dddd")}</p>
+                                        <p className="text-[9px] text-[#2F6F6D] font-medium">{s.preferredGenre} • {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)} subs</p>
+                                    </div>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate("/swap-details", { state: { ...s } });
+                                        }}
+                                        className="p-1.5 rounded-md hover:bg-[#2F6F6D1A] text-gray-400 hover:text-[#2F6F6D] transition-colors"
+                                    >
+                                        <FiChevronDown className="-rotate-90" size={14} />
+                                    </button>
                                 </div>
                             ))
                         ) : (
-                            !loading && <p className="text-[10px] text-gray-400 italic py-2">No other public slots available</p>
+                            !loading && (
+                                <div className="text-center py-6 px-4">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-gray-400">
+                                        <FiCalendar size={20} />
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 font-medium italic">No other public slots available for this author</p>
+                                </div>
+                            )
                         )}
                     </div>
                     
