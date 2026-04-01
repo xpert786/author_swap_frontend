@@ -139,6 +139,10 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                             const hasSlots = daySlots.length > 0;
                             const isCurrent = daySlots.some(s => s.id === currentSlotId);
                             const isToday = date.isSame(today, "day");
+                            
+                            // Check for availability
+                            const allBooked = hasSlots && daySlots.every(s => (s.status || "").toLowerCase() !== "available");
+                            const anyAvailable = hasSlots && daySlots.some(s => (s.status || "").toLowerCase() === "available");
 
                             return (
                                 <div
@@ -146,14 +150,19 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                                     onClick={(e) => {
                                         if (hasSlots) {
                                             e.stopPropagation();
-                                            navigate("/swap-details", { state: { ...daySlots[0] } });
+                                            // Prefer navigating to an available slot if multiple exist
+                                            const targetSlot = daySlots.find(s => (s.status || "").toLowerCase() === "available") || daySlots[0];
+                                            navigate("/swap-details", { state: { ...targetSlot } });
                                         }
                                     }}
                                     className={`
                                         h-8 flex items-center justify-center rounded-lg text-[11px] font-medium relative transition-all
                                         ${!isCurrentMonth ? "text-gray-200" : "text-gray-600"}
                                         ${hasSlots ? "cursor-pointer hover:scale-105" : ""}
-                                        ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" : hasSlots ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" : "hover:bg-gray-50"}
+                                        ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" : 
+                                          anyAvailable ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" :
+                                          allBooked ? "bg-[#EF44441A] text-[#EF4444] font-bold" : 
+                                          "hover:bg-gray-50"}
                                         ${isToday && !isCurrent ? "border border-[#E07A5F] border-dashed" : ""}
                                     `}
                                 >
@@ -169,14 +178,18 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col gap-2">
-                        <div className="flex items-center gap-4 justify-center">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-[#2F6F6D1A] border border-[#2F6F6D33]" />
-                                <span className="text-[9px] text-gray-500 font-medium">Available</span>
+                        <div className="flex items-center gap-3 justify-center">
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-[#2F6F6D1A]" />
+                                <span className="text-[8px] text-gray-500 font-medium">Available</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-[#2F6F6D]" />
-                                <span className="text-[9px] text-gray-500 font-medium">Current Slot</span>
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-[#EF444433]" />
+                                <span className="text-[8px] text-gray-500 font-medium">Booked</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 rounded-full bg-[#2F6F6D]" />
+                                <span className="text-[8px] text-gray-500 font-medium">Current</span>
                             </div>
                         </div>
                         <p className="text-[9px] text-[#374151] italic text-center">Click a highlighted date for details</p>
