@@ -240,7 +240,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
             {/* ── Availability Row ── */}
             <div className="flex items-center justify-between py-1 border-t border-gray-50 mt-1">
-                <AvailabilityPopover userId={partner.author?.id} currentSlotId={partner.id} />
+                <AvailabilityPopover userId={partner.author?.userId} currentSlotId={partner.id} />
                 <p className="text-[10px] text-gray-400 font-medium">Score: {partner.author?.reputationScore || 0}%</p>
             </div>
 
@@ -338,7 +338,7 @@ const PartnerRow = ({ partner, onSendRequest }) => {
                 </div>
             </td>
             <td className="py-4">
-                <AvailabilityPopover userId={partner.author?.id} currentSlotId={partner.id} />
+                <AvailabilityPopover userId={partner.author?.userId} currentSlotId={partner.id} />
             </td>
             <td className="py-4 text-[13px] font-medium text-[#111827]">
                 {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
