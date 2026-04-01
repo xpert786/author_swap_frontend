@@ -7,3 +7,7 @@ export const getProfile = async () => {
 export const updateProfile = async (data) => {
     return apiClient.patch(`profile/`, data);
 } 
+
+export const getPublicProfile = async (userId) => {
+    return apiClient.get(`profiles/${userId}/`);
+}

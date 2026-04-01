@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiChevronDown, FiRefreshCw, FiMessageSquare } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiRefreshCw, FiMessageSquare, FiCalendar } from "react-icons/fi";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import PaidSwapRequest from "./PaidSwapRequest";
@@ -11,7 +11,92 @@ import { formatCamelCaseName } from "../../../utils/formatName";
 import "./SwapPartner.css";
 import dayjs from "dayjs";
 import messageIcon from "../../../assets/message.png";
+// ─── Availability Popover ──────────────────────────────────────────────────
+const AvailabilityPopover = ({ userId, currentSlotId }) => {
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [slots, setSlots] = useState([]);
+    const ref = React.useRef(null);
 
+    React.useEffect(() => {
+        const handler = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const fetchAvailability = async () => {
+        if (slots.length > 0) {
+            setOpen(!open);
+            return;
+        }
+        try {
+            setLoading(true);
+            setOpen(true);
+            const response = await getPublicProfile(userId);
+            const availableSlots = response.data?.availableSlots || [];
+            // Filter out the current slot being viewed
+            setSlots(availableSlots.filter(s => s.id !== currentSlotId));
+        } catch (error) {
+            console.error("Failed to fetch availability:", error);
+            toast.error("Could not load availability");
+            setOpen(false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div ref={ref} className="relative">
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    fetchAvailability();
+                }}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold bg-[#2F6F6D1A] text-[#2F6F6D] hover:bg-[#2F6F6D2A] transition-colors"
+                title="View more available dates"
+            >
+                <FiCalendar size={12} />
+                Availability
+            </button>
+
+            {open && (
+                <div className="absolute bottom-full left-0 mb-2 w-[220px] bg-white border border-[#B5B5B5] rounded-xl shadow-2xl z-[150] p-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-[11px] font-bold text-black uppercase tracking-wider">Other Available Dates</p>
+                        {loading && <FiRefreshCw size={10} className="animate-spin text-[#2F6F6D]" />}
+                    </div>
+                    
+                    <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                        {slots.length > 0 ? (
+                            slots.map(s => (
+                                <div key={s.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-[#111827]">{dayjs(s.sendDate).format("DD MMM YYYY")}</p>
+                                        <p className="text-[9px] text-gray-500">{s.preferredGenre}</p>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-[#2F6F6D]">
+                                        {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)}
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            !loading && <p className="text-[10px] text-gray-400 italic py-2">No other public slots available</p>
+                        )}
+                    </div>
+                    
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex justify-center">
+                        <p className="text-[9px] text-[#374151] italic">Click row/card to view details</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+import { getPublicProfile } from "../../../apis/profile";
+import toast from "react-hot-toast";
 // ─── Partner Card ─────────────────────────────────────────────────────────────
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
     const navigate = useNavigate();
@@ -141,11 +226,22 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                     </p>
                 </div>
                 <div className="space-y-1">
-                    <p className="text-[11px] text-[#111827] font-medium">Audience</p>
-                    <p className="text-[12px] font-medium text-[#111827]">
-                        {new Intl.NumberFormat('en-US').format(Number(audienceSize))}
-                    </p>
+                    <p className="text-[11px] text-[#111827] font-medium">Analytics</p>
+                    <div className="flex flex-col gap-0.5">
+                        <p className="text-[10px] font-medium text-[#2F6F6D]">
+                            OR: <span className="text-[#111827]">{partner.author?.avgOpenRate || partner.author?.avg_open_rate || 0}%</span>
+                        </p>
+                        <p className="text-[10px] font-medium text-[#E07A5F]">
+                            CTR: <span className="text-[#111827]">{partner.author?.avgClickRate || partner.author?.avg_click_rate || 0}%</span>
+                        </p>
+                    </div>
                 </div>
+            </div>
+
+            {/* ── Availability Row ── */}
+            <div className="flex items-center justify-between py-1 border-t border-gray-50 mt-1">
+                <AvailabilityPopover userId={partner.author?.id} currentSlotId={partner.id} />
+                <p className="text-[10px] text-gray-400 font-medium">Score: {partner.author?.reputationScore || 0}%</p>
             </div>
 
             {/* ── Action Buttons ── */}
@@ -193,6 +289,96 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
                 </button>
             </div>
         </div >
+    );
+};
+
+// ─── Partner Row (List View) ──────────────────────────────────────────────────
+const PartnerRow = ({ partner, onSendRequest }) => {
+    const navigate = useNavigate();
+
+    const authorName = partner.author?.name || partner.name || "Unknown Author";
+    const authorPhoto = partner.author?.profilePicture
+        ? (partner.author.profilePicture.startsWith("http")
+            ? partner.author.profilePicture
+            : `http://72.61.251.114${partner.author.profilePicture}`)
+        : partner.photo || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
+    
+    const genre = partner.preferredGenre || partner.genre || "N/A";
+    const sendDate = partner.sendDate || partner.date || null;
+    const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
+    const price = parseFloat(partner.price || 0);
+    const isPaid = price > 0;
+
+    return (
+        <tr className="border-b border-[#B5B5B5] hover:bg-gray-50 transition-colors cursor-pointer" 
+            onClick={() => {
+                navigate("/swap-details", { state: { ...partner } });
+            }}>
+            <td className="py-4 pl-4">
+                <div className="flex items-center gap-3">
+                    <img src={authorPhoto} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
+                    <div>
+                        <p className="text-[13px] font-bold text-black">{formatCamelCaseName(authorName)}</p>
+                        <p className="text-[10px] text-[#374151]">{partner.author?.swapsCompleted || 0} swaps</p>
+                    </div>
+                </div>
+            </td>
+            <td className="py-4">
+                <span className="bg-[#16A34A33] text-black text-[10px] font-medium px-2 py-0.5 rounded-full">
+                    {genre}
+                </span>
+            </td>
+            <td className="py-4 text-[13px] font-medium text-[#111827]">
+                {new Intl.NumberFormat('en-US').format(Number(audienceSize))}
+            </td>
+            <td className="py-4">
+                <div className="flex flex-col">
+                    <span className="text-[11px] font-medium text-[#2F6F6D]">OR: {partner.author?.avgOpenRate || 0}%</span>
+                    <span className="text-[11px] font-medium text-[#E07A5F]">CTR: {partner.author?.avgClickRate || 0}%</span>
+                </div>
+            </td>
+            <td className="py-4">
+                <AvailabilityPopover userId={partner.author?.id} currentSlotId={partner.id} />
+            </td>
+            <td className="py-4 text-[13px] font-medium text-[#111827]">
+                {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
+            </td>
+            <td className="py-4">
+                <div className="flex items-center gap-1">
+                    {isPaid && <span className="bg-[#16A34A1A] text-[#16A34A] text-[10px] font-bold px-2 py-0.5 rounded-full">Paid</span>}
+                    <span className="text-[13px] font-medium text-[#111827]">{isPaid ? `$${price.toFixed(2)}` : "Free"}</span>
+                </div>
+            </td>
+            <td className="py-4 pr-4">
+                <div className="flex items-center justify-end gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSendRequest();
+                        }}
+                        className="px-3 py-1.5 bg-[#2F6F6D] text-white rounded-md text-[11px] font-medium hover:bg-[#255755]"
+                    >
+                        Request
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/communication", {
+                                state: {
+                                    partnerId: partner.author?.id,
+                                    partnerName: authorName,
+                                    partnerAvatar: authorPhoto,
+                                    partnerUsername: partner.author?.username || ""
+                                }
+                            });
+                        }}
+                        className="p-1.5 bg-[#DEE8E7] rounded-md transition-all hover:bg-[#cfdedd]"
+                    >
+                        <img src={messageIcon} alt="Message" className="w-4 h-4 object-contain" />
+                    </button>
+                </div>
+            </td>
+        </tr>
     );
 };
 
@@ -309,6 +495,7 @@ const SwapPartner = () => {
     const [selectedAudience, setSelectedAudience] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedPaid, setSelectedPaid] = useState(null);
+    const [viewType, setViewType] = useState(localStorage.getItem("swapDiscoveryView") || "grid");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [hasNext, setHasNext] = useState(false);
@@ -316,14 +503,44 @@ const SwapPartner = () => {
     const [nextUrl, setNextUrl] = useState(null);
     const [prevUrl, setPrevUrl] = useState(null);
 
+    const getDateRange = (dateLabel) => {
+        const today = dayjs();
+        if (dateLabel === "Today") {
+            return { start_date: today.format("YYYY-MM-DD"), end_date: today.format("YYYY-MM-DD") };
+        }
+        if (dateLabel === "This Week") {
+            return { start_date: today.format("YYYY-MM-DD"), end_date: today.endOf("week").format("YYYY-MM-DD") };
+        }
+        if (dateLabel === "Next Week") {
+            const nextWeek = today.add(1, "week");
+            return { start_date: nextWeek.startOf("week").format("YYYY-MM-DD"), end_date: nextWeek.endOf("week").format("YYYY-MM-DD") };
+        }
+        if (dateLabel === "This Month") {
+            return { start_date: today.format("YYYY-MM-DD"), end_date: today.endOf("month").format("YYYY-MM-DD") };
+        }
+        return {};
+    };
 
     const fetchSlots = async (url = null, page = 1) => {
         try {
             setLoading(true);
 
+            let params = { page };
+            if (selectedGenre && selectedGenre !== "All") params.genre = selectedGenre;
+            if (selectedPaid && selectedPaid !== "All") {
+                if (selectedPaid === "Free") params.promotion = "free";
+                if (selectedPaid === "Paid") params.promotion = "paid";
+                if (selectedPaid === "Genre-Specific") params.promotion = "genre_specific";
+            }
+            if (selectedDate && selectedDate !== "All") {
+                const range = getDateRange(selectedDate);
+                Object.assign(params, range);
+            }
+            if (search) params.search = search;
+
             const response = url
-                ? await getExploreSlots(null, url) // if your API supports full URL
-                : await getExploreSlots({ page });
+                ? await getExploreSlots(null, url) 
+                : await getExploreSlots(params);
 
             let data = response.data?.results || response.data || [];
             data = toCamel(data);
@@ -377,9 +594,9 @@ const SwapPartner = () => {
     };
 
     React.useEffect(() => {
-        fetchSlots();
+        fetchSlots(null, 1);
         fetchGenres();
-    }, []);
+    }, [selectedGenre, selectedDate, selectedPaid, search]);
 
 
     const filtered = (Array.isArray(slots) ? slots : []).filter((p) => {
@@ -433,16 +650,34 @@ const SwapPartner = () => {
 
             {/* Filter Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-                {/* Search Input */}
-                <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white w-full lg:max-w-[250px]">
-                    <FiSearch size={14} className="text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search.."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="border-none outline-none text-[13px] text-gray-900 bg-transparent w-full"
-                    />
+                <div className="flex items-center gap-4 w-full">
+                    {/* Search Input */}
+                    <div className="flex items-center gap-2 border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white flex-1 lg:max-w-[250px]">
+                        <FiSearch size={14} className="text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search.."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="border-none outline-none text-[13px] text-gray-900 bg-transparent w-full"
+                        />
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="flex items-center bg-gray-100 p-1 rounded-lg">
+                        <button 
+                            onClick={() => { setViewType("grid"); localStorage.setItem("swapDiscoveryView", "grid"); }}
+                            className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${viewType === "grid" ? "bg-white shadow-sm text-[#2F6F6D]" : "text-gray-500 hover:text-gray-700"}`}
+                        >
+                            Grid
+                        </button>
+                        <button 
+                            onClick={() => { setViewType("list"); localStorage.setItem("swapDiscoveryView", "list"); }}
+                            className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${viewType === "list" ? "bg-white shadow-sm text-[#2F6F6D]" : "text-gray-500 hover:text-gray-700"}`}
+                        >
+                            List
+                        </button>
+                    </div>
                 </div>
 
                 {/* Filter Controls */}
@@ -453,13 +688,6 @@ const SwapPartner = () => {
                         selected={selectedGenre}
                         onSelect={setSelectedGenre}
                     />
-                    {/* 
-                    <FilterDropdown
-                        label="Audience Size"
-                        options={["All", "0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000+"]}
-                        selected={selectedAudience}
-                        onSelect={setSelectedAudience}
-                    /> */}
                     <FilterDropdown
                         label="Date"
                         options={["All", "Today", "This Week", "Next Week", "This Month"]}
@@ -485,46 +713,92 @@ const SwapPartner = () => {
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filtered.map((partner) => (
-                            <PartnerCard
-                                key={partner.id}
-                                partner={{
-                                    ...partner,
-                                    // Map API fields if they are different from UI requirements
-                                    name: partner.author?.name || "Anonymous",
-                                    photo: partner.author?.profilePicture || `https://ui-avatars.com/api/?name=${partner.author?.name || "A"}&background=random`,
-                                    date: partner.sendDate || "N/A",
-                                    time: partner.sendTime || "N/A",
-                                    audience: partner.audienceSize || "0",
-                                    partners: `${(partner.maxPartners || 0) - (partner.currentPartnersCount || 0)} Slot${((partner.maxPartners || 0) - (partner.currentPartnersCount || 0)) !== 1 ? 's' : ''} Available`,
-                                    visibility: formatLabel(partner.visibility),
-                                    genre: (() => {
-                                        const pGenre = partner.preferredGenre || partner.genre || "";
-                                        const found = genres.find(g =>
-                                            (typeof g === 'string' ? g : g.value) === pGenre ||
-                                            (typeof g === 'string' ? g : g.label) === pGenre
-                                        );
-                                        return (typeof found === 'string' ? found : found?.label) || formatLabel(pGenre);
-                                    })(),
-                                    paid: partner.price && partner.price !== "0.00",
-                                    paidAmount: `$${partner.price || "0.00"}`,
-                                    badge: formatLabel(partner.promotionType),
-                                }}
-                                isSelected={selectedId === partner.id}
-                                onClick={() => setSelectedId(partner.id)}
-                                onSendRequest={() => {
-                                    setRequestingId(partner.id);
-                                    if (parseFloat(partner.price || 0) > 0) {
-                                        setRequestingPrice(partner.price);
-                                        setIsPaidRequestOpen(true);
-                                    } else {
-                                        setIsRequestOpen(true);
-                                    }
-                                }}
-                            />
-                        ))}
-                    </div>
+                    {viewType === "grid" ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {(slots || []).map((partner) => (
+                                <PartnerCard
+                                    key={partner.id}
+                                    partner={{
+                                        ...partner,
+                                        // Map API fields if they are different from UI requirements
+                                        name: partner.author?.name || "Anonymous",
+                                        photo: partner.author?.profilePicture || `https://ui-avatars.com/api/?name=${partner.author?.name || "A"}&background=random`,
+                                        date: partner.sendDate || "N/A",
+                                        time: partner.sendTime || "N/A",
+                                        audience: partner.audienceSize || "0",
+                                        partners: `${(partner.maxPartners || 0) - (partner.currentPartnersCount || 0)} Slot${((partner.maxPartners || 0) - (partner.currentPartnersCount || 0)) !== 1 ? 's' : ''} Available`,
+                                        visibility: formatLabel(partner.visibility),
+                                        genre: (() => {
+                                            const pGenre = partner.preferredGenre || partner.genre || "";
+                                            const found = genres.find(g =>
+                                                (typeof g === 'string' ? g : g.value) === pGenre ||
+                                                (typeof g === 'string' ? g : g.label) === pGenre
+                                            );
+                                            return (typeof found === 'string' ? found : found?.label) || formatLabel(pGenre);
+                                        })(),
+                                        paid: partner.price && partner.price !== "0.00",
+                                        paidAmount: `$${partner.price || "0.00"}`,
+                                        badge: formatLabel(partner.promotionType),
+                                    }}
+                                    isSelected={selectedId === partner.id}
+                                    onClick={() => setSelectedId(partner.id)}
+                                    onSendRequest={() => {
+                                        setRequestingId(partner.id);
+                                        if (parseFloat(partner.price || 0) > 0) {
+                                            setRequestingPrice(partner.price);
+                                            setIsPaidRequestOpen(true);
+                                        } else {
+                                            setIsRequestOpen(true);
+                                        }
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[10px] border border-[#B5B5B5] overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead className="bg-gray-50 border-b border-[#B5B5B5]">
+                                    <tr>
+                                        <th className="py-3 pl-4 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Author</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Genre</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Audience</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Analytics</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Availability</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th className="py-3 text-left text-[12px] font-bold text-gray-500 uppercase tracking-wider">Type/Price</th>
+                                        <th className="py-3 pr-4 text-right text-[12px] font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(slots || []).map((partner) => (
+                                        <PartnerRow 
+                                            key={partner.id}
+                                            partner={{
+                                                ...partner,
+                                                genre: (() => {
+                                                    const pGenre = partner.preferredGenre || partner.genre || "";
+                                                    const found = genres.find(g =>
+                                                        (typeof g === 'string' ? g : g.value) === pGenre ||
+                                                        (typeof g === 'string' ? g : g.label) === pGenre
+                                                    );
+                                                    return (typeof found === 'string' ? found : found?.label) || formatLabel(pGenre);
+                                                })(),
+                                            }}
+                                            onSendRequest={() => {
+                                                setRequestingId(partner.id);
+                                                if (parseFloat(partner.price || 0) > 0) {
+                                                    setRequestingPrice(partner.price);
+                                                    setIsPaidRequestOpen(true);
+                                                } else {
+                                                    setIsRequestOpen(true);
+                                                }
+                                            }}
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
