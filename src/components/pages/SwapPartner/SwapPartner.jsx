@@ -36,8 +36,7 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
             setOpen(true);
             const response = await getPublicProfile(userId);
             const availableSlots = response.data?.availableSlots || [];
-            // Filter out the current slot being viewed
-            setSlots(availableSlots.filter(s => s.id !== currentSlotId));
+            setSlots(availableSlots);
         } catch (error) {
             console.error("Failed to fetch availability:", error);
             toast.error("Could not load availability");
@@ -71,13 +70,16 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                     <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
                         {slots.length > 0 ? (
                             slots.map(s => (
-                                <div key={s.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#2F6F6D33] hover:bg-white transition-all shadow-sm">
-                                    <div className="w-10 h-10 flex flex-col items-center justify-center rounded-lg bg-white border border-gray-200 text-[#2F6F6D]">
+                                <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all shadow-sm ${s.id === currentSlotId ? "bg-[#2F6F6D14] border-[#2F6F6D33]" : "bg-gray-50 border-gray-100 hover:border-[#2F6F6D33] hover:bg-white"}`}>
+                                    <div className={`w-10 h-10 flex flex-col items-center justify-center rounded-lg border ${s.id === currentSlotId ? "bg-white border-[#2F6F6D] text-[#2F6F6D]" : "bg-white border-gray-200 text-gray-500"}`}>
                                         <span className="text-[10px] font-bold uppercase leading-none">{dayjs(s.sendDate).format("MMM")}</span>
                                         <span className="text-[14px] font-black leading-none">{dayjs(s.sendDate).format("DD")}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-[11px] font-bold text-[#111827]">{dayjs(s.sendDate).format("dddd")}</p>
+                                        <p className="text-[11px] font-bold text-[#111827]">
+                                            {dayjs(s.sendDate).format("dddd")}
+                                            {s.id === currentSlotId && <span className="ml-2 text-[8px] bg-[#2F6F6D] text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Current</span>}
+                                        </p>
                                         <p className="text-[9px] text-[#2F6F6D] font-medium">{s.preferredGenre} • {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)} subs</p>
                                     </div>
                                     <button 
