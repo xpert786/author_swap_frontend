@@ -95,7 +95,14 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                     <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
                         {slots.length > 0 ? (
                             slots.map(s => (
-                                <div key={s.id} className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all shadow-sm ${s.id === currentSlotId ? "bg-[#2F6F6D14] border-[#2F6F6D33]" : "bg-gray-50 border-gray-100 hover:border-[#2F6F6D33] hover:bg-white"}`}>
+                                <div 
+                                    key={s.id} 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate("/swap-details", { state: { ...s } });
+                                    }}
+                                    className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all shadow-sm cursor-pointer ${s.id === currentSlotId ? "bg-[#2F6F6D14] border-[#2F6F6D33]" : "bg-gray-50 border-gray-100 hover:border-[#2F6F6D33] hover:bg-white hover:translate-x-1"}`}
+                                >
                                     <div className={`w-10 h-10 flex flex-col items-center justify-center rounded-lg border ${s.id === currentSlotId ? "bg-white border-[#2F6F6D] text-[#2F6F6D]" : "bg-white border-gray-200 text-gray-500"}`}>
                                         <span className="text-[10px] font-bold uppercase leading-none">{dayjs(s.sendDate).format("MMM")}</span>
                                         <span className="text-[14px] font-black leading-none">{dayjs(s.sendDate).format("DD")}</span>
@@ -107,15 +114,9 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                                         </p>
                                         <p className="text-[9px] text-[#2F6F6D] font-medium">{s.preferredGenre} • {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)} subs</p>
                                     </div>
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate("/swap-details", { state: { ...s } });
-                                        }}
-                                        className="p-1.5 rounded-md hover:bg-[#2F6F6D1A] text-gray-400 hover:text-[#2F6F6D] transition-colors"
-                                    >
+                                    <div className="p-1.5 rounded-md text-gray-400 group-hover:text-[#2F6F6D] transition-colors">
                                         <FiChevronDown className="-rotate-90" size={14} />
-                                    </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
