@@ -37,6 +37,7 @@ const formatLabel = (str) => {
 
 // ─── Availability Popover ──────────────────────────────────────────────────
 const AvailabilityPopover = ({ userId, currentSlotId }) => {
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [slots, setSlots] = useState([]);
