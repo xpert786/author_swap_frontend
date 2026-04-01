@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiChevronDown, FiRefreshCw, FiMessageSquare, FiCalendar } from "react-icons/fi";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { PartnersIcon, PublicIcon } from "../../icons";
 import SwapRequest from "./SwapRequest";
 import PaidSwapRequest from "./PaidSwapRequest";
@@ -41,6 +42,7 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [slots, setSlots] = useState([]);
+    const [currentMonth, setCurrentMonth] = useState(dayjs());
     const ref = React.useRef(null);
 
     React.useEffect(() => {
@@ -72,6 +74,22 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
         }
     };
 
+    const days = ["S", "M", "T", "W", "T", "F", "S"];
+    const generateCalendar = () => {
+        const startDate = currentMonth.startOf("month").startOf("week");
+        const endDate = currentMonth.endOf("month").endOf("week");
+        let date = startDate.clone();
+        const result = [];
+        while (date.isBefore(endDate) || date.isSame(endDate, "day")) {
+            result.push(date.clone());
+            date = date.add(1, "day");
+        }
+        return result;
+    };
+
+    const calendarDays = generateCalendar();
+    const today = dayjs();
+
     return (
         <div ref={ref} className="relative">
             <button
@@ -87,53 +105,81 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
             </button>
 
             {open && (
-                <div className="absolute bottom-full left-0 mb-2 w-[220px] bg-white border border-[#B5B5B5] rounded-xl shadow-2xl z-[150] p-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-[11px] font-bold text-black uppercase tracking-wider">Other Available Dates</p>
+                <div className="absolute bottom-full left-[-80px] mb-2 w-[280px] bg-white border border-[#B5B5B5] rounded-2xl shadow-2xl z-[150] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
+                            >
+                                <IoChevronBack size={14} />
+                            </button>
+                            <p className="text-[12px] font-bold text-black uppercase tracking-tight w-[100px] text-center">
+                                {currentMonth.format("MMM YYYY")}
+                            </p>
+                            <button
+                                onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}
+                                className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
+                            >
+                                <IoChevronForward size={14} />
+                            </button>
+                        </div>
                         {loading && <FiRefreshCw size={10} className="animate-spin text-[#2F6F6D]" />}
                     </div>
-                    
-                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                        {slots.length > 0 ? (
-                            slots.map(s => (
-                                <div 
-                                    key={s.id} 
+
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                        {days.map(d => (
+                            <div key={d} className="text-center text-[9px] font-bold text-gray-400 py-1">{d}</div>
+                        ))}
+                        {calendarDays.map((date, idx) => {
+                            const isCurrentMonth = date.isSame(currentMonth, "month");
+                            const daySlots = slots.filter(s => dayjs(s.sendDate).isSame(date, "day"));
+                            const hasSlots = daySlots.length > 0;
+                            const isCurrent = daySlots.some(s => s.id === currentSlotId);
+                            const isToday = date.isSame(today, "day");
+
+                            return (
+                                <div
+                                    key={idx}
                                     onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate("/swap-details", { state: { ...s } });
+                                        if (hasSlots) {
+                                            e.stopPropagation();
+                                            navigate("/swap-details", { state: { ...daySlots[0] } });
+                                        }
                                     }}
-                                    className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all shadow-sm cursor-pointer ${s.id === currentSlotId ? "bg-[#2F6F6D14] border-[#2F6F6D33]" : "bg-gray-50 border-gray-100 hover:border-[#2F6F6D33] hover:bg-white hover:translate-x-1"}`}
+                                    className={`
+                                        h-8 flex items-center justify-center rounded-lg text-[11px] font-medium relative transition-all
+                                        ${!isCurrentMonth ? "text-gray-200" : "text-gray-600"}
+                                        ${hasSlots ? "cursor-pointer hover:scale-105" : ""}
+                                        ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" : hasSlots ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" : "hover:bg-gray-50"}
+                                        ${isToday && !isCurrent ? "border border-[#E07A5F] border-dashed" : ""}
+                                    `}
                                 >
-                                    <div className={`w-10 h-10 flex flex-col items-center justify-center rounded-lg border ${s.id === currentSlotId ? "bg-white border-[#2F6F6D] text-[#2F6F6D]" : "bg-white border-gray-200 text-gray-500"}`}>
-                                        <span className="text-[10px] font-bold uppercase leading-none">{dayjs(s.sendDate).format("MMM")}</span>
-                                        <span className="text-[14px] font-black leading-none">{dayjs(s.sendDate).format("DD")}</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-[11px] font-bold text-[#111827]">
-                                            {dayjs(s.sendDate).format("dddd")}
-                                            {s.id === currentSlotId && <span className="ml-2 text-[8px] bg-[#2F6F6D] text-white px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Current</span>}
-                                        </p>
-                                        <p className="text-[9px] text-[#2F6F6D] font-medium">{s.preferredGenre} • {new Intl.NumberFormat('en-US').format(s.audienceSize || 0)} subs</p>
-                                    </div>
-                                    <div className="p-1.5 rounded-md text-gray-400 group-hover:text-[#2F6F6D] transition-colors">
-                                        <FiChevronDown className="-rotate-90" size={14} />
-                                    </div>
+                                    {date.format("D")}
+                                    {hasSlots && daySlots.length > 1 && (
+                                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#E07A5F] text-white text-[7px] font-bold rounded-full flex items-center justify-center">
+                                            {daySlots.length}
+                                        </span>
+                                    )}
                                 </div>
-                            ))
-                        ) : (
-                            !loading && (
-                                <div className="text-center py-6 px-4">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-gray-400">
-                                        <FiCalendar size={20} />
-                                    </div>
-                                    <p className="text-[10px] text-gray-400 font-medium italic">No other public slots available for this author</p>
-                                </div>
-                            )
-                        )}
+                            );
+                        })}
                     </div>
-                    
-                    <div className="mt-2 pt-2 border-t border-gray-100 flex justify-center">
-                        <p className="text-[9px] text-[#374151] italic">Click row/card to view details</p>
+
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                        <div className="flex items-center gap-4 justify-center">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-[#2F6F6D1A] border border-[#2F6F6D33]" />
+                                <span className="text-[9px] text-gray-500 font-medium">Available</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-[#2F6F6D]" />
+                                <span className="text-[9px] text-gray-500 font-medium">Current Slot</span>
+                            </div>
+                        </div>
+                        <p className="text-[9px] text-[#374151] italic text-center">Click a highlighted date for details</p>
                     </div>
                 </div>
             )}
