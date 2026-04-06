@@ -38,13 +38,13 @@ const formatLabel = (str) => {
 };
 
 // ─── Availability Popover ──────────────────────────────────────────────────
-const AvailabilityPopover = ({ userId, currentSlotId }) => {
-    const navigate = useNavigate();
+const AvailabilityPopover = ({ userId, currentSlotId, onSlotSelect }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [slots, setSlots] = useState([]);
+    const [calendarData, setCalendarData] = useState([]); // array of { date, day, has_slots, status, slots: [...] }
     const [currentMonth, setCurrentMonth] = useState(dayjs());
     const [position, setPosition] = useState({ top: 0, left: 0 });
+    const [fetched, setFetched] = useState(false);
     const ref = React.useRef(null);
     const buttonRef = React.useRef(null);
 
@@ -71,47 +71,53 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
             const rect = buttonRef.current.getBoundingClientRect();
             const popoverWidth = 320;
             const popoverHeight = 360;
-            const sidebarWidth = 280; // Approximate sidebar width
+            const sidebarWidth = 280;
 
             let left = rect.left + rect.width / 2 - popoverWidth / 2;
             let top = rect.bottom + 8;
 
-            // Ensure it doesn't overlap sidebar - minimum left position
-            if (left < sidebarWidth + 16) {
-                left = sidebarWidth + 16;
-            }
-
-            // Prevent going off-screen on right
-            if (left + popoverWidth > window.innerWidth - 16) {
-                left = window.innerWidth - popoverWidth - 16;
-            }
-
-            // If not enough space below, show above
-            if (top + popoverHeight > window.innerHeight - 16) {
-                top = rect.top - popoverHeight - 8;
-            }
-
-            // If still off-screen at top, show below anyway
-            if (top < 16) {
-                top = rect.bottom + 8;
-            }
+            if (left < sidebarWidth + 16) left = sidebarWidth + 16;
+            if (left + popoverWidth > window.innerWidth - 16) left = window.innerWidth - popoverWidth - 16;
+            if (top + popoverHeight > window.innerHeight - 16) top = rect.top - popoverHeight - 8;
+            if (top < 16) top = rect.bottom + 8;
 
             setPosition({ top, left });
         }
     }, [open]);
 
     const fetchAvailability = async () => {
-        if (slots.length > 0) {
-            setOpen(!open);
+        // Toggle if already loaded
+        if (fetched) {
+            setOpen(prev => !prev);
             return;
         }
+
+        if (!userId) {
+            console.warn("AvailabilityPopover: no userId provided, skipping fetch");
+            setOpen(true);
+            return;
+        }
+
         try {
             setLoading(true);
             setOpen(true);
-            const response = await getPublicProfile(userId);
-            const camelData = toCamel(response.data);
-            const availableSlots = camelData?.availableSlots || [];
-            setSlots(availableSlots);
+            console.log("Fetching author availability for userId:", userId);
+            const response = await getAuthorAvailability(userId);
+            const raw = response.data;
+            // Log raw response so we can inspect the shape in browser console
+            console.log("author-availability raw response:", raw);
+
+            let data = [];
+            if (Array.isArray(raw)) {
+                data = raw;
+            } else if (raw && typeof raw === "object") {
+                // Try every common wrapping key
+                data = raw.results || raw.dates || raw.calendar || raw.slots || raw.data || raw.availability || [];
+            }
+
+            console.log("parsed calendar data:", data);
+            setCalendarData(toCamel(data));
+            setFetched(true);
         } catch (error) {
             console.error("Failed to fetch availability:", error);
             toast.error("Could not load availability");
@@ -186,31 +192,38 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
 
                     {/* Calendar Grid */}
                     <div className="grid grid-cols-7 gap-1 mb-2">
-                        {days.map(d => (
-                            <div key={d} className="text-center text-[9px] font-bold text-gray-400 py-1">{d}</div>
+                        {days.map((d, i) => (
+                            <div key={i} className="text-center text-[9px] font-bold text-gray-400 py-1">{d}</div>
                         ))}
                         {calendarDays.map((date, idx) => {
                             const isCurrentMonth = date.isSame(currentMonth, "month");
-                            const daySlots = slots.filter(s => dayjs(s.sendDate).isSame(date, "day"));
-                            const hasSlots = daySlots.length > 0;
-                            const isCurrent = daySlots.some(s => s.id === currentSlotId);
+                            // Match API response date field (YYYY-MM-DD)
+                            const dateEntry = calendarData.find(s => dayjs(s.date).isSame(date, "day"));
+                            const dSlots = dateEntry?.slots || [];
+                            const hasSlots = dateEntry?.hasSlots || dSlots.length > 0;
+                            const isCurrent = dSlots.some(s => s.id === currentSlotId);
                             const isToday = date.isSame(today, "day");
-
-                            const allBooked = hasSlots && daySlots.every(s => (s.status || "").toLowerCase() !== "available");
-                            const anyAvailable = hasSlots && daySlots.some(s => (s.status || "").toLowerCase() === "available");
+                            const anyAvailable = dateEntry?.status === "available" || dSlots.some(s => (s.status || "").toLowerCase() === "available");
+                            const allBooked = hasSlots && !anyAvailable;
 
                             return (
                                 <div
                                     key={idx}
                                     onClick={(e) => {
-                                        if (hasSlots) {
+                                        // Only trigger modal if clicking an available date with a valid slot
+                                        if (hasSlots && anyAvailable && onSlotSelect) {
                                             e.stopPropagation();
+                                            const availSlot = dSlots.find(s => (s.status || "").toLowerCase() === "available") || dSlots[0];
+                                            if (availSlot?.id) {
+                                                onSlotSelect(availSlot.id);
+                                                setOpen(false);
+                                            }
                                         }
                                     }}
                                     className={`
                                         h-9 flex items-center justify-center rounded-lg text-[12px] font-medium relative transition-all
                                         ${!isCurrentMonth ? "text-gray-200" : "text-gray-600"}
-                                        ${hasSlots ? "cursor-pointer hover:scale-105" : ""}
+                                        ${hasSlots && anyAvailable ? "cursor-pointer hover:scale-105" : ""}
                                         ${isCurrent ? "bg-[#2F6F6D] text-white shadow-sm ring-2 ring-[#2F6F6D33]" :
                                             anyAvailable ? "bg-[#2F6F6D1A] text-[#2F6F6D] font-bold" :
                                                 allBooked ? "bg-[#EF44441A] text-[#EF4444] font-bold" :
@@ -219,9 +232,9 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                                     `}
                                 >
                                     {date.format("D")}
-                                    {hasSlots && daySlots.length > 1 && (
+                                    {hasSlots && dSlots.length > 1 && (
                                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#E07A5F] text-white text-[7px] font-bold rounded-full flex items-center justify-center">
-                                            {daySlots.length}
+                                            {dSlots.length}
                                         </span>
                                     )}
                                 </div>
@@ -244,7 +257,12 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
                                 <span className="text-[10px] text-gray-600 font-medium">Current</span>
                             </div>
                         </div>
-                        {/* <p className="text-[10px] text-gray-500 text-center mt-1">Click a highlighted date for details</p> */}
+                        {!loading && fetched && calendarData.length === 0 && (
+                            <p className="text-[10px] text-gray-400 text-center mt-1">No availability data</p>
+                        )}
+                        {!loading && fetched && calendarData.length > 0 && onSlotSelect && (
+                            <p className="text-[10px] text-[#2F6F6D] text-center mt-1">Click a highlighted date to request that slot</p>
+                        )}
                     </div>
                 </div>,
                 document.body
@@ -253,10 +271,10 @@ const AvailabilityPopover = ({ userId, currentSlotId }) => {
     );
 };
 
-import { getPublicProfile } from "../../../apis/profile";
+import { getPublicProfile, getAuthorAvailability } from "../../../apis/profile";
 import toast from "react-hot-toast";
 // ─── Partner Card ─────────────────────────────────────────────────────────────
-const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
+const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabilitySelect }) => {
     const navigate = useNavigate();
 
     // Derive display values from API response (camelCased via toCamel)
@@ -398,7 +416,11 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 
             {/* ── Availability Row ── */}
             <div className="flex items-center justify-between py-1 border-t border-gray-50 mt-1">
-                <AvailabilityPopover userId={partner.author?.userId} currentSlotId={partner.id} />
+                <AvailabilityPopover 
+                    userId={partner.author?.userId || partner.author?.id || partner.userId} 
+                    currentSlotId={partner.id} 
+                    onSlotSelect={onAvailabilitySelect}
+                />
                 <p className="text-[10px] text-gray-400 font-medium">Score: {partner.author?.reputationScore || 0}%</p>
             </div>
 
@@ -451,7 +473,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest }) => {
 };
 
 // ─── Partner Row (List View) ──────────────────────────────────────────────────
-const PartnerRow = ({ partner, onSendRequest }) => {
+const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
     const navigate = useNavigate();
 
     const authorName = partner.author?.name || partner.name || "Unknown Author";
@@ -496,7 +518,11 @@ const PartnerRow = ({ partner, onSendRequest }) => {
                 </div>
             </td>
             <td className="py-4">
-                <AvailabilityPopover userId={partner.author?.userId} currentSlotId={partner.id} />
+                <AvailabilityPopover 
+                    userId={partner.author?.userId || partner.author?.id || partner.userId} 
+                    currentSlotId={partner.id} 
+                    onSlotSelect={onAvailabilitySelect}
+                />
             </td>
             <td className="py-4 text-[13px] font-medium text-[#111827]">
                 {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
@@ -896,6 +922,15 @@ const SwapPartner = () => {
                                             setIsRequestOpen(true);
                                         }
                                     }}
+                                    onAvailabilitySelect={(slotId) => {
+                                        setRequestingId(slotId);
+                                        if (parseFloat(partner.price || 0) > 0) {
+                                            setRequestingPrice(partner.price);
+                                            setIsPaidRequestOpen(true);
+                                        } else {
+                                            setIsRequestOpen(true);
+                                        }
+                                    }}
                                 />
                             ))}
                         </div>
@@ -931,6 +966,15 @@ const SwapPartner = () => {
                                             }}
                                             onSendRequest={() => {
                                                 setRequestingId(partner.id);
+                                                if (parseFloat(partner.price || 0) > 0) {
+                                                    setRequestingPrice(partner.price);
+                                                    setIsPaidRequestOpen(true);
+                                                } else {
+                                                    setIsRequestOpen(true);
+                                                }
+                                            }}
+                                            onAvailabilitySelect={(slotId) => {
+                                                setRequestingId(slotId);
                                                 if (parseFloat(partner.price || 0) > 0) {
                                                     setRequestingPrice(partner.price);
                                                     setIsPaidRequestOpen(true);

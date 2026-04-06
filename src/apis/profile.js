@@ -11,3 +11,7 @@ export const updateProfile = async (data) => {
 export const getPublicProfile = async (userId) => {
     return apiClient.get(`profiles/${userId}/`);
 }
+
+export const getAuthorAvailability = async (userId) => {
+    return apiClient.get(`author-availability/${userId}/`);
+}

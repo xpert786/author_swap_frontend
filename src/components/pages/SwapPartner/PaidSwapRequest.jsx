@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiChevronDown, FiRefreshCw, FiCheck } from "react-icons/fi";
+import { FiX, FiChevronDown, FiRefreshCw, FiCheck, FiCalendar } from "react-icons/fi";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { toast } from "react-hot-toast";
 import dummyBook from "../../../assets/dummy-book.png";
@@ -13,6 +13,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
     const [siteUrls, setSiteUrls] = useState([""]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [slotInfo, setSlotInfo] = useState(null);
     const [compatibility, setCompatibility] = useState({
         genre_match: false,
         audience_comparable: false,
@@ -50,8 +51,18 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                 try {
                     setLoading(true);
                     const slotResponse = await getSlotRequestData(id);
-                    if (slotResponse.data?.compatibility) {
-                        setCompatibility(slotResponse.data.compatibility);
+                    const sd = slotResponse.data;
+                    if (sd) {
+                        setSlotInfo({
+                            sendDate: sd.send_date,
+                            formattedDateTime: sd.formatted_send_date_time,
+                            audienceSize: sd.audience_size,
+                            genre: sd.preferred_genre,
+                            status: sd.status,
+                        });
+                    }
+                    if (sd?.compatibility) {
+                        setCompatibility(sd.compatibility);
                     }
 
                     if (slotResponse.data?.max_partners) {
@@ -122,7 +133,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                     )}
 
                     {/* Price Header Section */}
-                    <div className="flex justify-between items-center mb-6 bg-[#2F6F6D]/5 p-4 rounded-xl border border-[#2F6F6D]/10">
+                    <div className="flex justify-between items-center mb-4 bg-[#2F6F6D]/5 p-4 rounded-xl border border-[#2F6F6D]/10">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-[#2F6F6D] rounded-full flex items-center justify-center text-white font-bold">
                                 $
@@ -140,6 +151,19 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                             <FiX size={20} />
                         </button>
                     </div>
+
+                    {/* Slot Date Banner */}
+                    {slotInfo?.formattedDateTime && (
+                        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-gradient-to-r from-[#2F6F6D0D] to-[#2F6F6D05] border border-[#2F6F6D30] rounded-xl">
+                            <div className="w-8 h-8 rounded-lg bg-[#2F6F6D] flex items-center justify-center shrink-0">
+                                <FiCalendar size={14} className="text-white" />
+                            </div>
+                            <div>
+                                <p className="text-[9px] font-bold text-[#2F6F6D] uppercase tracking-widest leading-none mb-0.5">Newsletter Date</p>
+                                <p className="text-[13px] font-semibold text-[#111827] leading-tight">{slotInfo.formattedDateTime}</p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Standard Header */}
                     <div className="mb-6">
