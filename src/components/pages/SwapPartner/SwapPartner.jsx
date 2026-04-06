@@ -416,9 +416,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
 
             {/* ── Availability Row ── */}
             <div className="flex items-center justify-between py-1 border-t border-gray-50 mt-1">
-                <AvailabilityPopover 
-                    userId={partner.author?.userId || partner.author?.id || partner.userId} 
-                    currentSlotId={partner.id} 
+                <AvailabilityPopover
+                    userId={partner.author?.userId || partner.author?.id || partner.userId}
+                    currentSlotId={partner.id}
                     onSlotSelect={onAvailabilitySelect}
                 />
                 <p className="text-[10px] text-gray-400 font-medium">Score: {partner.author?.reputationScore || 0}%</p>
@@ -491,10 +491,11 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
 
     return (
         <tr className="border-b border-[#B5B5B5] hover:bg-gray-50 transition-colors cursor-pointer"
-            onClick={() => {
-                navigate("/swap-details", { state: { ...partner } });
-            }}>
-            <td className="py-4 pl-4">
+        >
+            <td className="py-4 pl-4"
+                onClick={() => {
+                    navigate("/swap-details", { state: { ...partner } });
+                }}>
                 <div className="flex items-center gap-3">
                     <img src={authorPhoto} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
                     <div>
@@ -518,9 +519,9 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
                 </div>
             </td>
             <td className="py-4">
-                <AvailabilityPopover 
-                    userId={partner.author?.userId || partner.author?.id || partner.userId} 
-                    currentSlotId={partner.id} 
+                <AvailabilityPopover
+                    userId={partner.author?.userId || partner.author?.id || partner.userId}
+                    currentSlotId={partner.id}
                     onSlotSelect={onAvailabilitySelect}
                 />
             </td>
