@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getSwaps, acceptSwap, declineSwap, restoreSwap, payForSwap, directPayment, confirmSwapPayment } from '../../../apis/swap';
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiEye } from "react-icons/fi";
 import { formatCamelCaseName } from '../../../utils/formatName';
 import toast from 'react-hot-toast';
 import SwapDetailsModal from './SwapDetailsModal';
@@ -377,9 +377,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
 
     return (
         <div
-            onClick={isCompleted ? (e) => e.stopPropagation() : onViewDetails}
-            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full
-                ${isCompleted ? "cursor-default" : "cursor-pointer hover:shadow-md"}
+            className={`p-5 rounded-[12px] border flex flex-col gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all h-full cursor-default
                 ${needsMyPayment
                     ? "bg-[#FFF5F5] border-[#E8A0A0]"
                     : isCompleted
@@ -406,7 +404,18 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                         </p>
                     </div>
                 </div>
-                <div className="flex items-end gap-1.5 shrink-0">
+                <div className="flex items-start gap-1.5 shrink-0">
+                    {/* View Details icon button */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onViewDetails();
+                        }}
+                        className="w-7 h-7 rounded-lg bg-[#2F6F6D1A] text-[#2F6F6D] flex items-center justify-center hover:bg-[#2F6F6D] hover:text-white transition-all"
+                        title="View Details"
+                    >
+                        <FiEye size={13} />
+                    </button>
                     {(data.badge || data.status) && (
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
                             ${isCompleted
