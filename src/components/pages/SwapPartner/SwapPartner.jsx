@@ -128,19 +128,24 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
             }
             
             const raw = response.data;
-            // Log raw response so we can inspect the shape in browser console
             console.log("author-availability raw response:", raw);
 
-            let data = [];
-            if (Array.isArray(raw)) {
-                data = raw;
+            let flattenedData = [];
+            if (raw && raw.calendar && Array.isArray(raw.calendar)) {
+                // Flatten all months into one array of days
+                raw.calendar.forEach(monthObj => {
+                    if (monthObj.days && Array.isArray(monthObj.days)) {
+                        flattenedData = [...flattenedData, ...monthObj.days];
+                    }
+                });
+            } else if (Array.isArray(raw)) {
+                flattenedData = raw;
             } else if (raw && typeof raw === "object") {
-                // Try every common wrapping key
-                data = raw.results || raw.dates || raw.calendar || raw.slots || raw.data || raw.availability || [];
+                flattenedData = raw.results || raw.dates || raw.calendar || raw.slots || raw.data || raw.availability || [];
             }
 
-            console.log("parsed calendar data:", data);
-            setCalendarData(toCamel(data));
+            console.log("parsed flattened calendar data:", flattenedData);
+            setCalendarData(toCamel(flattenedData));
             setFetched(true);
         } catch (error) {
             console.error("Failed to fetch availability:", error);

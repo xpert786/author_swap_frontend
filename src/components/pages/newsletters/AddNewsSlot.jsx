@@ -377,6 +377,20 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
                   <div>
                     <label className="text-[13px] font-medium text-gray-600">
+                      Frequency
+                    </label>
+                    <select
+                      name="frequency"
+                      value={formData.frequency || 'monthly'}
+                      onChange={handleChange}
+                      className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                    >
+                      <option value="weekly">Every Week</option>
+                      <option value="monthly">Every Month</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-medium text-gray-600">
                       Duration
                     </label>
                     <select
