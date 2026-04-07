@@ -109,10 +109,17 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
             if (calendarUrl) {
                 // Extract relative path from full URL (e.g., "/authorswap/api/author-availability/145/" -> "author-availability/145/")
                 const url = new URL(calendarUrl);
+                console.log("urllll", url)
                 const pathParts = url.pathname.split('/').filter(Boolean);
                 // Remove 'authorswap' and 'api' prefix if present, keep the rest
-                const relativePath = pathParts.slice(pathParts.indexOf('api') + 1).join('/');
-                response = await apiClient.get(relativePath || url.pathname);
+                const relativePathParts = pathParts.slice(pathParts.indexOf('api') + 1);
+                // Preserve trailing slash if original URL had it
+                const hasTrailingSlash = url.pathname.endsWith('/');
+                let relativePath = relativePathParts.join('/');
+                if (hasTrailingSlash && !relativePath.endsWith('/')) {
+                    relativePath += '/';
+                }
+                response = await apiClient.get(relativePath);
             } else {
                 // Fallback to userId-based fetch
                 response = await getAuthorAvailability(userId);
