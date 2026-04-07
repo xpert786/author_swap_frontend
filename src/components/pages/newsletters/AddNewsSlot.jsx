@@ -15,6 +15,9 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     visibility: "Public",
     price: "",
     pen_name: "",
+    is_recurring: false,
+    frequency: "monthly",
+    duration_months: 1,
   });
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
@@ -135,6 +138,9 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
         visibility: "Public",
         price: "",
         pen_name: penNames.length > 0 ? penNames[0] : "",
+        is_recurring: false,
+        frequency: "monthly",
+        duration_months: 1,
       });
     } catch (err) {
       console.error("Creation failed:", err);
@@ -350,6 +356,57 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                 />
               </div>
 
+            </div>
+
+            {/* Recurrence Section */}
+            <div className="mt-6 pt-5 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800">Recurring Slot</h3>
+                  <p className="text-[12px] text-gray-500">Automatically create this slot for multiple months</p>
+                </div>
+                <div 
+                  onClick={() => setFormData(prev => ({ ...prev, is_recurring: !prev.is_recurring }))}
+                  className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-200 ${formData.is_recurring ? 'bg-[#2F6F6D]' : 'bg-gray-300'}`}
+                >
+                  <div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform duration-200 ${formData.is_recurring ? 'translate-x-5' : 'translate-x-0'}`} />
+                </div>
+              </div>
+
+              {formData.is_recurring && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
+                  <div>
+                    <label className="text-[13px] font-medium text-gray-600">
+                      Frequency
+                    </label>
+                    <select
+                      name="frequency"
+                      value={formData.frequency}
+                      onChange={handleChange}
+                      className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                    >
+                      <option value="monthly">Every Month</option>
+                      <option value="weekly">Every Week</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-medium text-gray-600">
+                      Duration
+                    </label>
+                    <select
+                      name="duration_months"
+                      value={formData.duration_months}
+                      onChange={handleChange}
+                      className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                    >
+                      <option value={2}>2 Months</option>
+                      <option value={3}>3 Months</option>
+                      <option value={6}>6 Months</option>
+                      <option value={12}>12 Months</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
