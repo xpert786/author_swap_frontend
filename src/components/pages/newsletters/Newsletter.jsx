@@ -6,6 +6,7 @@ import {
     Trash2,
     Eye,
     Users,
+    User,
 } from "lucide-react";
 import { Publish } from "../../icons";
 import pendingSwapIcon from "../../../assets/pendingswap.png";
@@ -331,9 +332,22 @@ const Newsletter = () => {
 
             {/* Toolbar */}
             <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
-                <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
-                    All Slots for {selectedDate.format("MMMM D, YYYY")}
-                </h2>
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
+                        All Slots for {selectedDate.format("MMMM D, YYYY")}
+                    </h2>
+                    {penNameFilter !== "All Pen Names" && (
+                        <div className="flex items-center gap-2 text-[#2F6F6D]">
+                            <div className="flex items-center gap-1.5 bg-[#2F6F6D15] px-3 py-1.5 rounded-lg">
+                                <User size={16} className="text-[#2F6F6D]" />
+                                <span className="text-[14px] font-medium text-[#374151]">Showing calendar for pen name:</span>
+                                <span className="text-[14px] font-bold text-[#2F6F6D] bg-white px-2 py-0.5 rounded">
+                                    {penNameFilter}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                         {/* Genre */}
@@ -516,11 +530,21 @@ const Newsletter = () => {
                                         );
                                     }
 
-                                    return periodSlots.map(slot => (
+                                    return periodSlots.map(slot => {
+                                        const penName = slot.raw_data?.pen_name || slot.raw_data?.author?.pen_name || slot.raw_data?.author_pen_name || "—";
+                                        return (
                                         <div key={slot.id} className="bg-white rounded-2xl border border-[#B5B5B5] p-5 hover:border-[#E07A5F]">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-start justify-between">
-                                                    <h4 className="text-[15px] font-semibold text-[#111827]">{slot.time}</h4>
+                                                    <div className="flex flex-col gap-2">
+                                                        <h4 className="text-[15px] font-semibold text-[#111827]">{slot.time}</h4>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="w-2 h-2 rounded-full bg-[#2F6F6D]"></div>
+                                                            <span className="text-[13px] font-semibold text-[#2F6F6D] border border-[#2F6F6D] px-2 py-0.5 rounded">
+                                                                {penName}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                     <span className={`px-3 py-1 text-[11px] font-normal rounded-full ${slot.statusColor}`}>{slot.status}</span>
                                                 </div>
                                                 <div className="flex flex-wrap items-center gap-2">
@@ -553,7 +577,8 @@ const Newsletter = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    ));
+                                        );
+                                    });
                                 })()}
                             </div>
                         </div>

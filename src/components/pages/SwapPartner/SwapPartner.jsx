@@ -9,6 +9,7 @@ import PaidSwapRequest from "./PaidSwapRequest";
 import { getExploreSlots } from "../../../apis/swapPartner";
 import { getGenres } from "../../../apis/genre";
 import { formatCamelCaseName } from "../../../utils/formatName";
+import apiClient from "../../../apis/client";
 
 import "./SwapPartner.css";
 import dayjs from "dayjs";
@@ -38,7 +39,7 @@ const formatLabel = (str) => {
 };
 
 // ─── Availability Popover ──────────────────────────────────────────────────
-const AvailabilityPopover = ({ userId, currentSlotId, onSlotSelect }) => {
+const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSlotSelect }) => {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [calendarData, setCalendarData] = useState([]); // array of { date, day, has_slots, status, slots: [...] }
@@ -92,8 +93,9 @@ const AvailabilityPopover = ({ userId, currentSlotId, onSlotSelect }) => {
             return;
         }
 
-        if (!userId) {
-            console.warn("AvailabilityPopover: no userId provided, skipping fetch");
+        // Use calendarUrl if provided (for specific pen name), otherwise fallback to userId
+        if (!calendarUrl && !userId) {
+            console.warn("AvailabilityPopover: no calendarUrl or userId provided, skipping fetch");
             setOpen(true);
             return;
         }
@@ -101,8 +103,21 @@ const AvailabilityPopover = ({ userId, currentSlotId, onSlotSelect }) => {
         try {
             setLoading(true);
             setOpen(true);
-            console.log("Fetching author availability for userId:", userId);
-            const response = await getAuthorAvailability(userId);
+            console.log("Fetching author availability for:", calendarUrl || `userId: ${userId}`);
+            
+            let response;
+            if (calendarUrl) {
+                // Extract relative path from full URL (e.g., "/authorswap/api/author-availability/145/" -> "author-availability/145/")
+                const url = new URL(calendarUrl);
+                const pathParts = url.pathname.split('/').filter(Boolean);
+                // Remove 'authorswap' and 'api' prefix if present, keep the rest
+                const relativePath = pathParts.slice(pathParts.indexOf('api') + 1).join('/');
+                response = await apiClient.get(relativePath || url.pathname);
+            } else {
+                // Fallback to userId-based fetch
+                response = await getAuthorAvailability(userId);
+            }
+            
             const raw = response.data;
             // Log raw response so we can inspect the shape in browser console
             console.log("author-availability raw response:", raw);
@@ -279,6 +294,9 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
 
     // Derive display values from API response (camelCased via toCamel)
     const authorName = partner.author?.name || partner.name || "Unknown Author";
+    const penName = partner.penName || null; // pen_name from API
+    console.log("PartnerCard - penName:", penName, "authorName:", authorName, "partner:", partner);
+    const displayName = penName || authorName; // Show pen name if available, otherwise author name
     const authorPhoto = partner.author?.profilePicture
         ? (partner.author.profilePicture.startsWith("http")
             ? partner.author.profilePicture
@@ -295,6 +313,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
     const isPaid = price > 0;
     const status = partner.status || "available";
     const promotionType = partner.promotionType || partner.badge || null;
+    const availabilityCalendarUrl = partner.availabilityCalendarUrl || null; // availability_calendar_url from API
 
 
     // Status badges
@@ -332,8 +351,13 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
                             {/* Name + Swaps forced into one line */}
                             <div className="flex flex-col items-start gap-1.5 whitespace-nowrap">
                                 <p className="text-[14px] font-bold text-black leading-tight">
-                                    {formatCamelCaseName(authorName)}
+                                    {formatCamelCaseName(displayName)}
                                 </p>
+                                {penName && (
+                                    <p className="text-[10px] text-gray-500 font-medium">
+                                        by {formatCamelCaseName(authorName)}
+                                    </p>
+                                )}
                                 <p className="text-[10px] text-[#374151] font-medium">
                                     {swapsCompleted} swaps completed
                                 </p>
@@ -418,6 +442,8 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
             <div className="flex items-center justify-between py-1 border-t border-gray-50 mt-1">
                 <AvailabilityPopover
                     userId={partner.author?.userId || partner.author?.id || partner.userId}
+                    calendarUrl={availabilityCalendarUrl}
+                    penName={penName}
                     currentSlotId={partner.id}
                     onSlotSelect={onAvailabilitySelect}
                 />
@@ -477,6 +503,8 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
     const navigate = useNavigate();
 
     const authorName = partner.author?.name || partner.name || "Unknown Author";
+    const penName = partner.penName || null;
+    const displayName = penName || authorName;
     const authorPhoto = partner.author?.profilePicture
         ? (partner.author.profilePicture.startsWith("http")
             ? partner.author.profilePicture
@@ -488,6 +516,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
     const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
     const price = parseFloat(partner.price || 0);
     const isPaid = price > 0;
+    const availabilityCalendarUrl = partner.availabilityCalendarUrl || null;
 
     return (
         <tr className="border-b border-[#B5B5B5] hover:bg-gray-50 transition-colors cursor-pointer"
@@ -499,7 +528,10 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
                 <div className="flex items-center gap-3">
                     <img src={authorPhoto} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
                     <div>
-                        <p className="text-[13px] font-bold text-black">{formatCamelCaseName(authorName)}</p>
+                        <p className="text-[13px] font-bold text-black">{formatCamelCaseName(displayName)}</p>
+                        {penName && (
+                            <p className="text-[9px] text-gray-500">by {formatCamelCaseName(authorName)}</p>
+                        )}
                         <p className="text-[10px] text-[#374151]">{partner.author?.swapsCompleted || 0} swaps</p>
                     </div>
                 </div>
@@ -521,6 +553,8 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
             <td className="py-4">
                 <AvailabilityPopover
                     userId={partner.author?.userId || partner.author?.id || partner.userId}
+                    calendarUrl={availabilityCalendarUrl}
+                    penName={penName}
                     currentSlotId={partner.id}
                     onSlotSelect={onAvailabilitySelect}
                 />
