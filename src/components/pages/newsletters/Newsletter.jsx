@@ -22,6 +22,7 @@ import Swap from "../../../assets/swap-bg.png";
 import dayjs from "dayjs";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { updateNewsSlot, getNewsSlot, deleteNewsSlot, statsNewsSlot } from "../../../apis/newsletter";
+import { getProfile } from "../../../apis/profile";
 import { getGenres } from "../../../apis/genre";
 import { exportGoogleCalendar, exportOutlookCalendar, exportICSCalendar } from "../../../apis/calendar";
 import toast from "react-hot-toast";
@@ -36,6 +37,8 @@ const Newsletter = () => {
     const [currentMonth, setCurrentMonth] = useState(dayjs());
     const [visibility, setVisibility] = useState("All Visibility");
     const [status, setStatus] = useState("All Status");
+    const [penNameFilter, setPenNameFilter] = useState("All Pen Names");
+    const [penNames, setPenNames] = useState([]);
     const [genre, setGenre] = useState("Genre");
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -175,6 +178,20 @@ const Newsletter = () => {
         loadGenres();
     }, []);
 
+    useEffect(() => {
+        const loadPenNames = async () => {
+            try {
+                const { data } = await getProfile();
+                const profile = Array.isArray(data) ? data[0] : data;
+                const names = profile.pen_name
+                    ? profile.pen_name.split(",").map(n => n.trim()).filter(Boolean)
+                    : [];
+                setPenNames(names);
+            } catch (e) { console.error("Failed to load pen names", e); }
+        };
+        loadPenNames();
+    }, []);
+
     const formatLabel = (value) => {
         if (!value) return "";
         return value.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
@@ -245,7 +262,8 @@ const Newsletter = () => {
                 month: currentMonth.format("MM"), year: currentMonth.format("YYYY"),
                 genre: selectedGenreValue || "all",
                 visibility: visibility === "All Visibility" ? "all" : (visibility === "Public" ? "Public" : visibility.toLowerCase().replace(/ /g, "_")),
-                status: status === "All Status" ? "all" : (status === "Booked" ? "booked" : status.toLowerCase())
+                status: status === "All Status" ? "all" : (status === "Booked" ? "booked" : status.toLowerCase()),
+                ...(penNameFilter !== "All Pen Names" && { pen_name: penNameFilter })
             };
             const r = await statsNewsSlot(params);
             setNewsletterStats(r.data?.stats_cards || {});
@@ -254,7 +272,7 @@ const Newsletter = () => {
     };
 
     useEffect(() => { fetchSlots(); }, []);
-    useEffect(() => { fetchStats(); }, [genre, visibility, status, currentMonth]);
+    useEffect(() => { fetchStats(); }, [genre, visibility, status, penNameFilter, currentMonth]);
 
     const handleEditClick = (slot) => { setSelectedSlot(slot); setEditOpen(true); };
     const handleDeleteClick = (slot) => { setSelectedSlot(slot); setDeleteOpen(true); };
@@ -357,6 +375,21 @@ const Newsletter = () => {
                                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
                                     <div className="absolute left-0 mt-2 w-44 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999]">
                                         {["All Status", "Available", "Booked", "Published"].map(item => <button key={item} onClick={() => { setStatus(item); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{item}</button>)}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        {/* Pen Name */}
+                        <div className="relative">
+                            <button onClick={() => setOpenDropdown(openDropdown === "penName" ? null : "penName")} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[13px] font-medium text-[#111827]">
+                                {penNameFilter} <ChevronDown size={14} className={`text-gray-400 transition-transform ${openDropdown === "penName" ? "rotate-180" : ""}`} />
+                            </button>
+                            {openDropdown === "penName" && (
+                                <>
+                                    <div className="fixed inset-0 z-[9998]" onClick={() => setOpenDropdown(null)} />
+                                    <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-2xl py-2 z-[9999] max-h-[240px] overflow-y-auto">
+                                        <button onClick={() => { setPenNameFilter("All Pen Names"); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">All Pen Names</button>
+                                        {penNames.map(pn => <button key={pn} onClick={() => { setPenNameFilter(pn); setOpenDropdown(null); }} className="w-full text-left px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50">{pn}</button>)}
                                     </div>
                                 </>
                             )}
