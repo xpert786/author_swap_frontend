@@ -119,6 +119,8 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
                 if (hasTrailingSlash && !relativePath.endsWith('/')) {
                     relativePath += '/';
                 }
+                // Include query parameters (e.g., ?pen_name=kite)
+                relativePath += url.search;
                 response = await apiClient.get(relativePath);
             } else {
                 // Fallback to userId-based fetch
