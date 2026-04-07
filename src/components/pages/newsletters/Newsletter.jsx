@@ -66,10 +66,19 @@ const Newsletter = () => {
                     calendarRef.current.offsetHeight + "px";
             }
         };
+        // Initial sync
         syncHeight();
+        
+        // Use ResizeObserver for more robust tracking of height changes without infinite renders
+        const observer = new ResizeObserver(syncHeight);
+        if (calendarRef.current) observer.observe(calendarRef.current);
+        
         window.addEventListener("resize", syncHeight);
-        return () => window.removeEventListener("resize", syncHeight);
-    }); // intentionally no dep array — re-runs after every render to stay in sync
+        return () => {
+            window.removeEventListener("resize", syncHeight);
+            observer.disconnect();
+        };
+    }, []); // Only run once on mount to set listeners
 
     const handleSlotExport = (slotId, format) => {
         const slot = slots.find(s => s.id === slotId);
@@ -273,7 +282,10 @@ const Newsletter = () => {
     };
 
     useEffect(() => { fetchSlots(); }, []);
-    useEffect(() => { fetchStats(); }, [genre, visibility, status, penNameFilter, currentMonth]);
+    const memoizedMonth = currentMonth.format("YYYY-MM");
+    useEffect(() => { 
+        fetchStats(); 
+    }, [genre, visibility, status, penNameFilter, memoizedMonth]);
 
     const handleEditClick = (slot) => { setSelectedSlot(slot); setEditOpen(true); };
     const handleDeleteClick = (slot) => { setSelectedSlot(slot); setDeleteOpen(true); };

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 // Send cookies with requests so Django can set/read CSRF cookie
