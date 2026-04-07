@@ -179,7 +179,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
           <div className="mb-6 flex items-start justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
-                Add Newsletter Slot
+                Add Newsletter Slot (DEBUG: RECURRING ENABLED)
               </h2>
               <p className="mt-0.5 text-[13px] text-gray-500">
                 Add a send date for your newsletter to open it for swaps
