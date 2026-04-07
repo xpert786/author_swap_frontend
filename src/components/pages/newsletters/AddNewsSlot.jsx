@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createNewsSlot } from "../../../apis/newsletter";
 import { getGenres, audienceSize } from "../../../apis/genre";
+import { getProfile } from "../../../apis/profile";
 import { IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 
@@ -13,24 +14,38 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     max_partners: "",
     visibility: "Public",
     price: "",
+    pen_name: "",
   });
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
+  const [penNames, setPenNames] = useState([]);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [isPenNameOpen, setIsPenNameOpen] = useState(false);
   const genreRef = useRef(null);
+  const penNameRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [genresRes, audienceRes] = await Promise.all([
+        const [genresRes, audienceRes, profileRes] = await Promise.all([
           getGenres(),
-          audienceSize()
+          audienceSize(),
+          getProfile()
         ]);
 
         setGenres(genresRes);
+        
+        // Extract pen names from profile
+        const profile = Array.isArray(profileRes.data) ? profileRes.data[0] : profileRes.data;
+        const names = profile?.pen_name
+          ? profile.pen_name.split(",").map(n => n.trim()).filter(Boolean)
+          : [];
+        setPenNames(names);
+        
         setFormData(prev => ({
           ...prev,
-          audience_size: audienceRes.audience_size ?? ""
+          audience_size: audienceRes.audience_size ?? "",
+          pen_name: names.length > 0 ? names[0] : ""
         }));
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -49,11 +64,14 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     }
   }, [isOpen, prefillDate]);
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (genreRef.current && !genreRef.current.contains(event.target)) {
         setIsGenreOpen(false);
+      }
+      if (penNameRef.current && !penNameRef.current.contains(event.target)) {
+        setIsPenNameOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -87,6 +105,14 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     setIsGenreOpen(false);
   };
 
+  const handlePenNameSelect = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      pen_name: value,
+    }));
+    setIsPenNameOpen(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -108,6 +134,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
         max_partners: "",
         visibility: "Public",
         price: "",
+        pen_name: penNames.length > 0 ? penNames[0] : "",
       });
     } catch (err) {
       console.error("Creation failed:", err);
@@ -137,6 +164,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
   };
 
   const selectedGenreLabel = genres.find(g => g.value === formData.preferred_genre)?.label || "Select Genre";
+  const selectedPenNameLabel = formData.pen_name || "Select Pen Name";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
@@ -200,6 +228,43 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                   readOnly
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm bg-gray-100 cursor-not-allowed outline-none"
                 />
+              </div>
+
+              <div className="relative" ref={penNameRef}>
+                <label className="text-[13px] font-medium text-gray-600">
+                  Pen Name
+                </label>
+                <div
+                  onClick={() => setIsPenNameOpen(!isPenNameOpen)}
+                  className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D] flex items-center justify-between cursor-pointer"
+                >
+                  <span className={formData.pen_name ? "text-gray-800" : "text-gray-400"}>
+                    {selectedPenNameLabel}
+                  </span>
+                  <IoChevronDown className={`transition-transform duration-200 ${isPenNameOpen ? "rotate-180" : ""}`} />
+                </div>
+
+                {isPenNameOpen && (
+                  <div className="absolute left-0 right-0 mt-1 bg-white border border-[#B5B5B5] rounded-lg shadow-lg z-[60] overflow-hidden">
+                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                      <div
+                        onClick={() => handlePenNameSelect("")}
+                        className="px-3 py-2 text-sm text-gray-400 hover:bg-gray-50 cursor-pointer"
+                      >
+                        Select Pen Name
+                      </div>
+                      {penNames.map((pn) => (
+                        <div
+                          key={pn}
+                          onClick={() => handlePenNameSelect(pn)}
+                          className={`px-3 py-2 text-sm hover:bg-[#2F6F6D0D] hover:text-[#2F6F6D] cursor-pointer transition-colors ${formData.pen_name === pn ? "bg-[#2F6F6D0D] text-[#2F6F6D] font-medium" : "text-gray-700"}`}
+                        >
+                          {pn}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="relative" ref={genreRef}>
