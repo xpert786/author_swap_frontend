@@ -4,8 +4,8 @@ export const createNewsSlot = async (formData) => {
     return apiClient.post("newsletter-slot/", formData);
 }
 
-export const getNewsSlot = async () => {
-    return apiClient.get("newsletter-slot/");
+export const getNewsSlot = async (params) => {
+    return apiClient.get("newsletter-slot/", { params });
 }
 
 export const deleteNewsSlot = async (id) => {

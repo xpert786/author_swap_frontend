@@ -221,7 +221,10 @@ const Newsletter = () => {
     const fetchSlots = async () => {
         try {
             setLoading(true);
-            const response = await getNewsSlot();
+            const params = {
+                pen_name: penNameFilter === "All Pen Names" ? "all" : penNameFilter
+            };
+            const response = await getNewsSlot(params);
             const dataArray = Array.isArray(response.data) ? response.data : (response.data?.data || response.data?.results || []);
             const formatted = dataArray.map(item => {
                 let status = "Available", statusColor = "bg-[#16A34A33]";
@@ -281,7 +284,7 @@ const Newsletter = () => {
         } catch (e) { console.error("Failed to fetch stats", e); }
     };
 
-    useEffect(() => { fetchSlots(); }, []);
+    useEffect(() => { fetchSlots(); }, [penNameFilter]);
     const memoizedMonth = currentMonth.format("YYYY-MM");
     useEffect(() => { 
         fetchStats(); 
