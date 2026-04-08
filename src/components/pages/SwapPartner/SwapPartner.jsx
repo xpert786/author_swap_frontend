@@ -313,7 +313,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
     const authorPhoto = partner.author?.profilePicture
         ? (partner.author.profilePicture.startsWith("http")
             ? partner.author.profilePicture
-            : `http://72.61.251.114${partner.author.profilePicture}`)
+            : `${import.meta.env.VITE_BACKEND_URL}${partner.author.profilePicture}`)
         : partner.photo || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
     const swapsCompleted = partner.author?.swapsCompleted ?? partner.swaps ?? 0;
     const genre = partner.preferredGenre || partner.genre || "N/A";
@@ -517,7 +517,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
     const authorPhoto = partner.author?.profilePicture
         ? (partner.author.profilePicture.startsWith("http")
             ? partner.author.profilePicture
-            : `http://72.61.251.114${partner.author.profilePicture}`)
+            : `${import.meta.env.VITE_BACKEND_URL}${partner.author.profilePicture}`)
         : partner.photo || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
 
     const genre = partner.preferredGenre || partner.genre || "N/A";
