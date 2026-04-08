@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiX, FiChevronDown, FiRefreshCw, FiCheck, FiCalendar } from "react-icons/fi";
+import { FiX, FiChevronDown, FiRefreshCw, FiCheck, FiCalendar, FiShare2 } from "react-icons/fi";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { toast } from "react-hot-toast";
 import dummyBook from "../../../assets/dummy-book.png";
@@ -7,7 +7,8 @@ import dummyBook from "../../../assets/dummy-book.png";
 const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
     const [selectedBook, setSelectedBook] = useState(null);
     const [bookList, setBookList] = useState([]);
-    const [placement, setPlacement] = useState("Top");
+    const [placement, setPlacement] = useState("top");
+    const [placementOptions, setPlacementOptions] = useState([]);
     const [message, setMessage] = useState("");
     const [maxPartners, setMaxPartners] = useState("5 Partners");
     const [siteUrls, setSiteUrls] = useState([""]);
@@ -65,8 +66,17 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                         setCompatibility(sd.compatibility);
                     }
 
-                    if (slotResponse.data?.max_partners) {
-                        const mp = slotResponse.data.max_partners;
+                    if (sd?.placement_options) {
+                        setPlacementOptions(sd.placement_options);
+                        if (sd.slot_info?.placement_style && sd.slot_info.placement_style !== "Any") {
+                            setPlacement(sd.slot_info.placement_style.toLowerCase());
+                        } else if (sd.placement_options.length > 0) {
+                            setPlacement(sd.placement_options[0].value);
+                        }
+                    }
+
+                    if (sd?.max_partners) {
+                        const mp = sd.max_partners;
                         setMaxPartners(mp === 5 || mp === 10 ? `${mp} Partners` : "5 Partners");
                     }
 
@@ -98,7 +108,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
             setSubmitting(true);
             const payload = {
                 book_id: selectedBook,
-                placement,
+                placement_style: placement,
                 message,
                 max_partners: parseInt(maxPartners),
                 site_url: siteUrls.filter(link => link.trim() !== "")
@@ -266,36 +276,45 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                         </div>
 
                         {/* Placement Style */}
-                        {/* <div className="p-4 border border-[#B5B5B5] rounded-xl">
-                            <h3 className="text-[13px] font-medium text-[#111827] mb-4">
-                                Placement Style
-                            </h3>
-                            <div className="flex gap-6">
-                                {["Top", "Middle", "Bottom"].map((style) => (
-                                    <label
-                                        key={style}
-                                        className="flex items-center gap-2 cursor-pointer group"
-                                    >
-                                        <div className="relative flex items-center justify-center">
-                                            <input
-                                                type="radio"
-                                                name="placement"
-                                                value={style}
-                                                checked={placement === style}
-                                                onChange={(e) => setPlacement(e.target.value)}
-                                                className="appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-[#2F6F6D] transition-all"
-                                            />
-                                            {placement === style && (
-                                                <div className="w-2 h-2 bg-[#2F6F6D] rounded-full absolute" />
-                                            )}
-                                        </div>
-                                        <span className="text-[13px] font-medium text-[#374151]">
-                                            {style}
-                                        </span>
-                                    </label>
-                                ))}
+                        {placementOptions.length > 0 && (
+                            <div className="p-4 border border-[#B5B5B5] rounded-xl">
+                                <h3 className="text-[13px] font-medium text-[#111827] mb-4">
+                                    Placement Style
+                                </h3>
+                                <div className="flex flex-wrap gap-6">
+                                    {placementOptions.map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className="flex items-center gap-2 cursor-pointer group"
+                                        >
+                                            <div className="relative flex items-center justify-center">
+                                                <input
+                                                    type="radio"
+                                                    name="placement"
+                                                    value={option.value}
+                                                    checked={placement === option.value}
+                                                    onChange={(e) => setPlacement(e.target.value)}
+                                                    className="appearance-none w-4 h-4 border-2 border-gray-300 rounded-full checked:border-[#2F6F6D] transition-all"
+                                                />
+                                                {placement === option.value && (
+                                                    <div className="w-2 h-2 bg-[#2F6F6D] rounded-full absolute" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[13px] font-medium text-[#374151]">
+                                                    {option.label}
+                                                </span>
+                                                {option.description && (
+                                                    <span className="text-[10px] text-gray-400">
+                                                        {option.description}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
-                        </div> */}
+                        )}
 
                         {/* Form Fields */}
                         <div className="space-y-4">
@@ -326,13 +345,25 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                                 <div className="space-y-3">
                                     {siteUrls.map((link, index) => (
                                         <div key={index} className="flex gap-2">
-                                            <input
-                                                type="url"
-                                                placeholder="Enter site link"
-                                                value={link}
-                                                onChange={(e) => handleLinkChange(index, e.target.value)}
-                                                className="flex-1 border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
-                                            />
+                                            <div className="relative flex-1">
+                                                <input
+                                                    type="url"
+                                                    placeholder="Enter site link"
+                                                    value={link}
+                                                    onChange={(e) => handleLinkChange(index, e.target.value)}
+                                                    className="w-full border border-[#B5B5B5] rounded-lg pl-3 pr-10 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
+                                                />
+                                                {link && (
+                                                    <button
+                                                        type="button"
+                                                        title="Open Link"
+                                                        onClick={() => window.open(link.startsWith('http') ? link : `https://${link}`, '_blank')}
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#2F6F6D] hover:opacity-70 transition-all p-1"
+                                                    >
+                                                        <FiShare2 size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
                                             {siteUrls.length > 1 && (
                                                 <button
                                                     type="button"

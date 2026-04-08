@@ -737,9 +737,7 @@ const SwapPartner = () => {
             let params = { page };
             if (selectedGenre && selectedGenre !== "All") params.genre = selectedGenre;
             if (selectedPaid && selectedPaid !== "All") {
-                if (selectedPaid === "Free") params.promotion = "free";
-                if (selectedPaid === "Paid") params.promotion = "paid";
-                if (selectedPaid === "Genre-Specific") params.promotion = "genre_specific";
+                params.is_paid = selectedPaid === "Paid" ? "true" : "false";
             }
             if (selectedDate && selectedDate !== "All") {
                 const range = getDateRange(selectedDate);
@@ -753,6 +751,10 @@ const SwapPartner = () => {
 
             let data = response.data?.results || response.data || [];
             data = toCamel(data);
+            data = data.map(item => ({
+                ...item,
+                isPaid: (item.isPaid === true || item.isPaid === "true") || parseFloat(item.price || 0) > 0
+            }));
 
             setSlots(data);
             if (data.length > 0) setSelectedId(data[0].id);
@@ -808,16 +810,24 @@ const SwapPartner = () => {
     }, [selectedGenre, selectedAudience, selectedDate, selectedPaid, search]);
 
 
+    console.log('Active filters:', { selectedGenre, selectedAudience, selectedDate, selectedPaid, search });
+    console.log('Total slots:', slots.length);
+
     const filtered = (Array.isArray(slots) ? slots : []).filter((p) => {
         const matchesSearch = (p.author?.name || p.authorName || p.name || "").toLowerCase().includes(search.toLowerCase()) ||
             (p.preferredGenre || p.genre || "").toLowerCase().includes(search.toLowerCase());
 
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {
+            console.log('Filtered out by search:', p.name || p.author?.name);
+            return false;
+        }
 
         if (selectedGenre && selectedGenre !== "All") {
             const pGenre = p.preferredGenre || p.genre || "";
-            // Direct comparison with slug (value)
-            if (pGenre.toLowerCase() !== selectedGenre.toLowerCase()) return false;
+            if (pGenre.toLowerCase() !== selectedGenre.toLowerCase()) {
+                console.log('Filtered out by genre:', p.name || p.author?.name, 'genre=', pGenre);
+                return false;
+            }
         }
 
         if (selectedAudience && selectedAudience !== "All") {
@@ -841,14 +851,15 @@ const SwapPartner = () => {
         }
 
         if (selectedPaid && selectedPaid !== "All") {
-            const price = parseFloat(p.price || 0);
-            if (selectedPaid === "Free" && price > 0) return false;
-            if (selectedPaid === "Paid" && price === 0) return false;
-            if (selectedPaid === "Genre-Specific" && (p.promotionType || p.badge || "").toLowerCase() !== "genre_specific") return false;
+            const isActuallyPaid = p.isPaid || parseFloat(p.price || 0) > 0;
+            if (selectedPaid === "Free" && isActuallyPaid) return false;
+            if (selectedPaid === "Paid" && !isActuallyPaid) return false;
         }
 
         return true;
     });
+
+    console.log('Filtered count:', filtered.length);
 
     return (
         <div className="min-h-screen pb-10 bg-white">
@@ -896,7 +907,7 @@ const SwapPartner = () => {
                         />
                         <FilterDropdown
                             label="Free / Paid"
-                            options={["All", "Free", "Paid", "Genre-Specific"]}
+                            options={["All", "Free", "Paid"]}
                             selected={selectedPaid}
                             onSelect={setSelectedPaid}
                             align="right"

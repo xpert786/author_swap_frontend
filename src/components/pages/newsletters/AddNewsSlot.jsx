@@ -319,7 +319,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                   name="max_partners"
                   value={formData.max_partners}
                   onChange={handleChange}
-                  placeholder="5"
+                  placeholder="0"
                   max="10"
                   className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                 />
