@@ -8,6 +8,10 @@ export const getSubscriberAnalytics = async (params) => {
     return apiClient.get("subscriber-analytics/", { params });
 }
 
+export const getCampaignAnalytics = async (params) => {
+    return apiClient.get("campaign-analytics/", { params });
+}
+
 export const connectMailerlite = async (data) => {
     return apiClient.post("connect-mailerlite/", data);
 }

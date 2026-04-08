@@ -20,7 +20,7 @@ import { RxCursorArrow } from "react-icons/rx";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { getSubscriberAnalytics, getCampaignDates } from "../../../apis/subscription";
+import { getSubscriberAnalytics, getCampaignDates, getCampaignAnalytics } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
@@ -75,6 +75,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const [apiCampaignDates, setApiCampaignDates] = useState([]);
     const [selectedCampaignId, setSelectedCampaignId] = useState(null);
     const [campaignDatesLoading, setCampaignDatesLoading] = useState(false);
+    const [campaignLoading, setCampaignLoading] = useState(false);
+    const [campaignData, setCampaignData] = useState([]);
     const [ctrPage, setCtrPage] = useState(1);
     const [ctrPagination, setCtrPagination] = useState({
         total_pages: 1,
@@ -120,14 +122,10 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    const fetchData = async (cPage = ctrPage, cmpPage = campPage) => {
+    const fetchData = async (cPage = ctrPage) => {
         try {
             setLoading(true);
-            const params = { 
-                page: cPage,
-                camp_page: cmpPage,
-                tab: activeCampaignTab.toLowerCase().replace(" ", "_")
-            };
+            const params = { page: cPage };
             const analyticsRes = await getSubscriberAnalytics(params);
             const data = analyticsRes.data;
             setAnalytics(data);
@@ -135,13 +133,6 @@ const AnalyticsPage = ({ isChildView = false }) => {
             // Link CTR Pagination
             if (data?.link_level_ctr?.pagination) {
                 setCtrPagination(data.link_level_ctr.pagination);
-                // Only update page state if it differs to avoid loops, 
-                // but usually the setter from interaction handles this.
-            }
-
-            // Campaign Analytics Pagination
-            if (data?.campaign_analytics?.pagination) {
-                setCampPagination(data.campaign_analytics.pagination);
             }
         } catch (error) {
             console.error("Failed to fetch analytics data", error);
@@ -150,11 +141,37 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    useEffect(() => {
-        fetchData(ctrPage, campPage);
-    }, [ctrPage, campPage, activeCampaignTab]);
+    const fetchCampaignData = async (cmpPage = campPage) => {
+        try {
+            setCampaignLoading(true);
+            const params = { 
+                page: cmpPage,
+                tab: activeCampaignTab.toLowerCase().replace(" ", "_")
+            };
+            const res = await getCampaignAnalytics(params);
+            const data = res.data;
+            
+            setCampaignData(data?.results || []);
+            if (data?.pagination) {
+                setCampPagination(data.pagination);
+            }
+        } catch (error) {
+            console.error("Failed to fetch campaign data", error);
+        } finally {
+            setCampaignLoading(false);
+        }
+    };
 
-    // Update isMounted and initial fetch is now handled by the ctrPage effect
+    // Global data fetch
+    useEffect(() => {
+        fetchData(ctrPage);
+    }, [ctrPage]);
+
+    // Independent campaign data fetch
+    useEffect(() => {
+        fetchCampaignData(campPage);
+    }, [campPage, activeCampaignTab]);
+
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -455,9 +472,15 @@ const AnalyticsPage = ({ isChildView = false }) => {
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            {filteredCampaigns.length > 0 ? (
-                                filteredCampaigns.map((camp, idx) => (
+                        <div className="space-y-4 relative min-h-[200px]">
+                            {campaignLoading && (
+                                <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg">
+                                    <Loader2 className="w-6 h-6 text-[#2F6F6D] animate-spin" />
+                                </div>
+                            )}
+
+                            {campaignData.length > 0 ? (
+                                campaignData.map((camp, idx) => (
                                     <div
                                         key={idx}
                                         className={`flex items-center justify-between px-6 py-5 ${idx === 0 ? "bg-[#FEF3F2]" : "bg-white"
