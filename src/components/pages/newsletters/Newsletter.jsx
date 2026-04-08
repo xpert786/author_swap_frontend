@@ -247,7 +247,7 @@ const Newsletter = () => {
                 }
                 return {
                     id: item.id,
-                    time: item.send_date ? `${dayjs(item.send_date).format("MMM D, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
+                    time: item.send_date ? `${dayjs(item.send_date).format("MMM DD, YYYY")}${item.send_time ? ` at ${item.send_time}` : ""}` : `${item.formatted_date || ""} ${item.formatted_time || ""}`.trim() || item.send_time || "",
                     period: getPeriod(item.send_time) || formatLabel(item.time_period),
                     genre: formatLabel(item.preferred_genre),
                     rawGenre: (item.preferred_genre || "").toLowerCase(),
@@ -346,7 +346,7 @@ const Newsletter = () => {
             <div className="relative flex flex-col gap-4 mb-8 2xl:flex-row 2xl:items-center 2xl:justify-between">
                 <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-medium text-gray-800 whitespace-nowrap">
-                        All Slots for {selectedDate.format("MMMM D, YYYY")}
+                        All Slots for {selectedDate.format("MMMM DD, YYYY")}
                     </h2>
                     {penNameFilter !== "All Pen Names" && (
                         <div className="flex items-center gap-2 text-[#2F6F6D]">

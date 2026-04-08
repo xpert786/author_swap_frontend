@@ -309,7 +309,6 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
     // Derive display values from API response (camelCased via toCamel)
     const authorName = partner.author?.name || partner.name || "Unknown Author";
     const penName = partner.penName || null; // pen_name from API
-    console.log("PartnerCard - penName:", penName, "authorName:", authorName, "partner:", partner);
     const displayName = penName || authorName; // Show pen name if available, otherwise author name
     const authorPhoto = partner.author?.profilePicture
         ? (partner.author.profilePicture.startsWith("http")
@@ -367,11 +366,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
                                 <p className="text-[14px] font-bold text-black leading-tight">
                                     {formatCamelCaseName(displayName)}
                                 </p>
-                                {penName && (
-                                    <p className="text-[10px] text-gray-500 font-medium">
-                                        by {formatCamelCaseName(authorName)}
-                                    </p>
-                                )}
+                               
                                 <p className="text-[10px] text-[#374151] font-medium">
                                     {swapsCompleted} swaps completed
                                 </p>
@@ -430,7 +425,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
                 <div className="space-y-1">
                     <p className="text-[11px] text-[#111827] font-medium">Date</p>
                     <p className="text-[12px] font-medium text-[#111827]">
-                        {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
+                        {sendDate ? dayjs(sendDate).format("MMM DD, YYYY") : "N/A"}
                     </p>
                 </div>
                 <div className="space-y-1">
@@ -543,9 +538,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
                     <img src={authorPhoto} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
                     <div>
                         <p className="text-[13px] font-bold text-black">{formatCamelCaseName(displayName)}</p>
-                        {penName && (
-                            <p className="text-[9px] text-gray-500">by {formatCamelCaseName(authorName)}</p>
-                        )}
+                     
                         <p className="text-[10px] text-[#374151]">{partner.author?.swapsCompleted || 0} swaps</p>
                     </div>
                 </div>
@@ -574,7 +567,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
                 />
             </td>
             <td className="py-4 text-[13px] font-medium text-[#111827]">
-                {sendDate ? dayjs(sendDate).format("DD MMM YYYY") : "N/A"}
+                {sendDate ? dayjs(sendDate).format("MMM DD, YYYY") : "N/A"}
             </td>
             <td className="py-4">
                 <div className="flex items-center gap-1">
@@ -812,7 +805,7 @@ const SwapPartner = () => {
     React.useEffect(() => {
         fetchSlots(null, 1);
         fetchGenres();
-    }, [selectedGenre, selectedDate, selectedPaid, search]);
+    }, [selectedGenre, selectedAudience, selectedDate, selectedPaid, search]);
 
 
     const filtered = (Array.isArray(slots) ? slots : []).filter((p) => {
@@ -833,7 +826,8 @@ const SwapPartner = () => {
             if (selectedAudience === "0 – 5,000" && size > 5000) return false;
             if (selectedAudience === "5,000 – 20,000" && (size <= 5000 || size > 20000)) return false;
             if (selectedAudience === "20,000 – 50,000" && (size <= 20000 || size > 50000)) return false;
-            if (selectedAudience === "50,000+" && size <= 50000) return false;
+            if (selectedAudience === "50,000 - 100,000" && (size <= 50000 || size > 100000)) return false;
+            if (selectedAudience === "100,000+" && size <= 100000) return false;
         }
 
         if (selectedDate && selectedDate !== "All") {
@@ -895,6 +889,12 @@ const SwapPartner = () => {
                             onSelect={setSelectedDate}
                         />
                         <FilterDropdown
+                            label="Audience"
+                            options={["All", "0 – 5,000", "5,000 – 20,000", "20,000 – 50,000", "50,000 - 100,000", "100,000+"]}
+                            selected={selectedAudience}
+                            onSelect={setSelectedAudience}
+                        />
+                        <FilterDropdown
                             label="Free / Paid"
                             options={["All", "Free", "Paid", "Genre-Specific"]}
                             selected={selectedPaid}
@@ -933,9 +933,15 @@ const SwapPartner = () => {
                 </div>
             ) : (
                 <>
-                    {viewType === "grid" ? (
+                    {filtered.length === 0 && (
+                        <div className="text-center py-16 text-gray-400 text-sm italic">
+                            No partners found matching "{search}"
+                        </div>
+                    )}
+
+                    {filtered.length > 0 && viewType === "grid" ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {(slots || []).map((partner) => (
+                            {(filtered || []).map((partner) => (
                                 <PartnerCard
                                     key={partner.id}
                                     partner={{
@@ -983,7 +989,7 @@ const SwapPartner = () => {
                                 />
                             ))}
                         </div>
-                    ) : (
+                    ) : filtered.length > 0 ? (
                         <div className="bg-white rounded-[10px] border border-[#B5B5B5] overflow-x-auto">
                             <table className="w-full border-collapse">
                                 <thead className="bg-gray-50 border-b border-[#B5B5B5]">
@@ -999,7 +1005,7 @@ const SwapPartner = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {(slots || []).map((partner) => (
+                                    {(filtered || []).map((partner) => (
                                         <PartnerRow
                                             key={partner.id}
                                             partner={{
@@ -1036,10 +1042,10 @@ const SwapPartner = () => {
                                 </tbody>
                             </table>
                         </div>
-                    )}
+                    ) : null}
 
                     {/* Pagination Controls */}
-                    {totalPages > 1 && (
+                    {totalPages > 1 && filtered.length > 0 && (
                         <div className="flex items-center justify-center gap-2 mt-6">
                             <button
                                 onClick={() => prevUrl && fetchSlots(prevUrl)}
@@ -1058,12 +1064,6 @@ const SwapPartner = () => {
                             >
                                 Next
                             </button>
-                        </div>
-                    )}
-
-                    {filtered.length === 0 && (
-                        <div className="text-center py-16 text-gray-400 text-sm italic">
-                            No partners found matching "{search}"
                         </div>
                     )}
                 </>
