@@ -224,7 +224,7 @@ const BooksPage = () => {
                 </button>
 
                 {open && (
-                    <div className="absolute top-[calc(100%+6px)] right-0 min-w-[180px] bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[100] overflow-y-auto max-h-[280px] scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent animate-in fade-in slide-in-from-top-1">
+                    <div className="absolute top-[calc(100%+6px)] right-0 min-w-[180px] bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[100] overflow-y-auto max-h-[280px] custom-scrollbar animate-in fade-in slide-in-from-top-1">
                         {options.map((opt) => (
                             <div
                                 key={opt.value}
@@ -244,7 +244,7 @@ const BooksPage = () => {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen pb-10">
 
             {/* HEADER */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -546,7 +546,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                             Availability
                         </p>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap max-w-[140px]">
 
                             {Array.isArray(book.site_url) &&
                                 book.site_url.map((url, index) => {
@@ -563,7 +563,7 @@ const BookCard = ({ book, onClick, onEdit, onDelete }) => {
                                     return (
                                         <div
                                             key={index}
-                                            className="w-8 h-8 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]"
+                                            className="w-8 h-8 shrink-0 flex items-center justify-center shadow-sm hover:scale-110 transition-transform p-1 border border-[#2F6F6D] rounded-[6px]"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 window.open(url, "_blank");

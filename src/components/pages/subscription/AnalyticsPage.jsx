@@ -537,7 +537,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setCampPage(prev => Math.max(1, prev - 1))}
-                                        disabled={!campPagination.has_prev}
+                                        disabled={campPage <= 1}
                                         className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
                                     >
                                         <IoChevronBack className="w-3 h-3" />
@@ -545,7 +545,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                     </button>
                                     <button
                                         onClick={() => setCampPage(prev => Math.min(campPagination.total_pages, prev + 1))}
-                                        disabled={!campPagination.has_next}
+                                        disabled={campPage >= campPagination.total_pages}
                                         className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
                                     >
                                         Next
@@ -698,7 +698,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setCtrPage(prev => Math.max(1, prev - 1))}
-                                        disabled={!ctrPagination.has_prev}
+                                        disabled={ctrPage <= 1}
                                         className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
                                     >
                                         <IoChevronBack className="w-3 h-3" />
@@ -706,7 +706,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                     </button>
                                     <button
                                         onClick={() => setCtrPage(prev => Math.min(ctrPagination.total_pages, prev + 1))}
-                                        disabled={!ctrPagination.has_next}
+                                        disabled={ctrPage >= ctrPagination.total_pages}
                                         className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
                                     >
                                         Next
