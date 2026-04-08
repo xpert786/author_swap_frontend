@@ -35,7 +35,7 @@ const Dashboard = () => {
   const stats = [
     {
       label: "Total Slots",
-      value: dashboardData?.stats_cards?.total || "0",
+      value: dashboardData?.stats_cards?.total_slots || "0",
       icon: OpenBook,
       color: "bg-[#9DB7B5]", // Completed/Neutral
       path: "/newsletter",
