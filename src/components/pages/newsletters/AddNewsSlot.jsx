@@ -385,7 +385,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                       onChange={handleChange}
                       className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                     >
-                      <option value="weekly">Every Week</option>
+                      {/* <option value="weekly">Every Week</option> */}
                       <option value="monthly">Every Month</option>
                     </select>
                   </div>
