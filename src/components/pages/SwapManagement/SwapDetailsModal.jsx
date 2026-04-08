@@ -127,7 +127,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                 </div>
 
                                 {/* Metrics Grid */}
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-4 gap-3">
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Audience</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
@@ -145,6 +145,33 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                         <p className="text-[13px] font-medium text-[#111827]">
                                             {data?.request_date || "N/A"}
                                         </p>
+                                    </div>
+                                    <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
+                                        <p className="text-[12px] font-normal text-[#374151] mb-1">Placement</p>
+                                        {data?.placement_label ? (
+                                            <div className="mt-0.5">
+                                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center w-fit gap-1.5 ${
+                                                    data.placement_style === 'top' ? 'bg-[#F2F4F7] text-[#344054]' :
+                                                    data.placement_style === 'middle' ? 'bg-[#E0F2FE] text-[#026AA2]' :
+                                                    data.placement_style === 'bottom' ? 'bg-[#FEF3F2] text-[#B42318]' :
+                                                    data.placement_style === 'paid' ? 'bg-[#FEF3F2] text-[#B42318]' :
+                                                    data.placement_style === 'solo' ? 'bg-[#FEF3F2] text-[#B42318]' :
+                                                    'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                                        data.placement_style === 'top' ? 'bg-[#344054]' :
+                                                        data.placement_style === 'middle' ? 'bg-[#026AA2]' :
+                                                        data.placement_style === 'bottom' ? 'bg-[#B42318]' :
+                                                        data.placement_style === 'paid' ? 'bg-[#B42318]' :
+                                                        data.placement_style === 'solo' ? 'bg-[#B42318]' :
+                                                        'bg-gray-400'
+                                                    }`}></span>
+                                                    {data.placement_label}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <p className="text-[13px] font-medium text-[#111827]">N/A</p>
+                                        )}
                                     </div>
                                 </div>
 
