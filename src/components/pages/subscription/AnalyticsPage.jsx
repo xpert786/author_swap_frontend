@@ -75,6 +75,20 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const [apiCampaignDates, setApiCampaignDates] = useState([]);
     const [selectedCampaignId, setSelectedCampaignId] = useState(null);
     const [campaignDatesLoading, setCampaignDatesLoading] = useState(false);
+    const [ctrPage, setCtrPage] = useState(1);
+    const [ctrPagination, setCtrPagination] = useState({
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+        total_campaigns: 0
+    });
+    const [campPage, setCampPage] = useState(1);
+    const [campPagination, setCampPagination] = useState({
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+        total_results: 0
+    });
 
     // FIX 1: Use a ref for click-outside detection instead of a class-based approach
     const dropdownRef = useRef(null);
@@ -106,11 +120,29 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    const fetchData = async () => {
+    const fetchData = async (cPage = ctrPage, cmpPage = campPage) => {
         try {
             setLoading(true);
-            const analyticsRes = await getSubscriberAnalytics();
-            setAnalytics(analyticsRes.data);
+            const params = { 
+                page: cPage,
+                camp_page: cmpPage,
+                tab: activeCampaignTab.toLowerCase().replace(" ", "_")
+            };
+            const analyticsRes = await getSubscriberAnalytics(params);
+            const data = analyticsRes.data;
+            setAnalytics(data);
+            
+            // Link CTR Pagination
+            if (data?.link_level_ctr?.pagination) {
+                setCtrPagination(data.link_level_ctr.pagination);
+                // Only update page state if it differs to avoid loops, 
+                // but usually the setter from interaction handles this.
+            }
+
+            // Campaign Analytics Pagination
+            if (data?.campaign_analytics?.pagination) {
+                setCampPagination(data.campaign_analytics.pagination);
+            }
         } catch (error) {
             console.error("Failed to fetch analytics data", error);
         } finally {
@@ -119,7 +151,11 @@ const AnalyticsPage = ({ isChildView = false }) => {
     };
 
     useEffect(() => {
-        fetchData();
+        fetchData(ctrPage, campPage);
+    }, [ctrPage, campPage, activeCampaignTab]);
+
+    // Update isMounted and initial fetch is now handled by the ctrPage effect
+    useEffect(() => {
         setIsMounted(true);
     }, []);
 
@@ -143,7 +179,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
     const summaryStats = analytics?.summary_stats || {};
     const listHealth = analytics?.list_health_metrics || {};
 
-    const campaigns = analytics?.campaign_analytics || [];
+    const campaigns = analytics?.campaign_analytics?.results || [];
 
     // FIX 3: linkAnalysis correctly returns flat link objects (with campaignName attached)
     const linkAnalysis = useMemo(() => {
@@ -403,7 +439,10 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab}
-                                        onClick={() => setActiveCampaignTab(tab)}
+                                        onClick={() => {
+                                            setActiveCampaignTab(tab);
+                                            setCampPage(1); // Reset to first page on tab change
+                                        }}
                                         className={`px-4 py-2 text-sm rounded-md transition-all duration-200 cursor-pointer
                                             ${activeCampaignTab === tab
                                                 ? "bg-[#2F6F6D] text-white shadow-sm"
@@ -465,6 +504,33 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Campaign Pagination Controls */}
+                        {campPagination.total_pages > 1 && (
+                            <div className="flex items-center justify-between mt-6 px-2">
+                                <p className="text-xs text-gray-500">
+                                    Showing page <span className="font-medium text-gray-900">{campPage}</span> of <span className="font-medium text-gray-900">{campPagination.total_pages}</span>
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCampPage(prev => Math.max(1, prev - 1))}
+                                        disabled={!campPagination.has_prev}
+                                        className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
+                                    >
+                                        <IoChevronBack className="w-3 h-3" />
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setCampPage(prev => Math.min(campPagination.total_pages, prev + 1))}
+                                        disabled={!campPagination.has_next}
+                                        className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
+                                    >
+                                        Next
+                                        <IoChevronBack className="w-3 h-3 rotate-180" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* ================= LINK LEVEL ================= */}
@@ -599,6 +665,33 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Pagination Controls */}
+                        {ctrPagination.total_pages > 1 && (
+                            <div className="flex items-center justify-between mt-4 px-2">
+                                <p className="text-xs text-gray-500">
+                                    Showing page <span className="font-medium text-gray-900">{ctrPage}</span> of <span className="font-medium text-gray-900">{ctrPagination.total_pages}</span>
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCtrPage(prev => Math.max(1, prev - 1))}
+                                        disabled={!ctrPagination.has_prev}
+                                        className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
+                                    >
+                                        <IoChevronBack className="w-3 h-3" />
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setCtrPage(prev => Math.min(ctrPagination.total_pages, prev + 1))}
+                                        disabled={!ctrPagination.has_next}
+                                        className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
+                                    >
+                                        Next
+                                        <IoChevronBack className="w-3 h-3 rotate-180" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* ================= HISTORICAL TRENDS ================= */}

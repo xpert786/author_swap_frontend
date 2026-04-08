@@ -4,8 +4,8 @@ export const getSubscriberVerification = async () => {
     return apiClient.get("subscriber-verification/");
 }
 
-export const getSubscriberAnalytics = async () => {
-    return apiClient.get("subscriber-analytics/");
+export const getSubscriberAnalytics = async (params) => {
+    return apiClient.get("subscriber-analytics/", { params });
 }
 
 export const connectMailerlite = async (data) => {
