@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiX, FiChevronDown, FiRefreshCw, FiCheck, FiCalendar, FiShare2 } from "react-icons/fi";
+import { RiExternalLinkLine } from "react-icons/ri";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { toast } from "react-hot-toast";
 import dummyBook from "../../../assets/dummy-book.png";
@@ -23,7 +24,20 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
 
     const handleBookSelect = (book) => {
         setSelectedBook(book.id);
-        setSiteUrls(book.site_url && book.site_url.length > 0 ? book.site_url : [""]);
+        
+        let initialLinks = [""];
+        const rawLinks = book.retailer_links?.site_url || book.site_url;
+        
+        if (rawLinks) {
+            if (Array.isArray(rawLinks)) {
+                initialLinks = rawLinks.length > 0 ? rawLinks : [""];
+            } else if (typeof rawLinks === "string") {
+                initialLinks = rawLinks.split(",").map(url => url.trim()).filter(Boolean);
+                if (initialLinks.length === 0) initialLinks = [""];
+            }
+        }
+        
+        setSiteUrls(initialLinks);
 
         if (book.compatibility) {
             setCompatibility(book.compatibility);
@@ -80,7 +94,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                         setMaxPartners(mp === 5 || mp === 10 ? `${mp} Partners` : "5 Partners");
                     }
 
-                    const fetchedBooks = slotResponse.data?.my_books || [];
+                    const fetchedBooks = slotResponse.data?.user_books || slotResponse.data?.my_books || [];
                     setBookList(fetchedBooks);
                     if (fetchedBooks.length > 0 && !selectedBook) {
                         const primaryBook = fetchedBooks.find(b => b.is_primary || b.is_primary_promo);
@@ -360,7 +374,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                                                         onClick={() => window.open(link.startsWith('http') ? link : `https://${link}`, '_blank')}
                                                         className="absolute right-2 top-1/2 -translate-y-1/2 text-[#2F6F6D] hover:opacity-70 transition-all p-1"
                                                     >
-                                                        <FiShare2 size={16} />
+                                                        <RiExternalLinkLine size={16} />
                                                     </button>
                                                 )}
                                             </div>

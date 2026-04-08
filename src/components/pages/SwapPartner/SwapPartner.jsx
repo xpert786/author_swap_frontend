@@ -104,7 +104,7 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
             setLoading(true);
             setOpen(true);
             console.log("Fetching author availability for:", calendarUrl || `userId: ${userId}`);
-            
+
             let response;
             if (calendarUrl) {
                 // Extract relative path from full URL (e.g., "/authorswap/api/author-availability/145/" -> "author-availability/145/")
@@ -126,7 +126,7 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
                 // Fallback to userId-based fetch
                 response = await getAuthorAvailability(userId);
             }
-            
+
             const raw = response.data;
             console.log("author-availability raw response:", raw);
 
@@ -302,6 +302,15 @@ const AvailabilityPopover = ({ userId, calendarUrl, penName, currentSlotId, onSl
 
 import { getPublicProfile, getAuthorAvailability } from "../../../apis/profile";
 import toast from "react-hot-toast";
+
+const parsePrice = (val) => {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const clean = String(val).replace(/[^0-9.]/g, '');
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? 0 : parsed;
+};
+
 // ─── Partner Card ─────────────────────────────────────────────────────────────
 const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabilitySelect }) => {
     const navigate = useNavigate();
@@ -322,7 +331,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
     const sendDate = partner.sendDate || partner.date || null;
     const sendTime = partner.sendTime || partner.time || null;
     const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
-    const price = parseFloat(partner.price || 0);
+    const price = parsePrice(partner.price);
     const isPaid = price > 0;
     const status = partner.status || "available";
     const promotionType = partner.promotionType || partner.badge || null;
@@ -366,7 +375,7 @@ const PartnerCard = ({ partner, isSelected, onClick, onSendRequest, onAvailabili
                                 <p className="text-[14px] font-bold text-black leading-tight">
                                     {formatCamelCaseName(displayName)}
                                 </p>
-                               
+
                                 <p className="text-[10px] text-[#374151] font-medium">
                                     {swapsCompleted} swaps completed
                                 </p>
@@ -523,7 +532,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
     const genre = partner.preferredGenre || partner.genre || "N/A";
     const sendDate = partner.sendDate || partner.date || null;
     const audienceSize = partner.audienceSize ?? partner.audience ?? 0;
-    const price = parseFloat(partner.price || 0);
+    const price = parsePrice(partner.price);
     const isPaid = price > 0;
     const availabilityCalendarUrl = partner.availabilityCalendarUrl || null;
 
@@ -538,7 +547,7 @@ const PartnerRow = ({ partner, onSendRequest, onAvailabilitySelect }) => {
                     <img src={authorPhoto} alt={authorName} className="w-8 h-8 rounded-full object-cover" />
                     <div>
                         <p className="text-[13px] font-bold text-black">{formatCamelCaseName(displayName)}</p>
-                     
+
                         <p className="text-[10px] text-[#374151]">{partner.author?.swapsCompleted || 0} swaps</p>
                     </div>
                 </div>
@@ -737,7 +746,7 @@ const SwapPartner = () => {
             let params = { page };
             if (selectedGenre && selectedGenre !== "All") params.genre = selectedGenre;
             if (selectedPaid && selectedPaid !== "All") {
-                params.is_paid = selectedPaid === "Paid" ? "true" : "false";
+                params.is_paid = selectedPaid === "Paid" ? 1 : 0;
             }
             if (selectedDate && selectedDate !== "All") {
                 const range = getDateRange(selectedDate);
@@ -753,7 +762,7 @@ const SwapPartner = () => {
             data = toCamel(data);
             data = data.map(item => ({
                 ...item,
-                isPaid: (item.isPaid === true || item.isPaid === "true") || parseFloat(item.price || 0) > 0
+                isPaid: parsePrice(item.price) > 0
             }));
 
             setSlots(data);
@@ -851,7 +860,7 @@ const SwapPartner = () => {
         }
 
         if (selectedPaid && selectedPaid !== "All") {
-            const isActuallyPaid = p.isPaid || parseFloat(p.price || 0) > 0;
+            const isActuallyPaid = parsePrice(p.price) > 0;
             if (selectedPaid === "Free" && isActuallyPaid) return false;
             if (selectedPaid === "Paid" && !isActuallyPaid) return false;
         }
@@ -989,9 +998,10 @@ const SwapPartner = () => {
                                         }
                                     }}
                                     onAvailabilitySelect={(slotId) => {
-                                        setRequestingId(slotId);
-                                        if (parseFloat(partner.price || 0) > 0) {
-                                            setRequestingPrice(partner.price);
+                                        setRequestingId(partner.id);
+                                        const pr = parsePrice(partner.price);
+                                        if (pr > 0) {
+                                            setRequestingPrice(pr);
                                             setIsPaidRequestOpen(true);
                                         } else {
                                             setIsRequestOpen(true);
@@ -1032,8 +1042,9 @@ const SwapPartner = () => {
                                             }}
                                             onSendRequest={() => {
                                                 setRequestingId(partner.id);
-                                                if (parseFloat(partner.price || 0) > 0) {
-                                                    setRequestingPrice(partner.price);
+                                                const pr = parsePrice(partner.price);
+                                                if (pr > 0) {
+                                                    setRequestingPrice(pr);
                                                     setIsPaidRequestOpen(true);
                                                 } else {
                                                     setIsRequestOpen(true);
@@ -1041,8 +1052,9 @@ const SwapPartner = () => {
                                             }}
                                             onAvailabilitySelect={(slotId) => {
                                                 setRequestingId(slotId);
-                                                if (parseFloat(partner.price || 0) > 0) {
-                                                    setRequestingPrice(partner.price);
+                                                const pr = parsePrice(partner.price);
+                                                if (pr > 0) {
+                                                    setRequestingPrice(pr);
                                                     setIsPaidRequestOpen(true);
                                                 } else {
                                                     setIsRequestOpen(true);

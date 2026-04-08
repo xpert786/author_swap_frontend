@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiX, FiChevronDown, FiRefreshCw, FiCheck, FiCalendar, FiShare2 } from "react-icons/fi";
+import { RiExternalLinkLine } from "react-icons/ri";
 import { CheckBadgeIcon } from "../../icons";
 import { sendSwapRequest, getSlotRequestData } from "../../../apis/swapPartner";
 import { getBooks } from "../../../apis/bookManegment";
@@ -27,7 +28,20 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
 
     const handleBookSelect = (book) => {
         setSelectedBook(book.id);
-        setSiteUrls(book.site_url && book.site_url.length > 0 ? book.site_url : [""]);
+        
+        let initialLinks = [""];
+        const rawLinks = book.retailer_links?.site_url || book.site_url;
+        
+        if (rawLinks) {
+            if (Array.isArray(rawLinks)) {
+                initialLinks = rawLinks.length > 0 ? rawLinks : [""];
+            } else if (typeof rawLinks === "string") {
+                initialLinks = rawLinks.split(",").map(url => url.trim()).filter(Boolean);
+                if (initialLinks.length === 0) initialLinks = [""];
+            }
+        }
+        
+        setSiteUrls(initialLinks);
 
         // Use embedded compatibility data if available
         if (book.compatibility) {
@@ -91,7 +105,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                     }
 
                     // Use user's books directly from the request API
-                    const fetchedBooks = slotResponse.data?.my_books || [];
+                    const fetchedBooks = slotResponse.data?.user_books || slotResponse.data?.my_books || [];
                     setBookList(fetchedBooks);
                     if (fetchedBooks.length > 0 && !selectedBook) {
                         // Priority: try to find a primary book first, otherwise pick the first one
@@ -365,7 +379,7 @@ const SwapRequest = ({ isOpen, onClose, id }) => {
                                                         onClick={() => window.open(link.startsWith('http') ? link : `https://${link}`, '_blank')}
                                                         className="absolute right-2 top-1/2 -translate-y-1/2 text-[#2F6F6D] hover:opacity-70 transition-all p-1"
                                                     >
-                                                        <FiShare2 size={16} />
+                                                        <RiExternalLinkLine size={16} />
                                                     </button>
                                                 )}
                                             </div>

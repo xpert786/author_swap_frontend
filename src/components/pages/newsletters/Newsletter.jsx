@@ -49,8 +49,8 @@ const Newsletter = () => {
     const [genres, setGenres] = useState([]);
     const [loadingGenres, setLoadingGenres] = useState(true);
     const [newsletterStats, setNewsletterStats] = useState({
-        total_slots: 0, published_slots: 0,
-        pending_swap_requests: 0, confirmed_swaps: 0, verified_sent: 0
+        total: 0, booked_slots: 0,
+        pending_swaps: 0, completed_swaps: 0
     });
     const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
     const [calendarData, setCalendarData] = useState([]);
@@ -317,10 +317,10 @@ const Newsletter = () => {
     const SwapIcon = () => <img src={Swap} alt="Swap" style={{ width: "31px", height: "29px" }} />;
 
     const stats = [
-        { label: "Total", value: String(newsletterStats.total ?? newsletterStats.total_slots ?? 0), icon: NewsIcon },
-        { label: "Published Slots", value: String(newsletterStats.published_slots ?? 0), icon: SwapIcon },
-        { label: "Pending swap requests", value: String(newsletterStats.pending_swaps ?? newsletterStats.pending_swap_requests ?? 0), icon: PendingSwapIcon },
-        { label: "Confirmed swaps", value: String(newsletterStats.confirmed_swaps ?? 0), icon: ConfirmedSwapIcon },
+        { label: "Total", value: String(newsletterStats.total ?? 0), icon: NewsIcon },
+        { label: "Booked Slots", value: String(newsletterStats.booked_slots ?? 0), icon: SwapIcon },
+        { label: "Pending Swaps", value: String(newsletterStats.pending_swaps ?? 0), icon: PendingSwapIcon },
+        { label: "Completed Swaps", value: String(newsletterStats.completed_swaps ?? 0), icon: VerifiedSentIcon },
     ];
 
     return (
@@ -472,10 +472,9 @@ const Newsletter = () => {
                             let bgColor = "bg-white";
                             if (!isCurrentMonth) bgColor = "bg-[#F3F4F64D]";
                             else if (dayApiData?.has_slots) {
-                                if (dayApiData.has_verified) bgColor = "bg-[#9DB7B5]";
-                                else if (dayApiData.has_confirmed) bgColor = "bg-[#F59E0B33]";
+                                if (dayApiData.has_completed) bgColor = "bg-[#9DB7B5]";
+                                else if (dayApiData.has_booked) bgColor = "bg-[#F59E0B33]";
                                 else if (dayApiData.has_pending) bgColor = "bg-[#EAD8B1]";
-                                else if (dayApiData.has_published) bgColor = "bg-[#F1B9AA]";
                                 else if (dayApiData.has_available) bgColor = "bg-[#16A34A33]";
                                 else bgColor = "bg-[#F3F4F6]";
                             }
@@ -493,10 +492,10 @@ const Newsletter = () => {
 
                     <div className="flex flex-wrap gap-x-8 gap-y-3 mt-8 justify-center">
                         {[
+                            { color: "bg-[#9DB7B5]", label: "Completed swaps" },
+                            { color: "bg-[#F59E0B33]", label: "Booked slots" },
+                            { color: "bg-[#EAD8B1]", label: "Pending swaps" },
                             { color: "bg-[#16A34A33] border border-teal-100", label: "Available slots" },
-                            { color: "bg-[#F1B9AA]", label: "Published slots" },
-                            { color: "bg-[#F59E0B33]", label: "Confirmed slots" },
-                            { color: "bg-[#EAD8B1]", label: "Pending slots" },
                         ].map(({ color, label }) => (
                             <div key={label} className="flex items-center gap-2.5">
                                 <div className={`w-5 h-5 rounded-[4px] shadow-sm ${color}`} />
