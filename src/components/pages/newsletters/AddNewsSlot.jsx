@@ -16,8 +16,8 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     price: "",
     pen_name: "",
     is_recurring: false,
-    frequency: "monthly",
-    duration_months: 1,
+    frequency: "",
+    duration_months: "",
   });
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
@@ -121,6 +121,20 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
     setLoading(true);
 
     try {
+      // Validation - check required fields except time and price
+      const requiredFields = ['send_date', 'preferred_genre', 'max_partners', 'pen_name'];
+      if (formData.is_recurring) {
+        requiredFields.push('frequency', 'duration_months');
+      }
+      
+      const missingFields = requiredFields.filter(field => !formData[field]);
+      if (missingFields.length > 0) {
+        const fieldNames = missingFields.map(f => f.replace(/_/g, ' ')).join(', ');
+        toast.error(`Please fill in: ${fieldNames}`);
+        setLoading(false);
+        return;
+      }
+
       // Remove audience_size from the payload
       const { audience_size, ...payload } = formData;
       await createNewsSlot(payload);
@@ -133,14 +147,14 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
         send_date: "",
         send_time: "",
         audience_size: "",
-        preferred_genre: "Romance",
+        preferred_genre: "",
         max_partners: "",
         visibility: "Public",
         price: "",
         pen_name: penNames.length > 0 ? penNames[0] : "",
         is_recurring: false,
-        frequency: "monthly",
-        duration_months: 1,
+        frequency: "",
+        duration_months: "",
       });
     } catch (err) {
       console.error("Creation failed:", err);
@@ -381,11 +395,12 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                     </label>
                     <select
                       name="frequency"
-                      value={formData.frequency || 'monthly'}
+                      value={formData.frequency}
                       onChange={handleChange}
                       className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                     >
-                      {/* <option value="weekly">Every Week</option> */}
+                      <option value="">Select frequency</option>
+                      <option value="weekly">Every Week</option>
                       <option value="monthly">Every Month</option>
                     </select>
                   </div>
@@ -399,6 +414,7 @@ const AddNewsSlot = ({ isOpen, onClose, onSubmit, prefillDate }) => {
                       onChange={handleChange}
                       className="mt-1 w-full border border-[#B5B5B5] rounded-lg px-3 py-1.5 bg-white text-sm outline-none focus:ring-1 focus:ring-[#2F6F6D]"
                     >
+                      <option value="">Select duration</option>
                       <option value={2}>2 Months</option>
                       <option value={3}>3 Months</option>
                       <option value={6}>6 Months</option>
