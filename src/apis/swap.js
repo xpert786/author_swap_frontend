@@ -35,3 +35,11 @@ export const directPayment = (data) => {
 export const confirmSwapPayment = (id) => {
     return apiClient.post(`stripe/confirm-swap-payment/${id}/`);
 };
+
+export const submitProof = (formData) => {
+    return apiClient.post("swap-proof/submit/", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+};

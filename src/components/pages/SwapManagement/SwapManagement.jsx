@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import SwapDetailsModal from './SwapDetailsModal';
 import TrackSwapModal from './TrackSwapModal';
 import DeclineReasonModal from './DeclineReasonModal';
+import SubmitProofModal from './SubmitProofModal';
 import { useProfile } from '../../../context/ProfileContext';
 
 const tabs = [
@@ -52,7 +53,7 @@ const getSwapRole = (data, currentUserId) => {
     return { isSender, isReceiver };
 };
 
-const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, setDetailsId, setIsTrackOpen }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, setDetailsId, setIsTrackOpen, setIsSubmitProofOpen }) => {
 
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
@@ -74,6 +75,12 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
     const isRejected = status === "rejected" || status === "reject";
     const isCompleted = status === "completed" || status === "complete";
     const isScheduled = status === "scheduled";
+
+    // New proof submission statuses
+    const isAwaitingProof = status === "awaiting_proof";
+    const isProofSubmitted = status === "proof_submitted";
+    const isReviewing = status === "reviewing";
+    const isReadyToComplete = status === "ready_to_complete";
 
     // ── Payment flags (directly from API) ──
     const isPaidSwap = data.eligible_for_pay === true;
@@ -214,7 +221,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
     //   5. SCHEDULED → View Details
     // ─────────────────────────────────────────────────────────────────────
     const renderActions = () => {
-        
+
         // ── 1. SENDING / PENDING ──────────────────────────────────────────
         if (isSending) {
             if (isSender) {
@@ -360,17 +367,77 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
             );
         }
 
-        // ── 5. SCHEDULED ──────────────────────────────────────────────────
-        // if (isScheduled) {
-        //     return (
-        //         <button
-        //             onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-        //             className="w-fit bg-[#2F6F6D] text-white text-[12px] font-medium px-6 py-2.5 rounded-[6px] hover:opacity-90 transition-opacity"
-        //         >
-        //             View Details
-        //         </button>
-        //     );
-        // }
+        // ── 5. SCHEDULED / AWAITING PROOF ─────────────────────────────────
+        if (isScheduled || isAwaitingProof) {
+            if (isSender) {
+                return (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDetailsId(data.id);
+                            setIsSubmitProofOpen(true);
+                        }}
+                        className="px-6 py-2 bg-[#2F6F6D] text-white rounded-[6px] text-xs font-semibold hover:opacity-90 transition-opacity"
+                    >
+                        Submit Proof
+                    </button>
+                );
+            }
+            if (isReceiver) {
+                return (
+                    <div className="bg-yellow-100 text-yellow-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Waiting for proof submission
+                    </div>
+                );
+            }
+        }
+
+        // ── 6. PROOF SUBMITTED / REVIEWING ─────────────────────────────────
+        if (isProofSubmitted || isReviewing) {
+            if (isReceiver) {
+                return (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDetailsId(data.id);
+                            setIsTrackOpen(true);
+                        }}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-[6px] text-xs font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                        Review Proof
+                    </button>
+                );
+            }
+            if (isSender) {
+                return (
+                    <div className="bg-blue-100 text-blue-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Proof submitted — waiting for review
+                    </div>
+                );
+            }
+        }
+
+        // ── 7. READY TO COMPLETE ───────────────────────────────────────────
+        if (isReadyToComplete) {
+            if (isReceiver) {
+                return (
+                    <button
+                        onClick={handleReceivePayment}
+                        disabled={actionLoading === "complete"}
+                        className="px-6 py-2 bg-green-600 text-white rounded-[6px] text-xs font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                        {actionLoading === "complete" ? "Completing..." : "Complete Swap"}
+                    </button>
+                );
+            }
+            if (isSender) {
+                return (
+                    <div className="bg-green-100 text-green-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
+                        Waiting for completion
+                    </div>
+                );
+            }
+        }
 
         return null;
     };
@@ -420,10 +487,30 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                         <span className={`whitespace-nowrap text-[9px] font-medium px-2 py-0.5 rounded-md border
                             ${isCompleted
                                 ? "bg-[#16A34A1A] text-[#166534] border-[#16A34A33]"
-                                : "bg-gray-50 text-gray-600 border-gray-200"
+                                : isAwaitingProof
+                                    ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                    : isProofSubmitted
+                                        ? "bg-blue-100 text-blue-700 border-blue-200"
+                                        : isReviewing
+                                            ? "bg-purple-100 text-purple-700 border-purple-200"
+                                            : isReadyToComplete
+                                                ? "bg-green-100 text-green-700 border-green-200"
+                                                : "bg-gray-50 text-gray-600 border-gray-200"
                             }`}
                         >
-                            {isCompleted ? "Swap Completed" : isPaymentDone ? "Payment Done ✅" : formatLabel(data.badge || data.status)}
+                            {isCompleted
+                                ? "Swap Completed"
+                                : isPaymentDone
+                                    ? "Payment Done ✅"
+                                    : isAwaitingProof
+                                        ? "Awaiting Proof"
+                                        : isProofSubmitted
+                                            ? "Proof Submitted"
+                                            : isReviewing
+                                                ? "Under Review"
+                                                : isReadyToComplete
+                                                    ? "Ready to Complete"
+                                                    : formatLabel(data.badge || data.status)}
                         </span>
                     )}
                     {isPaidSwap && data.price != null && (
@@ -500,14 +587,14 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
 
             {/* ── Payment Method Modal ── */}
             {showPaymentModal && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
                     onClick={(e) => {
                         e.stopPropagation();
                         setShowPaymentModal(false);
                     }}
                 >
-                    <div 
+                    <div
                         className="bg-white w-[400px] rounded-[12px] shadow-xl p-6 m-4"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -576,7 +663,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
 
 const SwapManagement = () => {
     const { profile } = useProfile();
-   const currentUserId = profile?.user ?? null;
+    const currentUserId = profile?.user ?? null;
     const [swaps, setSwaps] = useState([]);
     const [tabCounts, setTabCounts] = useState({});
     const [loading, setLoading] = useState(true);
@@ -584,6 +671,7 @@ const SwapManagement = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isTrackOpen, setIsTrackOpen] = useState(false);
+    const [isSubmitProofOpen, setIsSubmitProofOpen] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
     const [isDeclineOpen, setIsDeclineOpen] = useState(false);
     const [declineId, setDeclineId] = useState(null);
@@ -614,7 +702,16 @@ const SwapManagement = () => {
             if (!silent) setLoading(true);
             const response = await getSwaps(tabKey);
             const responseData = response.data;
-            const data = responseData.results || responseData || [];
+            // const data = responseData.results || responseData || [];
+            let data = responseData.results || responseData || [];
+
+            // TEMP: force test status
+            data = data.map(swap => ({
+                ...swap,
+                status: "awaiting_proof"
+            }));
+
+            setSwaps(data);
             if (responseData.tab_counts) setTabCounts(responseData.tab_counts);
             setSwaps(data);
         } catch (error) {
@@ -625,9 +722,31 @@ const SwapManagement = () => {
         }
     };
 
+    // useEffect(() => {
+    //     fetchSwaps(activeTab.key);
+    // }, [activeTab]);
+
     useEffect(() => {
-        fetchSwaps(activeTab.key);
-    }, [activeTab]);
+
+        setSwaps([
+            {
+                id: 101,
+                sender_id: currentUserId,
+                receiver_id: 2,
+                author_name: "Test Author",
+                status: "awaiting_proof",
+                audience_size: "4500",
+                reliability_score: "98%",
+                requesting_book: "Demo Book",
+                message: "Testing proof flow",
+                eligible_for_pay: false,
+                payment_done: true
+            }
+        ]);
+
+        setLoading(false);
+
+    }, []);
 
     const filtered = (Array.isArray(swaps) ? swaps : []).filter((s) => {
         const sStatus = (s.status || "").toLowerCase();
@@ -715,10 +834,11 @@ const SwapManagement = () => {
                                     currentUserId={currentUserId}
                                     setDetailsId={setDetailsId}
                                     setIsTrackOpen={setIsTrackOpen}
+                                    setIsSubmitProofOpen={setIsSubmitProofOpen}
                                     onRefresh={(silent = false) => fetchSwaps(activeTab.key, silent)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);
-                                        if (swap.status === "scheduled") {
+                                        if (swap.status === "scheduled" || swap.status === "proof_submitted" || swap.status === "reviewing") {
                                             setIsTrackOpen(true);
                                         } else {
                                             setIsDetailsOpen(true);
@@ -752,6 +872,12 @@ const SwapManagement = () => {
                 onClose={() => { setIsDeclineOpen(false); setDeclineId(null); }}
                 onConfirm={handleConfirmDecline}
                 loading={declineLoading}
+            />
+            <SubmitProofModal
+                isOpen={isSubmitProofOpen}
+                swapId={detailsId}
+                onClose={() => { setIsSubmitProofOpen(false); setDetailsId(null); }}
+                onSuccess={() => fetchSwaps(activeTab.key)}
             />
         </div>
     );
