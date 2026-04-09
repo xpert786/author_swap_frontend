@@ -66,7 +66,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
     const { isSender, isReceiver } = getSwapRole(data, currentUserId);
 
     const status = (data.status || "").toLowerCase();
-    console.log("Swap Status:", status);
+    console.log("Swap Status:", status, "isSender:", isSender, "isReceiver:", isReceiver);
     const isSending = status === "sending" || status === "pending" || status === "incoming";
     const isAccepted =
         status === "accepted" ||
@@ -369,8 +369,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
         }
 
         // ── 5. SCHEDULED / AWAITING PROOF ─────────────────────────────────
+        // Receiver (who accepted & publishes newsletter) submits proof
         if (isScheduled || isAwaitingProof) {
-            if (isSender) {
+            if (isReceiver) {
                 return (
                     <button
                         onClick={(e) => {
@@ -384,7 +385,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                     </button>
                 );
             }
-            if (isReceiver) {
+            if (isSender) {
                 return (
                     <div className="bg-yellow-100 text-yellow-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                         Waiting for proof submission
@@ -394,8 +395,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
         }
 
         // ── 6. PROOF SUBMITTED / REVIEWING ─────────────────────────────────
+        // Sender (who requested the swap) reviews proof from receiver
         if (isProofSubmitted || isReviewing) {
-            if (isReceiver) {
+            if (isSender) {
                 return (
                     <button
                         onClick={(e) => {
@@ -409,7 +411,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                     </button>
                 );
             }
-            if (isSender) {
+            if (isReceiver) {
                 return (
                     <div className="bg-blue-100 text-blue-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                         Proof submitted — waiting for review
@@ -419,8 +421,9 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
         }
 
         // ── 7. READY TO COMPLETE ───────────────────────────────────────────
+        // Sender (who requested & reviewed) completes the swap
         if (isReadyToComplete) {
-            if (isReceiver) {
+            if (isSender) {
                 return (
                     <button
                         onClick={handleReceivePayment}
@@ -431,7 +434,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                     </button>
                 );
             }
-            if (isSender) {
+            if (isReceiver) {
                 return (
                     <div className="bg-green-100 text-green-700 text-[10px] font-medium px-3 py-1.5 rounded-md w-fit">
                         Waiting for completion
@@ -704,19 +707,7 @@ const SwapManagement = () => {
             const response = await getSwaps(tabKey);
             const responseData = response.data;
             // const data = responseData.results || responseData || [];
-            let data = responseData.results || responseData || [];
-
-            // TEMP TESTING ONLY — modify ONE swap, not all
-            data = data.map((swap, index) => {
-                if (index === 0) {
-                    return {
-                        ...swap,
-                        status: "awaiting_proof"
-                    };
-                }
-                return swap;
-            });
-
+            const data = responseData.results || responseData || [];
             setSwaps(data);
             if (responseData.tab_counts) setTabCounts(responseData.tab_counts);
             setSwaps(data);
