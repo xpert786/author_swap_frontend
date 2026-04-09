@@ -36,8 +36,8 @@ export const confirmSwapPayment = (id) => {
     return apiClient.post(`stripe/confirm-swap-payment/${id}/`);
 };
 
-export const submitProof = (formData) => {
-    return apiClient.post("swap-proof/submit/", formData, {
+export const submitProof = (id, formData) => {
+    return apiClient.post(`submit-proof/${id}/`, formData, {
         headers: {
             "Content-Type": "multipart/form-data",
         },

@@ -66,6 +66,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
     const { isSender, isReceiver } = getSwapRole(data, currentUserId);
 
     const status = (data.status || "").toLowerCase();
+    console.log("Swap Status:", status);
     const isSending = status === "sending" || status === "pending" || status === "incoming";
     const isAccepted =
         status === "accepted" ||
@@ -705,11 +706,16 @@ const SwapManagement = () => {
             // const data = responseData.results || responseData || [];
             let data = responseData.results || responseData || [];
 
-            // TEMP: force test status
-            data = data.map(swap => ({
-                ...swap,
-                status: "awaiting_proof"
-            }));
+            // TEMP TESTING ONLY — modify ONE swap, not all
+            data = data.map((swap, index) => {
+                if (index === 0) {
+                    return {
+                        ...swap,
+                        status: "awaiting_proof"
+                    };
+                }
+                return swap;
+            });
 
             setSwaps(data);
             if (responseData.tab_counts) setTabCounts(responseData.tab_counts);

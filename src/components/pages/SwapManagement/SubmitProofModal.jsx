@@ -48,16 +48,7 @@ const SubmitProofModal = ({ isOpen, onClose, swapId, onSuccess }) => {
 
             formData.append("notes", notes);
 
-            // await submitProof(formData);
-
-
-            console.log("Proof submitted:", formData);
-
-            toast.success("Proof submitted (mock)");
-
-            onSuccess();
-            onClose();
-
+            await submitProof(swapId, formData);
 
             toast.success("Proof submitted successfully");
             setScreenshot(null);
