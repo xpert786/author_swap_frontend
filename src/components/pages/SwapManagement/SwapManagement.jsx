@@ -722,31 +722,31 @@ const SwapManagement = () => {
         }
     };
 
-    // useEffect(() => {
-    //     fetchSwaps(activeTab.key);
-    // }, [activeTab]);
-
     useEffect(() => {
+        fetchSwaps(activeTab.key);
+    }, [activeTab]);
 
-        setSwaps([
-            {
-                id: 101,
-                sender_id: currentUserId,
-                receiver_id: 2,
-                author_name: "Test Author",
-                status: "awaiting_proof",
-                audience_size: "4500",
-                reliability_score: "98%",
-                requesting_book: "Demo Book",
-                message: "Testing proof flow",
-                eligible_for_pay: false,
-                payment_done: true
-            }
-        ]);
+    // useEffect(() => {
 
-        setLoading(false);
+    //     setSwaps([
+    //         {
+    //             id: 101,
+    //             sender_id: currentUserId,
+    //             receiver_id: 2,
+    //             author_name: "Test Author",
+    //             status: "awaiting_proof",
+    //             audience_size: "4500",
+    //             reliability_score: "98%",
+    //             requesting_book: "Demo Book",
+    //             message: "Testing proof flow",
+    //             eligible_for_pay: false,
+    //             payment_done: true
+    //         }
+    //     ]);
 
-    }, []);
+    //     setLoading(false);
+
+    // }, []);
 
     const filtered = (Array.isArray(swaps) ? swaps : []).filter((s) => {
         const sStatus = (s.status || "").toLowerCase();
