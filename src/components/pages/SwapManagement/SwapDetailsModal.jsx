@@ -127,7 +127,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                 </div>
 
                                 {/* Metrics Grid */}
-                                <div className="grid grid-cols-4 gap-3">
+                                <div className="grid grid-cols-3 gap-3">
                                     <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Audience</p>
                                         <p className="text-[13px] font-medium text-[#111827]">
@@ -146,7 +146,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                             {data?.request_date || "N/A"}
                                         </p>
                                     </div>
-                                    <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
+                                    {/* <div className="bg-white border border-gray-100 p-2.5 rounded-xl text-start">
                                         <p className="text-[12px] font-normal text-[#374151] mb-1">Placement</p>
                                         {data?.placement_label ? (
                                             <div className="mt-0.5">
@@ -172,7 +172,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                         ) : (
                                             <p className="text-[13px] font-medium text-[#111827]">N/A</p>
                                         )}
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 {/* Site URLs */}

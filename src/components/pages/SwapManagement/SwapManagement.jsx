@@ -69,7 +69,6 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
     const { isSender, isReceiver } = getSwapRole(data, currentUserId);
 
     const status = (data.status || "").toLowerCase();
-    console.log("Swap Status:", status, "isSender:", isSender, "isReceiver:", isReceiver);
     const isSending = status === "sending" || status === "pending" || status === "incoming";
     const isAccepted =
         status === "accepted" ||

@@ -290,7 +290,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                         </div>
 
                         {/* Placement Style */}
-                        {placementOptions.length > 0 && (
+                        {/* {placementOptions.length > 0 && (
                             <div className="p-4 border border-[#B5B5B5] rounded-xl">
                                 <h3 className="text-[13px] font-medium text-[#111827] mb-4">
                                     Placement Style
@@ -328,7 +328,7 @@ const PaidSwapRequest = ({ isOpen, onClose, id, price }) => {
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Form Fields */}
                         <div className="space-y-4">

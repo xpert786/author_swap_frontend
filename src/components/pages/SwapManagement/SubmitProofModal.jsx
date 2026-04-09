@@ -43,7 +43,7 @@ const SubmitProofModal = ({ isOpen, onClose, swapId, onSuccess }) => {
             }
 
             if (publicLink.trim()) {
-                formData.append("public_link", publicLink.trim());
+                formData.append("link", publicLink.trim());
             }
 
             formData.append("notes", notes);
