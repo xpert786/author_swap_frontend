@@ -9,6 +9,7 @@ import SwapDetailsModal from './SwapDetailsModal';
 import TrackSwapModal from './TrackSwapModal';
 import DeclineReasonModal from './DeclineReasonModal';
 import SubmitProofModal from './SubmitProofModal';
+import ReviewProofModal from './ReviewProofModal';
 import { useProfile } from '../../../context/ProfileContext';
 
 const tabs = [
@@ -53,7 +54,7 @@ const getSwapRole = (data, currentUserId) => {
     return { isSender, isReceiver };
 };
 
-const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, setDetailsId, setIsTrackOpen, setIsSubmitProofOpen }) => {
+const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, setDetailsId, setIsTrackOpen, setIsSubmitProofOpen, setIsReviewProofOpen }) => {
 
     const navigate = useNavigate();
     const [actionLoading, setActionLoading] = useState(null);
@@ -403,7 +404,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                         onClick={(e) => {
                             e.stopPropagation();
                             setDetailsId(data.id);
-                            setIsTrackOpen(true);
+                            setIsReviewProofOpen(true);
                         }}
                         className="px-6 py-2 bg-blue-600 text-white rounded-[6px] text-xs font-semibold hover:bg-blue-700 transition-colors"
                     >
@@ -676,6 +677,7 @@ const SwapManagement = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isTrackOpen, setIsTrackOpen] = useState(false);
     const [isSubmitProofOpen, setIsSubmitProofOpen] = useState(false);
+    const [isReviewProofOpen, setIsReviewProofOpen] = useState(false);
     const [detailsId, setDetailsId] = useState(null);
     const [isDeclineOpen, setIsDeclineOpen] = useState(false);
     const [declineId, setDeclineId] = useState(null);
@@ -832,6 +834,7 @@ const SwapManagement = () => {
                                     setDetailsId={setDetailsId}
                                     setIsTrackOpen={setIsTrackOpen}
                                     setIsSubmitProofOpen={setIsSubmitProofOpen}
+                                    setIsReviewProofOpen={setIsReviewProofOpen}
                                     onRefresh={(silent = false) => fetchSwaps(activeTab.key, silent)}
                                     onViewDetails={() => {
                                         setDetailsId(swap.id);
@@ -874,6 +877,12 @@ const SwapManagement = () => {
                 isOpen={isSubmitProofOpen}
                 swapId={detailsId}
                 onClose={() => { setIsSubmitProofOpen(false); setDetailsId(null); }}
+                onSuccess={() => fetchSwaps(activeTab.key)}
+            />
+            <ReviewProofModal
+                isOpen={isReviewProofOpen}
+                swapId={detailsId}
+                onClose={() => { setIsReviewProofOpen(false); setDetailsId(null); }}
                 onSuccess={() => fetchSwaps(activeTab.key)}
             />
         </div>

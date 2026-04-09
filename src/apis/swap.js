@@ -43,3 +43,15 @@ export const submitProof = (id, formData) => {
         },
     });
 };
+
+export const reviewProof = (id) => {
+    return apiClient.get(`review-proof/${id}/`);
+};
+
+export const acceptProof = (id) => {
+    return apiClient.post(`approve-proof/${id}/`);
+};
+
+export const declineProof = (id, data) => {
+    return apiClient.post(`dispute-proof/${id}/`, data);
+};
