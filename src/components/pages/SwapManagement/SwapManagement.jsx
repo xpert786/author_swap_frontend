@@ -407,7 +407,7 @@ const SwapCard = ({ data, onRefresh, onViewDetails, onDecline, currentUserId, se
                             setDetailsId(data.id);
                             setIsReviewProofOpen(true);
                         }}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-[6px] text-xs font-semibold hover:bg-blue-700 transition-colors"
+                        className="px-6 py-2 bg-[#1F4F4D] text-white rounded-[6px] text-xs font-semibold hover:opacity-90 transition-opacity"
                     >
                         Review Proof
                     </button>
