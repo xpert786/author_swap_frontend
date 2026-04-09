@@ -18,6 +18,8 @@ const tabs = [
     { label: "Sending Swaps", key: "sending" },
     { label: "Reject Swaps", key: "rejected" },
     { label: "Scheduled Swaps", key: "scheduled" },
+    { label: "Proof Submitted", key: "proof_submitted" },
+    { label: "Awaiting Proof", key: "awaiting_proof" },
     { label: "Completed Swaps", key: "completed" }
 ];
 
@@ -759,6 +761,8 @@ const SwapManagement = () => {
             else if (tKey === "pending" && sStatus === "incoming") isTabMatch = true;
             else if (tKey === "rejected" && sStatus === "reject") isTabMatch = true;
             else if (tKey === "sending" && sStatus === "active") isTabMatch = true;
+            else if (tKey === "proof_submitted" && sStatus === "proof_submitted") isTabMatch = true;
+            else if (tKey === "awaiting_proof" && (sStatus === "awaiting_proof" || sStatus === "scheduled")) isTabMatch = true;
             else if (activeTab.key !== "all") isTabMatch = true;
         }
 
