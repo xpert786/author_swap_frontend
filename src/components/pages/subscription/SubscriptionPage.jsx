@@ -29,6 +29,11 @@ export default function SubscriptionPage() {
     const [defaultCard, setDefaultCard] = useState(null);
     const [fetchingCard, setFetchingCard] = useState(false);
 
+    // Additional placements modal state
+    const [showAdditionalPlacementsModal, setShowAdditionalPlacementsModal] = useState(false);
+    const [selectedPlacementOption, setSelectedPlacementOption] = useState(null);
+    const [processingPlacement, setProcessingPlacement] = useState(false);
+
     const fetchVerification = async (showLoader = true) => {
         try {
             if (showLoader) setLoading(true);
@@ -40,7 +45,6 @@ export default function SubscriptionPage() {
             if (showLoader) setLoading(false);
         }
     };
-
 
     useEffect(() => {
         fetchVerification();
@@ -385,8 +389,27 @@ export default function SubscriptionPage() {
                             })}
                         </div>
 
+                        {/* Additional Placements Section */}
+                        <div className="bg-white border border-[#B5B5B5] rounded-lg p-6 mt-8">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-md font-medium text-[#111827] mb-1">Need More Placements?</h3>
+                                    <p className="text-sm text-[#374151]">
+                                        Purchase additional paid placements without upgrading your plan.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowAdditionalPlacementsModal(true)}
+                                    className="px-5 py-2.5 bg-[#2F6F6D] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+                                >
+                                    Request Additional Features
+                                    <ArrowRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Footer */}
-                        <div className="bg-white border border-gray-300 rounded-lg p-4 mt-12 text-xs text-gray-600 space-y-1">
+                        <div className="bg-white border border-gray-300 rounded-lg p-4 mt-6 text-xs text-gray-600 space-y-1">
                             <h3 className="text-md font-medium text-[#111827] mb-2">What You Get With Every Plan</h3>
                             <p>• Newsletter swaps are always unlimited.</p>
                             <p>• Paid placements reset monthly.</p>
@@ -497,6 +520,124 @@ export default function SubscriptionPage() {
                     </div>
                 </div>
             )}
+            {/* ── Additional Placements Modal ── */}
+            {showAdditionalPlacementsModal && (
+                <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-[110]">
+                    <div className="bg-white w-[440px] rounded-[10px] shadow-xl overflow-hidden m-5">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-5">
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-800">Additional Placements</h2>
+                                    <p className="text-[13px] text-gray-500 mt-0.5">Select the number of extra placements you need</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setShowAdditionalPlacementsModal(false);
+                                        setSelectedPlacementOption(null);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 text-lg transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* Options */}
+                            <div className="space-y-3 mb-6">
+                                <label
+                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                                        selectedPlacementOption === '15'
+                                            ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            name="placementOption"
+                                            value="15"
+                                            checked={selectedPlacementOption === '15'}
+                                            onChange={(e) => setSelectedPlacementOption(e.target.value)}
+                                            className="w-4 h-4 text-[#2F6F6D] accent-[#2F6F6D]"
+                                        />
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">15 Additional Placements</p>
+                                            <p className="text-xs text-gray-500">One-time purchase</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-lg font-bold text-[#2F6F6D]">$15</span>
+                                </label>
+
+                                <label
+                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                                        selectedPlacementOption === '25'
+                                            ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            name="placementOption"
+                                            value="25"
+                                            checked={selectedPlacementOption === '25'}
+                                            onChange={(e) => setSelectedPlacementOption(e.target.value)}
+                                            className="w-4 h-4 text-[#2F6F6D] accent-[#2F6F6D]"
+                                        />
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">25 Additional Placements</p>
+                                            <p className="text-xs text-gray-500">One-time purchase</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-lg font-bold text-[#2F6F6D]">$25</span>
+                                </label>
+                            </div>
+
+                            {/* Note */}
+                            <p className="text-[11px] text-gray-400 text-center mb-5">
+                                Additional placements will be added to your account immediately after purchase.
+                                They do not roll over to the next billing period.
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowAdditionalPlacementsModal(false);
+                                        setSelectedPlacementOption(null);
+                                    }}
+                                    className="flex-1 px-4 py-2.5 text-[13px] rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (selectedPlacementOption) {
+                                            toast.success(`Proceeding with ${selectedPlacementOption} additional placements...`);
+                                            setShowAdditionalPlacementsModal(false);
+                                            setSelectedPlacementOption(null);
+                                        } else {
+                                            toast.error("Please select an option");
+                                        }
+                                    }}
+                                    disabled={!selectedPlacementOption || processingPlacement}
+                                    className="flex-1 px-4 py-2.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white font-medium hover:opacity-90 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {processingPlacement ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Proceed
+                                            <ArrowRight size={14} />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* ── Payment Confirmation Modal ── */}
             {showPaymentConfirmModal && defaultCard && (
                 <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-[110]">
