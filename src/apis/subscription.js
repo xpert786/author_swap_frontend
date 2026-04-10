@@ -47,10 +47,15 @@ export const attachPaymentMethod = async (data) => {
 export const changePlanPreview = async (data) => {
     return apiClient.post("stripe/change-plan/preview/", data);
 }
+
 export const manualUpgrade = async (data) => {
     return apiClient.post("subscription/upgrade/", data);
 }
 
 export const getCampaignDates = async () => {
     return apiClient.get("campaign-dates/");
+}
+
+export const syncAddonPayment = async (data) => {
+    return apiClient.post("stripe/sync-addon-payment/", data);
 }

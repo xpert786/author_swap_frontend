@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
 import { getSubscriberVerification, createCheckoutSession, changePlanPreview, getPaymentMethods, manualUpgrade } from "../../../apis/subscription";
+import { directPayment } from "../../../apis/wallet";
 import toast from "react-hot-toast";
 import { useProfile } from "../../../context/ProfileContext";
 
@@ -33,6 +34,10 @@ export default function SubscriptionPage() {
     const [showAdditionalPlacementsModal, setShowAdditionalPlacementsModal] = useState(false);
     const [selectedPlacementOption, setSelectedPlacementOption] = useState(null);
     const [processingPlacement, setProcessingPlacement] = useState(false);
+
+    // Payment method modal state for additional placements
+    const [showPlacementPaymentModal, setShowPlacementPaymentModal] = useState(false);
+    const [placementPaymentLoading, setPlacementPaymentLoading] = useState(null);
 
     const fetchVerification = async (showLoader = true) => {
         try {
@@ -612,28 +617,131 @@ export default function SubscriptionPage() {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        if (selectedPlacementOption) {
-                                            toast.success(`Proceeding with ${selectedPlacementOption} additional placements...`);
-                                            setShowAdditionalPlacementsModal(false);
-                                            setSelectedPlacementOption(null);
-                                        } else {
+                                        if (!selectedPlacementOption) {
                                             toast.error("Please select an option");
+                                            return;
                                         }
+                                        setShowAdditionalPlacementsModal(false);
+                                        setShowPlacementPaymentModal(true);
                                     }}
-                                    disabled={!selectedPlacementOption || processingPlacement}
+                                    disabled={!selectedPlacementOption}
                                     className="flex-1 px-4 py-2.5 text-[13px] rounded-lg bg-[#2F6F6D] text-white font-medium hover:opacity-90 transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
-                                    {processingPlacement ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <>
-                                            Proceed
-                                            <ArrowRight size={14} />
-                                        </>
-                                    )}
+                                    Proceed
+                                    <ArrowRight size={14} />
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Additional Placements Payment Method Modal ── */}
+            {showPlacementPaymentModal && (
+                <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-[120]">
+                    <div className="bg-white w-[400px] rounded-[12px] shadow-xl p-6 m-4">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-800">Choose Payment Method</h2>
+                                <p className="text-[13px] text-gray-500 mt-1">
+                                    Amount: <span className="font-semibold text-[#2F6F6D]">${selectedPlacementOption || "0.00"}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowPlacementPaymentModal(false);
+                                    setSelectedPlacementOption(null);
+                                    setPlacementPaymentLoading(null);
+                                }}
+                                className="text-gray-400 hover:text-gray-600 text-lg transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setPlacementPaymentLoading("card");
+                                        const response = await directPayment({
+                                            payment_type: "addon_placement",
+                                            count: parseInt(selectedPlacementOption),
+                                            payment_method: "card"
+                                        });
+                                        if (response.data?.url) {
+                                            window.location.href = response.data.url;
+                                        } else {
+                                            toast.success(response.data?.message || "Payment successful!");
+                                            setShowPlacementPaymentModal(false);
+                                            setSelectedPlacementOption(null);
+                                            fetchVerification(false);
+                                        }
+                                    } catch (err) {
+                                        console.error("Card payment error:", err);
+                                        toast.error(err?.response?.data?.message || "Failed to process card payment");
+                                    } finally {
+                                        setPlacementPaymentLoading(null);
+                                    }
+                                }}
+                                disabled={placementPaymentLoading === "card"}
+                                className="w-full p-4 border-2 border-[#2F6F6D] rounded-[10px] hover:bg-[#2F6F6D] hover:text-white transition-all group text-left disabled:opacity-50"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-[#2F6F6D33] group-hover:bg-white/20 flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Pay with Card</p>
+                                        <p className="text-xs opacity-80">Use your saved card or add a new one</p>
+                                    </div>
+                                    {placementPaymentLoading === "card" && <Loader2 className="w-4 h-4 animate-spin ml-auto" />}
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setPlacementPaymentLoading("wallet");
+                                        const response = await directPayment({
+                                            payment_type: "addon_placement",
+                                            count: parseInt(selectedPlacementOption),
+                                            payment_method: "wallet"
+                                        });
+                                        toast.success(response.data?.message || "Payment successful using wallet funds!");
+                                        setShowPlacementPaymentModal(false);
+                                        setSelectedPlacementOption(null);
+                                        fetchVerification(false);
+                                    } catch (err) {
+                                        console.error("Wallet payment error:", err);
+                                        toast.error(err?.response?.data?.message || "Failed to process payment from wallet. Please check your balance.");
+                                    } finally {
+                                        setPlacementPaymentLoading(null);
+                                    }
+                                }}
+                                disabled={placementPaymentLoading === "wallet"}
+                                className="w-full p-4 border-2 border-[#16A34A] text-[#16A34A] rounded-[10px] hover:bg-[#16A34A] hover:text-white transition-all group text-left disabled:opacity-50"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-[#16A34A33] group-hover:bg-white/20 flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a1 1 0 11-2 0 1 1 0 012 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">Pay from Wallet Funds</p>
+                                        <p className="text-xs opacity-80">Use your available balance</p>
+                                    </div>
+                                    {placementPaymentLoading === "wallet" && <Loader2 className="w-4 h-4 animate-spin ml-auto" />}
+                                </div>
+                            </button>
+                        </div>
+
+                        <p className="text-[11px] text-gray-400 text-center mt-6">
+                            You will be charged ${selectedPlacementOption} for {selectedPlacementOption} additional placements.
+                        </p>
                     </div>
                 </div>
             )}
