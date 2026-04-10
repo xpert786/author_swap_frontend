@@ -20,7 +20,7 @@ import { RxCursorArrow } from "react-icons/rx";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { getSubscriberAnalytics, getCampaignDates, getCampaignAnalytics } from "../../../apis/subscription";
+import { getSubscriberAnalytics, getCampaignDates, getCampaignAnalytics, getLinkLevelAnalytics } from "../../../apis/subscription";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
@@ -91,6 +91,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
         has_prev: false,
         total_results: 0
     });
+    const [linkLevelData, setLinkLevelData] = useState({ results: [], pagination: {} });
 
     // FIX 1: Use a ref for click-outside detection instead of a class-based approach
     const dropdownRef = useRef(null);
@@ -122,18 +123,12 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    const fetchData = async (cPage = ctrPage) => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const params = { page: cPage };
-            const analyticsRes = await getSubscriberAnalytics(params);
+            const analyticsRes = await getSubscriberAnalytics();
             const data = analyticsRes.data;
             setAnalytics(data);
-            
-            // Link CTR Pagination
-            if (data?.link_level_ctr?.pagination) {
-                setCtrPagination(data.link_level_ctr.pagination);
-            }
         } catch (error) {
             console.error("Failed to fetch analytics data", error);
         } finally {
@@ -162,10 +157,24 @@ const AnalyticsPage = ({ isChildView = false }) => {
         }
     };
 
-    // Global data fetch
+    const fetchLinkLevelData = async (page = 1) => {
+        try {
+            const res = await getLinkLevelAnalytics({ page });
+            const data = res.data || res;
+            setLinkLevelData({
+                results: data?.results || [],
+                pagination: data?.pagination || {}
+            });
+        } catch (error) {
+            console.error("Failed to fetch link-level analytics:", error);
+            setLinkLevelData({ results: [], pagination: {} });
+        }
+    };
+
+    // Global data fetch - initial load only, no pagination dependency
     useEffect(() => {
-        fetchData(ctrPage);
-    }, [ctrPage]);
+        fetchData();
+    }, []);
 
     // Independent campaign data fetch
     useEffect(() => {
@@ -175,6 +184,10 @@ const AnalyticsPage = ({ isChildView = false }) => {
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    useEffect(() => {
+        fetchLinkLevelData(ctrPage);
+    }, [ctrPage]);
 
     // FIX 2: Stable click-outside handler using ref — no isDropdownOpen in deps
     useEffect(() => {
@@ -200,8 +213,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
 
     // FIX 3: linkAnalysis correctly returns flat link objects (with campaignName attached)
     const linkAnalysis = useMemo(() => {
-        const allLinks = Array.isArray(analytics?.link_level_ctr?.results)
-            ? analytics.link_level_ctr.results
+        const allLinks = Array.isArray(linkLevelData?.results)
+            ? linkLevelData.results
             : [];
 
         const filtered = selectedCampaignId
@@ -216,7 +229,7 @@ const AnalyticsPage = ({ isChildView = false }) => {
             }));
             return [...acc, ...links];
         }, []);
-    }, [analytics?.link_level_ctr?.results, selectedCampaignId]);
+    }, [linkLevelData?.results, selectedCampaignId]);
 
     const subGrowth = Array.isArray(analytics?.growth_chart) && analytics.growth_chart.length > 0
         ? analytics.growth_chart
@@ -690,10 +703,10 @@ const AnalyticsPage = ({ isChildView = false }) => {
                         </div>
 
                         {/* Pagination Controls */}
-                        {ctrPagination.total_pages > 1 && (
+                        {(linkLevelData.pagination?.total_pages > 1 || ctrPagination.total_pages > 1) && (
                             <div className="flex items-center justify-between mt-4 px-2">
                                 <p className="text-xs text-gray-500">
-                                    Showing page <span className="font-medium text-gray-900">{ctrPage}</span> of <span className="font-medium text-gray-900">{ctrPagination.total_pages}</span>
+                                    Showing page <span className="font-medium text-gray-900">{ctrPage}</span> of <span className="font-medium text-gray-900">{linkLevelData.pagination?.total_pages || ctrPagination.total_pages}</span>
                                 </p>
                                 <div className="flex gap-2">
                                     <button
@@ -705,8 +718,8 @@ const AnalyticsPage = ({ isChildView = false }) => {
                                         Previous
                                     </button>
                                     <button
-                                        onClick={() => setCtrPage(prev => Math.min(ctrPagination.total_pages, prev + 1))}
-                                        disabled={ctrPage >= ctrPagination.total_pages}
+                                        onClick={() => setCtrPage(prev => Math.min(linkLevelData.pagination?.total_pages || ctrPagination.total_pages, prev + 1))}
+                                        disabled={ctrPage >= (linkLevelData.pagination?.total_pages || ctrPagination.total_pages)}
                                         className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors flex items-center gap-1"
                                     >
                                         Next

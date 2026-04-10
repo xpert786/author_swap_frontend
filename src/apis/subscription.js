@@ -63,3 +63,7 @@ export const syncAddonPayment = async (data) => {
 export const getAddonStats = async () => {
     return apiClient.get("payments/addon-stats/");
 }
+
+export const getLinkLevelAnalytics = async (params) => {
+    return apiClient.get("link-level-analytics/", { params });
+}
