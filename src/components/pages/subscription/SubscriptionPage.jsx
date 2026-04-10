@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Check, Rocket, Crown, ArrowRight, Loader2 } from "lucide-react";
 import AnalyticsPage from "./AnalyticsPage";
-import { getSubscriberVerification, createCheckoutSession, changePlanPreview, getPaymentMethods, manualUpgrade } from "../../../apis/subscription";
+import { getSubscriberVerification, createCheckoutSession, changePlanPreview, getPaymentMethods, manualUpgrade, getAddonStats } from "../../../apis/subscription";
 import { directPayment } from "../../../apis/wallet";
 import toast from "react-hot-toast";
 import { useProfile } from "../../../context/ProfileContext";
@@ -39,23 +39,49 @@ export default function SubscriptionPage() {
     const [showPlacementPaymentModal, setShowPlacementPaymentModal] = useState(false);
     const [placementPaymentLoading, setPlacementPaymentLoading] = useState(null);
 
+    // Addon stats state
+    const [addonStats, setAddonStats] = useState(null);
+    const [loadingAddonStats, setLoadingAddonStats] = useState(false);
+
     const fetchVerification = async (showLoader = true) => {
         try {
             if (showLoader) setLoading(true);
             const res = await getSubscriberVerification();
             setVerification(res.data);
         } catch (error) {
-            console.error("Failed to fetch verification status", error);
+            console.error("[DEBUG] Failed to fetch verification status:", error);
+            console.error("[DEBUG] Error response:", error?.response);
+            console.error("[DEBUG] Error message:", error?.message);
         } finally {
             if (showLoader) setLoading(false);
         }
     };
 
+    const fetchAddonStats = async () => {
+        console.log("[DEBUG] fetchAddonStats called");
+        try {
+            setLoadingAddonStats(true);
+            console.log("[DEBUG] Calling getAddonStats API...");
+            const res = await getAddonStats();
+            console.log("[DEBUG] getAddonStats response:", res.data);
+            setAddonStats(res.data);
+        } catch (error) {
+            console.error("[DEBUG] Failed to fetch addon stats:", error);
+            console.error("[DEBUG] Error response:", error?.response);
+            console.error("[DEBUG] Error message:", error?.message);
+        } finally {
+            setLoadingAddonStats(false);
+        }
+    };
+
     useEffect(() => {
+        console.log("[DEBUG] useEffect running - calling APIs");
         fetchVerification();
+        fetchAddonStats();
     }, []);
 
     const handleSubscribe = async (tier) => {
+        console.log("[DEBUG] handleSubscribe called");
         try {
             setProcessingId(tier.id);
             setSelectedTier(tier);
@@ -168,11 +194,11 @@ export default function SubscriptionPage() {
         const isCurrent = subscription?.tier?.toString() === tier.id?.toString();
         if (isCurrent) return "Current Plan";
         if (!subscription) return "Get Started";
-        
+
         // Check if this is an upgrade or downgrade
         const currentTierId = parseInt(subscription?.tier);
         const targetTierId = parseInt(tier.id);
-        
+
         if (targetTierId > currentTierId) {
             return `Upgrade to ${tier.name}`;
         } else if (targetTierId < currentTierId) {
@@ -293,8 +319,64 @@ export default function SubscriptionPage() {
                             </p>
                         </div>
 
-                        <h2 id="membership-tiers" className="text-center text-[#111827] text-[25px] font-semibold mb-8">
-                            Choose Your Membership
+                        {/* Additional Placements Section */}
+                        <div className="bg-white border border-[#B5B5B5] rounded-lg p-6 mt-8">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-md font-medium text-[#111827] mb-1">Need More Placements?</h3>
+                                    <p className="text-sm text-[#374151]">
+                                        Purchase additional paid placements without upgrading your plan.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowAdditionalPlacementsModal(true)}
+                                    className="px-5 py-2.5 bg-[#2F6F6D] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+                                >
+                                    Request Additional Features
+                                    <ArrowRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Addon Stats Section - Only show if user has purchased addons */}
+                        {addonStats?.stats?.total_purchased > 0 && (
+                            <div className="bg-gradient-to-r from-[#2F6F6D]/5 to-[#16A34A]/5 border border-[#2F6F6D]/20 rounded-lg p-5 mt-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-[#2F6F6D] rounded-full flex items-center justify-center">
+                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-sm font-semibold text-[#111827]">Your Add-on Placements</p>
+                                    </div>
+                                    <span className="text-xs bg-[#2F6F6D] text-white px-2 py-1 rounded-full">
+                                        Active
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="bg-white rounded-lg p-3 text-center shadow-sm border border-gray-100">
+                                        <p className="text-xl font-bold text-[#2F6F6D]">{addonStats.stats.total_purchased}</p>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">Total Purchased</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center shadow-sm border border-gray-100">
+                                        <p className="text-xl font-bold text-amber-500">{addonStats.stats.total_used}</p>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">Used</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-3 text-center shadow-sm border border-gray-100">
+                                        <p className="text-xl font-bold text-green-500">{addonStats.stats.remaining_balance}</p>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">Remaining</p>
+                                    </div>
+                                </div>
+                                <div className="mt-3 pt-3 border-t border-[#2F6F6D]/10 flex items-center justify-between">
+                                    <p className="text-xs text-gray-500">Total invested</p>
+                                    <p className="text-sm font-semibold text-[#2F6F6D]">${addonStats.stats.total_invested}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <h2 id="membership-tiers" className="text-center text-[#111827] text-[25px] font-semibold my-8">
+                            {subscription?.is_active ? "Manage Your Subscription" : "Choose Your Membership"}
                         </h2>
 
                         {/* Pricing Cards */}
@@ -388,30 +470,12 @@ export default function SubscriptionPage() {
                                                 </>
                                             )}
                                         </button>
-
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* Additional Placements Section */}
-                        <div className="bg-white border border-[#B5B5B5] rounded-lg p-6 mt-8">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                                <div>
-                                    <h3 className="text-md font-medium text-[#111827] mb-1">Need More Placements?</h3>
-                                    <p className="text-sm text-[#374151]">
-                                        Purchase additional paid placements without upgrading your plan.
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setShowAdditionalPlacementsModal(true)}
-                                    className="px-5 py-2.5 bg-[#2F6F6D] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
-                                >
-                                    Request Additional Features
-                                    <ArrowRight size={16} />
-                                </button>
-                            </div>
-                        </div>
+
 
                         {/* Footer */}
                         <div className="bg-white border border-gray-300 rounded-lg p-4 mt-6 text-xs text-gray-600 space-y-1">
@@ -550,11 +614,10 @@ export default function SubscriptionPage() {
                             {/* Options */}
                             <div className="space-y-3 mb-6">
                                 <label
-                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                                        selectedPlacementOption === '15'
-                                            ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
+                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${selectedPlacementOption === '15'
+                                        ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <input
@@ -574,11 +637,10 @@ export default function SubscriptionPage() {
                                 </label>
 
                                 <label
-                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                                        selectedPlacementOption === '25'
-                                            ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
+                                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${selectedPlacementOption === '25'
+                                        ? 'border-[#2F6F6D] bg-[#2F6F6D]/5'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <input

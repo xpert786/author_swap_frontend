@@ -56,6 +56,9 @@ const SignUp = () => {
 
   const password = watch("password");
 
+  // Password validation regex: 8+ chars, 1 uppercase, 1 number, 1 special char
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
 
   const onSubmit = async (data) => {
     const loadingToast = toast.loading("Creating your account...");
@@ -193,9 +196,9 @@ const SignUp = () => {
                     placeholder="Enter Password"
                     {...register("password", {
                       required: "Password is required",
-                      minLength: {
-                        value: 8,
-                        message: "Minimum 8 characters required",
+                      pattern: {
+                        value: passwordRegex,
+                        message: "Password must be 8+ characters with 1 uppercase, 1 number, and 1 special character",
                       },
                     })}
                     className={`w-full border rounded-[10px] px-4 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 transition-all pr-12

@@ -59,3 +59,7 @@ export const getCampaignDates = async () => {
 export const syncAddonPayment = async (data) => {
     return apiClient.post("stripe/sync-addon-payment/", data);
 }
+
+export const getAddonStats = async () => {
+    return apiClient.get("payments/addon-stats/");
+}
