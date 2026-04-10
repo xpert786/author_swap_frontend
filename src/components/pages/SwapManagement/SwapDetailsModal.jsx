@@ -51,7 +51,9 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
 
     const partnerGenre = formatGenre(data?.partner_genre) || "Mystery Author";
     const book = data?.promoting_book || {};
-    const siteUrls = data?.site_url || [];
+    // const siteUrls = data?.site_url || [];
+    const siteUrls =
+        data?.link_ctr_analysis?.map(link => link.url) || [];
 
     return (
         <div className="fixed inset-0 bg-[#00000080] flex items-center justify-center z-50">
@@ -178,7 +180,7 @@ const SwapDetailsModal = ({ isOpen, onClose, swapId }) => {
                                 {/* Site URLs */}
                                 {siteUrls.length > 0 && (
                                     <div>
-                                        <h4 className="text-md font-medium text-[#111827] mb-3">Site URLs</h4>
+                                        <h4 className="text-md font-medium text-[#111827] mb-3">Site URLs (to promote)</h4>
                                         <div className="space-y-2">
                                             {siteUrls.map((url, idx) => {
                                                 // Extract clean URL (handle cases where URL has extra text)

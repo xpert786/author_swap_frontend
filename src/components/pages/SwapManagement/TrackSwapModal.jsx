@@ -80,7 +80,9 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
     const authorImage = data?.partner_profile_picture || `https://ui-avatars.com/api/?name=${authorName}&background=random`;
     const authorRole = data?.partner_genre || "Author";
     const book = data?.promoting_book || {};
-    const siteUrls = data?.site_url || [];
+    // const siteUrls = data?.site_url || [];
+    const siteUrls =
+        data?.link_level_ctr?.map(link => link.url) || [];
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4">
@@ -171,7 +173,7 @@ const TrackSwapModal = ({ isOpen, onClose, swapId }) => {
                                 {/* Site URLs */}
                                 {siteUrls.length > 0 && (
                                     <div className="pt-2">
-                                        <h3 className="text-base font-medium text-[#111827] mb-4">Site URLs</h3>
+                                        <h3 className="text-base font-medium text-[#111827] mb-4">Site URLs (to promote)</h3>
                                         <div className="space-y-2">
                                             {siteUrls.map((url, idx) => {
                                                 const cleanUrl = url.split(' ')[0];
