@@ -67,11 +67,15 @@ const ReviewProofModal = ({ isOpen, onClose, swapId, onSuccess }) => {
 
     if (!isOpen) return null;
 
-    const hasScreenshot = data?.proof_screenshot;
-    const hasLink = data?.proof_link;
     const submittedAt = data?.submitted_at
         ? dayjs(data.submitted_at).format("MMM D, YYYY [at] h:mm A")
         : "N/A";
+
+    // Get all screenshots and links from proof_media array
+    const proofMedia = data?.proof_media || [];
+    const screenshots = proofMedia.filter(m => m.media_type === "screenshot" && m.url);
+    const links = proofMedia.filter(m => m.media_type === "link" && m.link_url);
+    const hasMedia = screenshots.length > 0 || links.length > 0;
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -109,13 +113,75 @@ const ReviewProofModal = ({ isOpen, onClose, swapId, onSuccess }) => {
                                     <span>{submittedAt}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-[13px] text-gray-600">
-                                    <span className="font-medium">Proof Type:</span>
-                                    <span className="capitalize">{data?.proof_type || "N/A"}</span>
+                                    <span className="font-medium">Items Submitted:</span>
+                                    <span>{screenshots.length} screenshot{screenshots.length !== 1 ? 's' : ''}, {links.length} link{links.length !== 1 ? 's' : ''}</span>
                                 </div>
                             </div>
 
-                            {/* Screenshot Display */}
-                            {hasScreenshot && (
+                            {/* Screenshots Display */}
+                            {screenshots.length > 0 && (
+                                <div className="mb-5">
+                                    <label className="text-[13px] font-medium text-gray-600 block mb-2">
+                                        <FiImage className="inline mr-1.5" size={14} />
+                                        Screenshot Proof ({screenshots.length})
+                                    </label>
+                                    <div className="space-y-3">
+                                        {screenshots.map((media, index) => (
+                                            <div key={media.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                                                <div className="bg-gray-100 px-3 py-1 text-xs text-gray-500 border-b border-gray-200">
+                                                    Screenshot {index + 1}
+                                                </div>
+                                                <img
+                                                    src={media.url}
+                                                    alt={`Proof screenshot ${index + 1}`}
+                                                    className="w-full h-auto max-h-[300px] object-contain bg-gray-100"
+                                                />
+                                                <div className="p-2 bg-gray-50 border-t border-gray-200">
+                                                    <a
+                                                        href={media.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1.5 text-[13px] text-[#2F6F6D] hover:underline"
+                                                    >
+                                                        <FiExternalLink size={14} />
+                                                        View Full Image
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Links Display */}
+                            {links.length > 0 && (
+                                <div className="mb-5">
+                                    <label className="text-[13px] font-medium text-gray-600 block mb-2">
+                                        <FiExternalLink className="inline mr-1.5" size={14} />
+                                        Public Links ({links.length})
+                                    </label>
+                                    <div className="space-y-2">
+                                        {links.map((media, index) => (
+                                            <a
+                                                key={media.id}
+                                                href={media.link_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-sm px-3 py-2.5 rounded-lg bg-[#2F6F6D08] hover:bg-[#2F6F6D15] transition-colors border border-[#2F6F6D20] text-[#2F6F6D] font-medium"
+                                            >
+                                                <span className="text-xs bg-[#2F6F6D] text-white px-1.5 py-0.5 rounded shrink-0">
+                                                    {index + 1}
+                                                </span>
+                                                <FiExternalLink className="shrink-0" size={16} />
+                                                <span className="truncate">{media.link_url}</span>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fallback: Show old format if no proof_media */}
+                            {!hasMedia && data?.proof_screenshot && (
                                 <div className="mb-5">
                                     <label className="text-[13px] font-medium text-gray-600 block mb-2">
                                         <FiImage className="inline mr-1.5" size={14} />
@@ -140,8 +206,7 @@ const ReviewProofModal = ({ isOpen, onClose, swapId, onSuccess }) => {
                                 </div>
                             )}
 
-                            {/* Link Display */}
-                            {hasLink && (
+                            {!hasMedia && data?.proof_link && (
                                 <div className="mb-5">
                                     <label className="text-[13px] font-medium text-gray-600 block mb-2">
                                         <FiExternalLink className="inline mr-1.5" size={14} />
