@@ -343,11 +343,7 @@ export default function SubscriptionPage() {
                             <div className="bg-gradient-to-r from-[#2F6F6D]/5 to-[#16A34A]/5 border border-[#2F6F6D]/20 rounded-lg p-5 mt-4">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-[#2F6F6D] rounded-full flex items-center justify-center">
-                                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                            </svg>
-                                        </div>
+                                      
                                         <p className="text-sm font-semibold text-[#111827]">Your Add-on Placements</p>
                                     </div>
                                     <span className="text-xs bg-[#2F6F6D] text-white px-2 py-1 rounded-full">
